@@ -21,10 +21,12 @@ export function FAQ() {
   return (
     <section id="faq" className="py-20 md:py-28">
       <div className="container mx-auto px-6">
-        <h2 className="text-2xl md:text-3xl font-bold tracking-tight mb-12">
-          {t('title')}
-        </h2>
-        <div className="max-w-3xl">
+        <div className="text-center mb-12">
+          <h2 className="text-2xl md:text-3xl font-bold tracking-tight">
+            {t('title')}
+          </h2>
+        </div>
+        <div className="max-w-3xl mx-auto">
           {items.map((item, i) => (
             <div key={i} className="border-b border-border/60">
               <button
@@ -56,3 +58,4 @@ export function FAQ() {
     </section>
   );
 }
+

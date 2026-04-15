@@ -51,9 +51,6 @@ export function Navigation() {
               5,152
             </span>
           </a>
-          <Link href="/docs" className="inline-flex items-center justify-center h-8 px-4 text-sm font-medium rounded-md bg-foreground text-background hover:bg-foreground/90 transition-colors">
-            {t('docs')}
-          </Link>
         </div>
       </div>
     </header>

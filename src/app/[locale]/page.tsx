@@ -1,10 +1,11 @@
 import { getTranslations, getLocale } from 'next-intl/server';
 import { Link } from '@/i18n/routing';
-import { ArrowRight, Mic, Target, BrainCircuit, GraduationCap, Zap, BarChart3, AudioWaveform, Timer, PauseCircle, Link2, Volume2, Database, Check, ArrowUpRight, Sparkles, ScanSearch, Workflow, ExternalLink } from 'lucide-react';
+import { ArrowRight, Mic, Target, BrainCircuit, GraduationCap, Zap, BarChart3, AudioWaveform, Timer, PauseCircle, Link2, Volume2, Database, Check, ArrowUpRight, Sparkles, ScanSearch, Workflow, ExternalLink, BookOpen } from 'lucide-react';
 import { FAQ } from '@/components/faq';
 import { WorkflowSteps } from '@/components/workflow-steps';
 import { HeroTypewriter } from '@/components/hero-typewriter';
 import { ScrollIndicator } from '@/components/scroll-indicator';
+import { FadeUp, StaggerContainer, StaggerItem, CountUp, HoverCard, IconWrap } from '@/components/animated-section';
 
 export default async function HomePage() {
   const locale = await getLocale();
@@ -57,42 +58,69 @@ export default async function HomePage() {
         </div>
 
         <div className="container mx-auto px-6 flex flex-col items-center text-center">
-          <span className="inline-block text-xs tracking-widest uppercase text-muted-foreground border border-border/60 rounded-full px-4 py-1.5 mb-8 backdrop-blur-sm">
-            {tHero('badge')}
-          </span>
-          <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight leading-[1.1] mb-6 max-w-3xl">
-            {tHero('title_line1')}<br />
-            <HeroTypewriter locale={locale} />
-          </h1>
-          <p className="text-base md:text-lg text-muted-foreground mb-10 max-w-xl leading-relaxed">
-            {tHero('description')}
-          </p>
-          <div className="flex items-center gap-4">
-            <Link
-              href="/demo"
-              className="group relative inline-flex items-center justify-center h-12 px-8 text-sm font-semibold rounded-full bg-foreground text-background hover:bg-foreground/90 transition-all duration-300 gap-2 shadow-lg shadow-foreground/10 hover:shadow-xl hover:shadow-foreground/15 hover:-translate-y-0.5"
-            >
-              {tHero('cta_primary')}
-              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
-            </Link>
-            <Link
-              href="/docs"
-              className="group inline-flex items-center justify-center h-12 px-8 text-sm font-semibold rounded-full border-2 border-border/80 hover:border-foreground/40 hover:bg-muted/50 transition-all duration-300 backdrop-blur-sm"
-            >
-              {tHero('cta_secondary')}
-            </Link>
-          </div>
+          <FadeUp delay={0}>
+            <span className="inline-block text-xs tracking-widest uppercase text-muted-foreground border border-border/60 rounded-full px-4 py-1.5 mb-8 backdrop-blur-sm">
+              {tHero('badge')}
+            </span>
+          </FadeUp>
+          <FadeUp delay={0.1}>
+            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight leading-[1.1] mb-6 max-w-3xl">
+              {tHero('title_line1')}<br />
+              <HeroTypewriter locale={locale} />
+            </h1>
+          </FadeUp>
+          <FadeUp delay={0.2}>
+            <p className="text-base md:text-lg text-muted-foreground mb-10 max-w-xl leading-relaxed">
+              {tHero('description')}
+            </p>
+          </FadeUp>
+          <FadeUp delay={0.3}>
+            <div className="flex items-center gap-3">
+              {/* 主按钮：磨砂黑底 + 微光边框 + 内发光 */}
+              <Link
+                href="/demo"
+                className="group relative inline-flex items-center justify-center h-11 px-7 text-sm font-semibold rounded-xl overflow-hidden gap-2
+                  bg-foreground text-background
+                  shadow-[0_1px_0_0_rgba(255,255,255,0.12)_inset,0_-1px_0_0_rgba(0,0,0,0.3)_inset,0_4px_16px_rgba(0,0,0,0.22)]
+                  hover:shadow-[0_1px_0_0_rgba(255,255,255,0.18)_inset,0_-1px_0_0_rgba(0,0,0,0.3)_inset,0_8px_24px_rgba(0,0,0,0.3)]
+                  hover:-translate-y-[2px] active:translate-y-0
+                  transition-all duration-200"
+              >
+                <span className="relative z-10 flex items-center gap-2">
+                  {tHero('cta_primary')}
+                  <ArrowRight className="h-3.5 w-3.5 transition-transform duration-200 group-hover:translate-x-0.5" />
+                </span>
+                {/* 顶部高光条 */}
+                <span className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/30 to-transparent" />
+              </Link>
+
+              {/* 次按钮：玻璃质感 + 细边框 */}
+              <Link
+                href="/docs"
+                className="group inline-flex items-center justify-center gap-2 h-11 px-7 text-sm font-medium rounded-xl
+                  border border-border/70 bg-background/60 backdrop-blur-md
+                  hover:border-foreground/25 hover:bg-background/90
+                  shadow-[0_1px_3px_rgba(0,0,0,0.06),0_1px_0_0_rgba(255,255,255,0.6)_inset]
+                  hover:shadow-[0_2px_8px_rgba(0,0,0,0.1),0_1px_0_0_rgba(255,255,255,0.6)_inset]
+                  hover:-translate-y-[2px] active:translate-y-0
+                  transition-all duration-200 text-foreground/80 hover:text-foreground"
+              >
+                <BookOpen className="h-3.5 w-3.5 opacity-60 group-hover:opacity-100 transition-opacity" />
+                {tHero('cta_secondary')}
+              </Link>
+            </div>
+          </FadeUp>
         </div>
       </section>
 
       {/* ━━━ 三大核心价值 ━━━ */}
       <section id="features" className="py-20 md:py-28 border-t border-border/40">
         <div className="container mx-auto px-6">
-          <div className="text-center mb-14">
+          <FadeUp className="text-center mb-14">
             <h2 className="text-2xl md:text-3xl font-bold tracking-tight mb-3">三大核心价值</h2>
             <p className="text-muted-foreground max-w-lg mx-auto">从多维数据到智能教学，一站式语音评测 AI 解决方案</p>
-          </div>
-          <div className="grid lg:grid-cols-3 gap-px bg-border/40 border border-border/40 rounded-xl overflow-hidden max-w-5xl mx-auto">
+          </FadeUp>
+          <StaggerContainer className="grid lg:grid-cols-3 gap-px bg-border/40 border border-border/40 rounded-xl overflow-hidden max-w-5xl mx-auto">
             {[
               {
                 icon: Sparkles,
@@ -116,10 +144,10 @@ export default async function HomePage() {
                 points: [tAdvanced('card1_title'), tAdvanced('card2_title'), tAdvanced('card3_title')],
               },
             ].map((card, i) => (
-              <div key={i} className="bg-background p-8 md:p-10 flex flex-col">
-                <div className={`h-10 w-10 rounded-lg flex items-center justify-center mb-6 ${card.color}`}>
+              <StaggerItem key={i} className="bg-background p-8 md:p-10 flex flex-col group hover:bg-muted/20 transition-colors duration-300">
+                <IconWrap className={`h-10 w-10 rounded-lg flex items-center justify-center mb-6 ${card.color}`}>
                   <card.icon className="h-5 w-5" />
-                </div>
+                </IconWrap>
                 <h3 className="text-lg font-bold mb-2">{card.title}</h3>
                 <p className="text-sm text-muted-foreground leading-relaxed mb-6">{card.desc}</p>
                 <ul className="mt-auto space-y-2">
@@ -130,9 +158,9 @@ export default async function HomePage() {
                     </li>
                   ))}
                 </ul>
-              </div>
+              </StaggerItem>
             ))}
-          </div>
+          </StaggerContainer>
         </div>
       </section>
 
@@ -142,19 +170,23 @@ export default async function HomePage() {
       {/* ━━━ 全部参数展示 ━━━ */}
       <section id="params" className="py-20 md:py-28 border-t border-border/40">
         <div className="container mx-auto px-6">
-          <div className="text-center mb-14">
+          <FadeUp className="text-center mb-14">
             <h2 className="text-2xl md:text-3xl font-bold tracking-tight mb-3">{tFeatures('all_params_title')}</h2>
             <p className="text-muted-foreground max-w-lg mx-auto leading-relaxed">{tFeatures('all_params_desc')}</p>
-          </div>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-px bg-border/40 border border-border/40 rounded-lg overflow-hidden max-w-5xl mx-auto">
+          </FadeUp>
+          <StaggerContainer className="grid sm:grid-cols-2 lg:grid-cols-4 gap-px bg-border/40 border border-border/40 rounded-lg overflow-hidden max-w-5xl mx-auto" staggerDelay={0.07}>
             {features.map((f, i) => (
-              <div key={i} className="bg-background p-6 flex flex-col gap-3 hover:bg-muted/30 transition-colors">
-                <f.icon className="h-5 w-5 text-muted-foreground" />
-                <h3 className="text-sm font-semibold">{f.title}</h3>
-                <p className="text-xs text-muted-foreground leading-relaxed">{f.desc}</p>
-              </div>
+              <StaggerItem key={i}>
+                <HoverCard className="bg-background p-6 flex flex-col gap-3 cursor-default h-full">
+                  <IconWrap className="w-fit">
+                    <f.icon className="h-5 w-5 text-muted-foreground" />
+                  </IconWrap>
+                  <h3 className="text-sm font-semibold">{f.title}</h3>
+                  <p className="text-xs text-muted-foreground leading-relaxed">{f.desc}</p>
+                </HoverCard>
+              </StaggerItem>
             ))}
-          </div>
+          </StaggerContainer>
         </div>
       </section>
 
@@ -287,46 +319,52 @@ export default async function HomePage() {
       {/* ━━━ Pricing ━━━ */}
       <section id="pricing" className="py-20 md:py-28 border-t border-border/40 bg-muted/30">
         <div className="container mx-auto px-6">
-          <div className="text-center mb-14">
+          <FadeUp className="text-center mb-14">
             <h2 className="text-2xl md:text-3xl font-bold tracking-tight mb-3">{tPricing('title')}</h2>
             <p className="text-muted-foreground max-w-lg mx-auto leading-relaxed">{tPricing('description')}</p>
-          </div>
-          <div className="grid md:grid-cols-3 gap-6 max-w-4xl mx-auto">
-            <div className="border border-border/60 rounded-lg p-6 bg-background flex flex-col">
-              <h3 className="text-lg font-semibold mb-1">{tPricing('free_title')}</h3>
-              <p className="text-xs text-muted-foreground mb-5">{tPricing('free_desc')}</p>
-              <div className="text-3xl font-bold mb-6">{tPricing('free_price')}</div>
-              <ul className="space-y-3 text-sm text-muted-foreground mb-8 flex-1">
-                <li className="flex items-center gap-2"><Check className="h-4 w-4 text-foreground" />{tPricing('free_f1')}</li>
-                <li className="flex items-center gap-2"><Check className="h-4 w-4 text-foreground" />{tPricing('free_f2')}</li>
-                <li className="flex items-center gap-2"><Check className="h-4 w-4 text-foreground" />{tPricing('free_f3')}</li>
-              </ul>
-              <Link href="/login" className="inline-flex items-center justify-center h-9 px-4 text-sm font-medium rounded-md border border-border hover:bg-muted transition-colors w-full">{tPricing('free_cta')}</Link>
-            </div>
-            <div className="border-2 border-foreground rounded-lg p-6 bg-background flex flex-col relative">
-              <span className="absolute -top-3 left-5 text-xs font-medium bg-foreground text-background px-2.5 py-0.5 rounded-full">{tPricing('pro_badge')}</span>
-              <h3 className="text-lg font-semibold mb-1">{tPricing('pro_title')}</h3>
-              <p className="text-xs text-muted-foreground mb-5">{tPricing('pro_desc')}</p>
-              <div className="text-3xl font-bold mb-6">{tPricing('pro_price')}<span className="text-sm text-muted-foreground font-normal">{tPricing('pro_unit')}</span></div>
-              <ul className="space-y-3 text-sm text-muted-foreground mb-8 flex-1">
-                <li className="flex items-center gap-2"><Check className="h-4 w-4 text-foreground" />{tPricing('pro_f1')}</li>
-                <li className="flex items-center gap-2"><Check className="h-4 w-4 text-foreground" />{tPricing('pro_f2')}</li>
-                <li className="flex items-center gap-2"><Check className="h-4 w-4 text-foreground" />{tPricing('pro_f3')}</li>
-              </ul>
-              <Link href="/login" className="inline-flex items-center justify-center h-9 px-4 text-sm font-medium rounded-md bg-foreground text-background hover:bg-foreground/90 transition-colors w-full">{tPricing('pro_cta')}</Link>
-            </div>
-            <div className="border border-border/60 rounded-lg p-6 bg-background flex flex-col">
-              <h3 className="text-lg font-semibold mb-1">{tPricing('enterprise_title')}</h3>
-              <p className="text-xs text-muted-foreground mb-5">{tPricing('enterprise_desc')}</p>
-              <div className="text-3xl font-bold mb-6">{tPricing('enterprise_price')}</div>
-              <ul className="space-y-3 text-sm text-muted-foreground mb-8 flex-1">
-                <li className="flex items-center gap-2"><Check className="h-4 w-4 text-foreground" />{tPricing('enterprise_f1')}</li>
-                <li className="flex items-center gap-2"><Check className="h-4 w-4 text-foreground" />{tPricing('enterprise_f2')}</li>
-                <li className="flex items-center gap-2"><Check className="h-4 w-4 text-foreground" />{tPricing('enterprise_f3')}</li>
-              </ul>
-              <Link href="/contact" className="inline-flex items-center justify-center h-9 px-4 text-sm font-medium rounded-md border border-border hover:bg-muted transition-colors w-full">{tPricing('enterprise_cta')}</Link>
-            </div>
-          </div>
+          </FadeUp>
+          <StaggerContainer className="grid md:grid-cols-3 gap-6 max-w-4xl mx-auto" staggerDelay={0.12}>
+            <StaggerItem>
+              <HoverCard className="border border-border/60 rounded-lg p-6 bg-background flex flex-col h-full">
+                <h3 className="text-lg font-semibold mb-1">{tPricing('free_title')}</h3>
+                <p className="text-xs text-muted-foreground mb-5">{tPricing('free_desc')}</p>
+                <div className="text-3xl font-bold mb-6">{tPricing('free_price')}</div>
+                <ul className="space-y-3 text-sm text-muted-foreground mb-8 flex-1">
+                  <li className="flex items-center gap-2"><Check className="h-4 w-4 text-foreground" />{tPricing('free_f1')}</li>
+                  <li className="flex items-center gap-2"><Check className="h-4 w-4 text-foreground" />{tPricing('free_f2')}</li>
+                  <li className="flex items-center gap-2"><Check className="h-4 w-4 text-foreground" />{tPricing('free_f3')}</li>
+                </ul>
+                <Link href="/login" className="inline-flex items-center justify-center h-9 px-4 text-sm font-medium rounded-md border border-border hover:bg-muted transition-colors w-full">{tPricing('free_cta')}</Link>
+              </HoverCard>
+            </StaggerItem>
+            <StaggerItem>
+              <HoverCard className="border-2 border-foreground rounded-lg p-6 bg-background flex flex-col relative h-full">
+                <span className="absolute -top-3 left-5 text-xs font-medium bg-foreground text-background px-2.5 py-0.5 rounded-full">{tPricing('pro_badge')}</span>
+                <h3 className="text-lg font-semibold mb-1">{tPricing('pro_title')}</h3>
+                <p className="text-xs text-muted-foreground mb-5">{tPricing('pro_desc')}</p>
+                <div className="text-3xl font-bold mb-6">{tPricing('pro_price')}<span className="text-sm text-muted-foreground font-normal">{tPricing('pro_unit')}</span></div>
+                <ul className="space-y-3 text-sm text-muted-foreground mb-8 flex-1">
+                  <li className="flex items-center gap-2"><Check className="h-4 w-4 text-foreground" />{tPricing('pro_f1')}</li>
+                  <li className="flex items-center gap-2"><Check className="h-4 w-4 text-foreground" />{tPricing('pro_f2')}</li>
+                  <li className="flex items-center gap-2"><Check className="h-4 w-4 text-foreground" />{tPricing('pro_f3')}</li>
+                </ul>
+                <Link href="/login" className="inline-flex items-center justify-center h-9 px-4 text-sm font-medium rounded-md bg-foreground text-background hover:bg-foreground/90 transition-colors w-full">{tPricing('pro_cta')}</Link>
+              </HoverCard>
+            </StaggerItem>
+            <StaggerItem>
+              <HoverCard className="border border-border/60 rounded-lg p-6 bg-background flex flex-col h-full">
+                <h3 className="text-lg font-semibold mb-1">{tPricing('enterprise_title')}</h3>
+                <p className="text-xs text-muted-foreground mb-5">{tPricing('enterprise_desc')}</p>
+                <div className="text-3xl font-bold mb-6">{tPricing('enterprise_price')}</div>
+                <ul className="space-y-3 text-sm text-muted-foreground mb-8 flex-1">
+                  <li className="flex items-center gap-2"><Check className="h-4 w-4 text-foreground" />{tPricing('enterprise_f1')}</li>
+                  <li className="flex items-center gap-2"><Check className="h-4 w-4 text-foreground" />{tPricing('enterprise_f2')}</li>
+                  <li className="flex items-center gap-2"><Check className="h-4 w-4 text-foreground" />{tPricing('enterprise_f3')}</li>
+                </ul>
+                <Link href="/contact" className="inline-flex items-center justify-center h-9 px-4 text-sm font-medium rounded-md border border-border hover:bg-muted transition-colors w-full">{tPricing('enterprise_cta')}</Link>
+              </HoverCard>
+            </StaggerItem>
+          </StaggerContainer>
         </div>
       </section>
 
@@ -339,32 +377,42 @@ export default async function HomePage() {
       <section id="about" className="py-20 md:py-28 border-t border-border/40 bg-muted/30">
         <div className="container mx-auto px-6">
           <div className="max-w-3xl mx-auto text-center">
-            <h2 className="text-2xl md:text-3xl font-bold tracking-tight mb-4">{tAbout('title')}</h2>
-            <p className="text-muted-foreground leading-relaxed mb-10">{tAbout('description')}</p>
+            <FadeUp>
+              <h2 className="text-2xl md:text-3xl font-bold tracking-tight mb-4">{tAbout('title')}</h2>
+              <p className="text-muted-foreground leading-relaxed mb-10">{tAbout('description')}</p>
+            </FadeUp>
 
-            <div className="grid grid-cols-3 gap-8 max-w-md mx-auto mb-10">
-              <div>
-                <div className="text-3xl font-bold tracking-tight">{tAbout('stat1_value')}</div>
+            <StaggerContainer className="grid grid-cols-3 gap-8 max-w-md mx-auto mb-10" staggerDelay={0.15}>
+              <StaggerItem>
+                <div className="text-3xl font-bold tracking-tight">
+                  <CountUp value={10} suffix="+" />
+                </div>
                 <div className="text-xs text-muted-foreground mt-1">{tAbout('stat1_label')}</div>
-              </div>
-              <div>
-                <div className="text-3xl font-bold tracking-tight">{tAbout('stat2_value')}</div>
+              </StaggerItem>
+              <StaggerItem>
+                <div className="text-3xl font-bold tracking-tight">
+                  <CountUp value={20} suffix="+" />
+                </div>
                 <div className="text-xs text-muted-foreground mt-1">{tAbout('stat2_label')}</div>
-              </div>
-              <div>
-                <div className="text-3xl font-bold tracking-tight">{tAbout('stat3_value')}</div>
+              </StaggerItem>
+              <StaggerItem>
+                <div className="text-3xl font-bold tracking-tight">
+                  <CountUp value={99} suffix="%" />
+                </div>
                 <div className="text-xs text-muted-foreground mt-1">{tAbout('stat3_label')}</div>
-              </div>
-            </div>
+              </StaggerItem>
+            </StaggerContainer>
 
-            <a
-              href="https://www.chivox.com/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center justify-center gap-2 h-10 px-6 text-sm font-medium rounded-full border border-border/80 hover:border-foreground/40 hover:bg-muted/50 transition-all duration-300"
-            >
-              访问驰声官网 <ExternalLink className="h-3.5 w-3.5" />
-            </a>
+            <FadeUp delay={0.3}>
+              <a
+                href="https://www.chivox.com/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center gap-2 h-10 px-6 text-sm font-medium rounded-full border border-border/80 hover:border-foreground/40 hover:bg-muted/50 transition-all duration-300"
+              >
+                访问驰声官网 <ExternalLink className="h-3.5 w-3.5" />
+              </a>
+            </FadeUp>
           </div>
         </div>
       </section>

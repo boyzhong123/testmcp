@@ -4,7 +4,7 @@ import { notFound } from 'next/navigation';
 import { routing } from '@/i18n/routing';
 import { Geist, Geist_Mono } from "next/font/google";
 import { Navigation } from "@/components/navigation";
-import { Footer } from "@/components/footer";
+import { Footer } from "@/components/Footer";
 import { ThemeProvider } from "@/components/theme-provider";
 import "../globals.css";
 
