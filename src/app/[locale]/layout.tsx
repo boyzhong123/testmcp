@@ -3,9 +3,9 @@ import { getMessages } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 import { routing } from '@/i18n/routing';
 import { Geist, Geist_Mono } from "next/font/google";
-import { Navigation } from "@/components/navigation";
-import { Footer } from "@/components/footer";
 import { ThemeProvider } from "@/components/theme-provider";
+import { AuthProvider } from "@/lib/auth-context";
+import { ConditionalShell } from "@/components/conditional-shell";
 import "../globals.css";
 
 const geistSans = Geist({
@@ -46,13 +46,13 @@ export default async function LocaleLayout({
     <html lang={locale} suppressHydrationWarning className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col relative">
         <ThemeProvider>
-          <NextIntlClientProvider messages={messages}>
-            <Navigation />
-            <div className="flex-1">
-              {children}
-            </div>
-            <Footer />
-          </NextIntlClientProvider>
+          <AuthProvider>
+            <NextIntlClientProvider messages={messages}>
+              <ConditionalShell>
+                {children}
+              </ConditionalShell>
+            </NextIntlClientProvider>
+          </AuthProvider>
         </ThemeProvider>
       </body>
     </html>

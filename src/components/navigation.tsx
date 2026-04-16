@@ -2,6 +2,7 @@ import { useTranslations } from 'next-intl';
 import { Link } from '@/i18n/routing';
 import { LanguageSwitcher } from './language-switcher';
 import { ThemeToggle } from './theme-toggle';
+import { AuthNavButton } from './auth-nav-button';
 
 export function Navigation() {
   const t = useTranslations('Navigation');
@@ -37,6 +38,7 @@ export function Navigation() {
         <div className="flex items-center gap-2">
           <ThemeToggle />
           <LanguageSwitcher />
+          <AuthNavButton />
           <a
             href="https://github.com/chivox/mcp-server"
             target="_blank"

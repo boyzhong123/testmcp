@@ -1,6 +1,6 @@
 import { getTranslations, getLocale } from 'next-intl/server';
 import { Link } from '@/i18n/routing';
-import { ArrowRight, Target, BarChart3, AudioWaveform, Timer, PauseCircle, Link2, Volume2, Database, Check, ArrowUpRight, Sparkles, ScanSearch, Workflow, ExternalLink, BookOpen } from 'lucide-react';
+import { ArrowRight, Target, BarChart3, AudioWaveform, Timer, PauseCircle, Link2, Volume2, Database, Check, ArrowUpRight, Sparkles, ScanSearch, Workflow, ExternalLink, BookOpen, Mic, FileAudio, Radio, Zap } from 'lucide-react';
 import { FAQ } from '@/components/faq';
 import { WorkflowSteps } from '@/components/workflow-steps';
 import { HeroTypewriter } from '@/components/hero-typewriter';
@@ -161,6 +161,91 @@ export default async function HomePage() {
               </StaggerItem>
             ))}
           </StaggerContainer>
+        </div>
+      </section>
+
+      {/* ━━━ 边录边评 · 双模式评测 ━━━ */}
+      <section className="py-20 md:py-28 border-t border-border/40">
+        <div className="container mx-auto px-6">
+          <FadeUp className="text-center mb-14">
+            <h2 className="text-2xl md:text-3xl font-bold tracking-tight mb-3">边录边评 · 双模式评测</h2>
+            <p className="text-muted-foreground max-w-xl mx-auto">不只支持音频文件，更支持实时流式评测——边录音边出分，延迟更低、体验更自然</p>
+          </FadeUp>
+          <div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+            <FadeUp>
+              <HoverCard className="rounded-xl border border-border/60 p-8 h-full flex flex-col bg-background">
+                <div className="flex items-center gap-3 mb-4">
+                  <IconWrap className="h-10 w-10 rounded-lg bg-foreground/5 flex items-center justify-center">
+                    <Radio className="h-5 w-5 text-foreground" />
+                  </IconWrap>
+                  <h3 className="text-lg font-bold">实时录音评测</h3>
+                </div>
+                <p className="text-sm text-muted-foreground leading-relaxed mb-6">通过本地麦克风采集语音，音频以 WebSocket 流式推送到评测引擎。无需生成中间文件，录完即出分，适合交互式口语练习。</p>
+                <div className="mt-auto space-y-5">
+                  <div className="rounded-lg bg-muted/30 p-4">
+                    <p className="text-xs font-semibold mb-3 text-muted-foreground">评测流程</p>
+                    <div className="space-y-3">
+                      {[
+                        { step: '1', icon: Mic, text: '创建流式会话，指定评测类型与参考文本' },
+                        { step: '2', icon: Radio, text: '开始录音，音频实时推送至云端评测引擎' },
+                        { step: '3', icon: Zap, text: '停止录音，即刻获得多维评分结果' },
+                      ].map((item) => (
+                        <div key={item.step} className="flex items-start gap-3">
+                          <span className="h-6 w-6 rounded-full bg-foreground text-background flex items-center justify-center text-xs font-bold shrink-0">{item.step}</span>
+                          <div className="flex items-center gap-2 text-sm">
+                            <item.icon className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                            <span>{item.text}</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  <ul className="space-y-2">
+                    {['延迟降低 30-50%，体验更流畅', '无需管理音频文件', '支持断线自动重连'].map((p, i) => (
+                      <li key={i} className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <Check className="h-3.5 w-3.5 text-foreground shrink-0" />{p}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </HoverCard>
+            </FadeUp>
+            <FadeUp>
+              <HoverCard className="rounded-xl border border-border/60 p-8 h-full flex flex-col bg-background">
+                <div className="flex items-center gap-3 mb-4">
+                  <IconWrap className="h-10 w-10 rounded-lg bg-foreground/5 flex items-center justify-center">
+                    <FileAudio className="h-5 w-5 text-foreground" />
+                  </IconWrap>
+                  <h3 className="text-lg font-bold">音频文件评测</h3>
+                </div>
+                <p className="text-sm text-muted-foreground leading-relaxed mb-6">支持本地文件路径、Base64 编码、URL 三种输入方式。传入路径即可评测，代理自动处理编码和上传，适合批量处理场景。</p>
+                <div className="mt-auto space-y-5">
+                  <div className="rounded-lg bg-muted/30 p-4">
+                    <p className="text-xs font-semibold mb-3 text-muted-foreground">三种输入方式</p>
+                    <div className="space-y-2">
+                      {[
+                        { label: 'audio_file_path', desc: '本地路径，最便捷' },
+                        { label: 'audio_base64', desc: 'Base64 编码数据' },
+                        { label: 'audio_url', desc: '远程 URL 地址' },
+                      ].map((item) => (
+                        <div key={item.label} className="flex items-center justify-between text-sm">
+                          <code className="text-xs font-mono bg-background px-2 py-0.5 rounded border border-border/40">{item.label}</code>
+                          <span className="text-muted-foreground text-xs">{item.desc}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  <ul className="space-y-2">
+                    {['支持 mp3/wav/ogg/m4a/aac/pcm', '大文件自动压缩', '适合批量评测与回放分析'].map((p, i) => (
+                      <li key={i} className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <Check className="h-3.5 w-3.5 text-foreground shrink-0" />{p}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </HoverCard>
+            </FadeUp>
+          </div>
         </div>
       </section>
 
