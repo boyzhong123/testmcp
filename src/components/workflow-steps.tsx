@@ -47,11 +47,11 @@ export function WorkflowSteps() {
           recorder.<span className="text-emerald-400">ondataavailable</span> = (e) ={'>'} {'{'}{'\n'}
           {'  '}<span className="text-violet-400">const</span> audioBlob = e.data;{'\n'}
           {'  '}mcpClient.<span className="text-emerald-400">send</span>({'{'}{'\n'}
-          {'    '}tool: <span className="text-amber-300">"assess_speech"</span>,{'\n'}
+          {'    '}tool: <span className="text-amber-300">&quot;assess_speech&quot;</span>,{'\n'}
           {'    '}params: {'{'}{'\n'}
           {'      '}audio: audioBlob,{'\n'}
-          {'      '}refText: <span className="text-amber-300">"Hello world"</span>,{'\n'}
-          {'      '}lang: <span className="text-amber-300">"en"</span>{'\n'}
+          {'      '}refText: <span className="text-amber-300">&quot;Hello world&quot;</span>,{'\n'}
+          {'      '}lang: <span className="text-amber-300">&quot;en&quot;</span>{'\n'}
           {'    '}{'}'}{'\n'}
           {'  '}{'}'});{'\n'}
           {'}'};
@@ -65,14 +65,14 @@ export function WorkflowSteps() {
         <>
           <span className="text-zinc-500">{'// MCP returns structured data'}</span>{'\n'}
           {'{'}{'\n'}
-          {'  '}<span className="text-emerald-400">"overall"</span>: <span className="text-amber-300">72</span>,{'\n'}
-          {'  '}<span className="text-emerald-400">"accuracy"</span>: <span className="text-amber-300">65</span>,{'\n'}
-          {'  '}<span className="text-emerald-400">"fluency"</span>: <span className="text-amber-300">85</span>,{'\n'}
-          {'  '}<span className="text-emerald-400">"speed"</span>: <span className="text-amber-300">130</span>,{'\n'}
-          {'  '}<span className="text-emerald-400">"weak_phonemes"</span>: [<span className="text-amber-300">"θ"</span>, <span className="text-amber-300">"r"</span>],{'\n'}
-          {'  '}<span className="text-emerald-400">"stress_issues"</span>: [<span className="text-amber-300">"record"</span>],{'\n'}
-          {'  '}<span className="text-emerald-400">"pause_count"</span>: <span className="text-amber-300">3</span>,{'\n'}
-          {'  '}<span className="text-emerald-400">"linking_score"</span>: <span className="text-amber-300">78</span>{'\n'}
+          {'  '}<span className="text-emerald-400">&quot;overall&quot;</span>: <span className="text-amber-300">72</span>,{'\n'}
+          {'  '}<span className="text-emerald-400">&quot;accuracy&quot;</span>: <span className="text-amber-300">65</span>,{'\n'}
+          {'  '}<span className="text-emerald-400">&quot;fluency&quot;</span>: <span className="text-amber-300">85</span>,{'\n'}
+          {'  '}<span className="text-emerald-400">&quot;speed&quot;</span>: <span className="text-amber-300">130</span>,{'\n'}
+          {'  '}<span className="text-emerald-400">&quot;weak_phonemes&quot;</span>: [<span className="text-amber-300">&quot;θ&quot;</span>, <span className="text-amber-300">&quot;r&quot;</span>],{'\n'}
+          {'  '}<span className="text-emerald-400">&quot;stress_issues&quot;</span>: [<span className="text-amber-300">&quot;record&quot;</span>],{'\n'}
+          {'  '}<span className="text-emerald-400">&quot;pause_count&quot;</span>: <span className="text-amber-300">3</span>,{'\n'}
+          {'  '}<span className="text-emerald-400">&quot;linking_score&quot;</span>: <span className="text-amber-300">78</span>{'\n'}
           {'}'}
         </>
       ),
@@ -84,15 +84,15 @@ export function WorkflowSteps() {
         <>
           <span className="text-zinc-500">{'// Feed MCP data to LLM'}</span>{'\n'}
           <span className="text-violet-400">const</span> response = <span className="text-violet-400">await</span> llm.<span className="text-emerald-400">chat</span>({'{'}{'\n'}
-          {'  '}model: <span className="text-amber-300">"gpt-4"</span>,{'\n'}
+          {'  '}model: <span className="text-amber-300">&quot;gpt-4&quot;</span>,{'\n'}
           {'  '}messages: [{'\n'}
           {'    '}{'{'}{'\n'}
-          {'      '}role: <span className="text-amber-300">"system"</span>,{'\n'}
+          {'      '}role: <span className="text-amber-300">&quot;system&quot;</span>,{'\n'}
           {'      '}content: <span className="text-amber-300">`You are an English tutor.</span>{'\n'}
           <span className="text-amber-300">{'        '}Analyze the speech data and</span>{'\n'}
           <span className="text-amber-300">{'        '}give corrective feedback.`</span>{'\n'}
           {'    '}{'}'},{'\n'}
-          {'    '}{'{'} role: <span className="text-amber-300">"user"</span>, content: mcpData {'}'}{'\n'}
+          {'    '}{'{'} role: <span className="text-amber-300">&quot;user&quot;</span>, content: mcpData {'}'}{'\n'}
           {'  '}]{'\n'}
           {'}'});
         </>
@@ -114,8 +114,8 @@ export function WorkflowSteps() {
           - /r/ → tongue position too far back{'\n'}
           {'\n'}
           <span className="text-emerald-400">## Practice</span>{'\n'}
-          <span className="text-amber-300">"Thirty-three thieves thought</span>{'\n'}
-          <span className="text-amber-300">{'  '}they thrilled the throne."</span>
+          <span className="text-amber-300">&quot;Thirty-three thieves thought</span>{'\n'}
+          <span className="text-amber-300">{'  '}they thrilled the throne.&quot;</span>
         </>
       ),
     },

@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Link } from '@/i18n/routing';
-import { ArrowLeft, BookOpen, Code2, Zap, FileText, ChevronRight, Copy, Check, Terminal, Globe, Mic, MessageSquare, BarChart3, AlertTriangle, Lightbulb } from 'lucide-react';
+import { ArrowLeft, BookOpen, Code2, Zap, FileText, Copy, Check, Terminal, Globe, Mic, MessageSquare, BarChart3, AlertTriangle, Lightbulb } from 'lucide-react';
 
 function CopyButton({ text }: { text: string }) {
   const [copied, setCopied] = useState(false);
@@ -133,7 +133,7 @@ const NAV = [
 ];
 
 export default function DocsPage() {
-  const [activeSection, setActiveSection] = useState('quick-start');
+  const [, setActiveSection] = useState('quick-start');
 
   return (
     <main className="flex-1">

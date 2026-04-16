@@ -1,6 +1,6 @@
 import { getTranslations, getLocale } from 'next-intl/server';
 import { Link } from '@/i18n/routing';
-import { ArrowRight, Mic, Target, BrainCircuit, GraduationCap, Zap, BarChart3, AudioWaveform, Timer, PauseCircle, Link2, Volume2, Database, Check, ArrowUpRight, Sparkles, ScanSearch, Workflow, ExternalLink, BookOpen } from 'lucide-react';
+import { ArrowRight, Target, BarChart3, AudioWaveform, Timer, PauseCircle, Link2, Volume2, Database, Check, ArrowUpRight, Sparkles, ScanSearch, Workflow, ExternalLink, BookOpen } from 'lucide-react';
 import { FAQ } from '@/components/faq';
 import { WorkflowSteps } from '@/components/workflow-steps';
 import { HeroTypewriter } from '@/components/hero-typewriter';

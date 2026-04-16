@@ -14,9 +14,33 @@ const SECTIONS = [
   { id: 'about', label: '关于驰声' },
 ];
 
+function getInitialActiveIdx() {
+  if (typeof window === 'undefined') return 0;
+  
+  const scrollY = window.scrollY;
+  const offsets = SECTIONS.map(s => {
+    const el = document.getElementById(s.id);
+    return el ? el.offsetTop - 200 : 0;
+  });
+
+  let activeIdx = 0;
+  for (let i = offsets.length - 1; i >= 0; i--) {
+    if (scrollY >= offsets[i]) {
+      activeIdx = i;
+      break;
+    }
+  }
+  return activeIdx;
+}
+
+function getInitialVisible() {
+  if (typeof window === 'undefined') return false;
+  return window.scrollY > 300;
+}
+
 export function ScrollIndicator() {
-  const [activeIdx, setActiveIdx] = useState(0);
-  const [visible, setVisible] = useState(false);
+  const [activeIdx, setActiveIdx] = useState(getInitialActiveIdx);
+  const [visible, setVisible] = useState(getInitialVisible);
   const [hoverIdx, setHoverIdx] = useState<number | null>(null);
 
   const handleScroll = useCallback(() => {
@@ -40,7 +64,6 @@ export function ScrollIndicator() {
 
   useEffect(() => {
     window.addEventListener('scroll', handleScroll, { passive: true });
-    handleScroll();
     return () => window.removeEventListener('scroll', handleScroll);
   }, [handleScroll]);
 

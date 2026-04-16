@@ -7,7 +7,7 @@ const TYPEWRITER_ZH = ['接入大模型', '生成教学反馈', '驱动口语练
 const TYPEWRITER_EN = ['with LLMs', 'into Teaching', 'into Practice', 'into Products'];
 
 export function HeroTypewriter({ locale }: { locale: string }) {
-  const t = useTranslations('Hero');
+  useTranslations('Hero');
   const texts = locale === 'en' ? TYPEWRITER_EN : TYPEWRITER_ZH;
 
   return (

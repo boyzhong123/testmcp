@@ -28,9 +28,11 @@ export function Typewriter({
     }
 
     if (isDeleting && displayed === '') {
-      setIsDeleting(false);
-      setIndex((i) => (i + 1) % texts.length);
-      return;
+      const timer = setTimeout(() => {
+        setIsDeleting(false);
+        setIndex((i) => (i + 1) % texts.length);
+      }, 0);
+      return () => clearTimeout(timer);
     }
 
     const timeout = isDeleting ? deleteSpeed : speed;
