@@ -36,7 +36,7 @@ type PronSample = {
   apiTag: string;
   refText: string;
   overall: number;
-  scores: { accuracy: number; integrity: number; fluency: number; rhythm: number };
+  scores: { accuracy: number; integrity: number; fluency: number; rhythm?: number };
   speed?: number;
   details: WordDetail[];
   analysisPrompt: string;
@@ -73,7 +73,7 @@ const SAMPLES: Record<QType, Sample> = {
     apiTag: 'en.word.score',
     refText: 'particular',
     overall: 58,
-    scores: { accuracy: 45, integrity: 100, fluency: 100, rhythm: 80 },
+    scores: { accuracy: 45, integrity: 100, fluency: 100 },
     details: [
       {
         char: 'particular',
@@ -664,7 +664,7 @@ const CN_SAMPLES: Partial<Record<QType, Sample>> = {
     apiTag: 'cn.word.raw',
     refText: '独特',
     overall: 72,
-    scores: { accuracy: 82, integrity: 100, fluency: 100, rhythm: 58 },
+    scores: { accuracy: 82, integrity: 100, fluency: 100 },
     details: [
       {
         char: '独',
@@ -1221,6 +1221,7 @@ export default function DemoPage() {
   // 如当前题型在该语言下不可用，取第一个可用题型
   const effectiveQType: QType = availableTypes.includes(qtype) ? qtype : availableTypes[0];
   const sample = (samplesForLang[effectiveQType] ?? SAMPLES[effectiveQType]) as Sample;
+  const showRhythmScore = sample.kind === 'pron' && typeof sample.scores.rhythm === 'number';
   const mcpJson = useMemo(() => buildMcpJson(sample), [sample]);
 
   const analysisPromptResolved = sample.analysisPrompt.replace('{mcp_response}', mcpJson);
@@ -1484,14 +1485,14 @@ export default function DemoPage() {
               </div>
 
               {/* Main scores grid */}
-              <div className="grid grid-cols-2 sm:grid-cols-5 gap-px bg-border/40">
+              <div className={`grid grid-cols-2 ${showRhythmScore ? 'sm:grid-cols-5' : 'sm:grid-cols-4'} gap-px bg-border/40`}>
                 <AnimatedScore target={sample.overall} label="Overall" sub="总分" />
                 {sample.kind === 'pron' ? (
                   <>
                     <AnimatedScore target={sample.scores.accuracy} label="Accuracy" sub="准确度" />
                     <AnimatedScore target={sample.scores.integrity} label="Integrity" sub="完整度" />
                     <AnimatedScore target={sample.scores.fluency} label="Fluency" sub="流利度" />
-                    <AnimatedScore target={sample.scores.rhythm} label="Rhythm" sub="韵律度" />
+                    {showRhythmScore && <AnimatedScore target={sample.scores.rhythm!} label="Rhythm" sub="韵律度" />}
                   </>
                 ) : (
                   <>
