@@ -9,6 +9,7 @@ import { ScrollIndicator } from '@/components/scroll-indicator';
 import { FadeUp, StaggerContainer, StaggerItem, CountUp, HoverCard, IconWrap } from '@/components/animated-section';
 import { FullPageScroll } from '@/components/fullpage-scroll';
 import { ParamsShowcase } from '@/components/params-showcase';
+import { DemoPreview } from '@/components/demo-preview';
 import { cn } from '@/lib/utils';
 
 export default async function HomePage() {
@@ -204,6 +205,30 @@ export default async function HomePage() {
               ))}
             </div>
           </FadeUp>
+        </div>
+      </section>
+
+      {/* ━━━ 在线体验 CTA ━━━ */}
+      <section id="demo" data-fp-section className="relative overflow-hidden min-h-screen flex flex-col justify-center py-14 md:py-20 border-t border-border/40 bg-gradient-to-b from-muted/10 via-background to-muted/10">
+        {/* 背景光晕 */}
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute top-1/4 -left-32 w-[480px] h-[480px] rounded-full bg-foreground/[0.03] blur-3xl" />
+          <div className="absolute bottom-1/4 -right-32 w-[480px] h-[480px] rounded-full bg-foreground/[0.03] blur-3xl" />
+        </div>
+
+        <div className="container mx-auto px-6 relative">
+          {/* 标题 */}
+          <FadeUp className="text-center mb-10">
+            <span className="inline-block text-[11px] tracking-[0.2em] uppercase text-muted-foreground mb-3">Interactive Demo · 零门槛试用</span>
+            <h2 className="text-2xl md:text-3xl font-bold tracking-tight mb-3">
+              一眼看懂驰声能做什么 <span className="text-muted-foreground font-normal">· 评测 → 诊断 → 练习</span>
+            </h2>
+            <p className="text-muted-foreground max-w-xl mx-auto leading-relaxed">
+              无需注册、无需付费。4 种题型、8 个评分字段、LLM 二次 / 三次分析，全部走真实 API 响应。
+            </p>
+          </FadeUp>
+
+          <DemoPreview />
         </div>
       </section>
 
@@ -537,6 +562,117 @@ score < 70 的音素，给
         </div>
       </section>
 
+      {/* ━━━ 全部参数展示 ━━━ */}
+      <section id="params" data-fp-section className="min-h-screen flex flex-col justify-center py-14 md:py-20 border-t border-border/40">
+        <div className="container mx-auto px-6">
+          <FadeUp className="text-center mb-10">
+            <span className="inline-block text-[11px] tracking-[0.2em] uppercase text-muted-foreground mb-3">Assessment Parameters</span>
+            <h2 className="text-2xl md:text-3xl font-bold tracking-tight mb-3">{tFeatures('all_params_title')}</h2>
+            <p className="text-muted-foreground max-w-lg mx-auto leading-relaxed">{tFeatures('all_params_desc')}</p>
+          </FadeUp>
+
+          <ParamsShowcase />
+
+          <FadeUp delay={0.4} className="mt-4 max-w-6xl mx-auto text-center">
+            <p className="text-[11px] text-muted-foreground/70">
+              <span className="inline-flex items-center gap-1.5">
+                <span className="w-1 h-1 rounded-full bg-amber-500 animate-pulse" />
+                悬停左侧任意字段，右侧 JSON 中对应位置会实时高亮
+              </span>
+            </p>
+          </FadeUp>
+        </div>
+      </section>
+
+      {/* ━━━ LLM 深度分析演示 ━━━ */}
+      <section id="how-it-works" data-fp-section className="min-h-screen flex flex-col justify-center py-14 md:py-20 border-t border-border/40 bg-zinc-950 text-zinc-50">
+        <div className="container mx-auto px-6">
+          <div className="grid lg:grid-cols-5 gap-12 items-start max-w-6xl mx-auto">
+            <div className="lg:col-span-2">
+              <span className="inline-block text-[11px] tracking-[0.2em] uppercase text-zinc-500 mb-3">Deep Analysis</span>
+              <h2 className="text-2xl md:text-3xl font-bold tracking-tight mb-4">{tValue('demo_title')}</h2>
+              <p className="text-zinc-400 leading-relaxed mb-8">{tValue('demo_desc')}</p>
+              <ul className="space-y-3 mb-8">
+                {[tValue('demo_point1'), tValue('demo_point2'), tValue('demo_point3')].map((p, i) => (
+                  <li key={i} className="flex items-start gap-3">
+                    <Check className="h-4 w-4 text-emerald-400 mt-0.5 shrink-0" />
+                    <span className="text-sm text-zinc-300">{p}</span>
+                  </li>
+                ))}
+              </ul>
+
+              <div className="flex items-center gap-3 py-3 px-4 rounded-lg border border-white/[0.08] bg-white/[0.03] mb-8">
+                <div className="flex -space-x-2">
+                  {['bg-emerald-400', 'bg-violet-400', 'bg-amber-400', 'bg-rose-400'].map((c, i) => (
+                    <div key={i} className={`h-6 w-6 rounded-full ${c} border-2 border-zinc-950`} />
+                  ))}
+                </div>
+                <div className="text-xs text-zinc-400">兼容 <span className="text-zinc-200">GPT · Claude · Gemini · Qwen</span> 等主流 LLM</div>
+              </div>
+
+              <Link href="/demo" className="inline-flex items-center gap-1.5 text-sm font-medium text-zinc-50 hover:underline underline-offset-4">
+                {tAdvanced('cta')} <ArrowUpRight className="h-4 w-4" />
+              </Link>
+            </div>
+
+            <div className="lg:col-span-3 space-y-3">
+              <div className="rounded-lg border border-white/[0.08] bg-white/[0.03] p-5">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="text-xs text-zinc-500 font-mono">① MCP Assessment Output</div>
+                  <div className="text-[10px] text-zinc-600 font-mono">structured_json</div>
+                </div>
+                <pre className="text-xs font-mono text-zinc-300 leading-relaxed">
+{`{
+  "overall": 72,
+  "pron": { "accuracy": 65, "integrity": 95, "fluency": 85, "rhythm": 70 },
+  "details": [
+    { "char": "record", "score": 58, "dp_type": "mispron",
+      "phonemes": [{ "char": "r", "score": 45, "dp_type": "mispron" }] }
+  ]
+}`}
+                </pre>
+              </div>
+
+              <div className="flex items-center justify-center py-0.5">
+                <div className="h-3 w-px bg-white/10" />
+              </div>
+
+              <div className="rounded-lg border border-emerald-500/20 bg-emerald-500/[0.04] p-5">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="text-xs text-emerald-400 font-mono">② LLM Teaching Response</div>
+                  <div className="text-[10px] text-emerald-500/60 font-mono">natural_language</div>
+                </div>
+                <p className="text-sm text-zinc-200 leading-relaxed">
+                  {tValue('demo_llm_response')}
+                </p>
+              </div>
+
+              <div className="flex items-center justify-center py-0.5">
+                <div className="h-3 w-px bg-white/10" />
+              </div>
+
+              <div className="rounded-lg border border-violet-400/20 bg-violet-400/[0.04] p-5">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="text-xs text-violet-300 font-mono">③ Auto-Generated Exercise</div>
+                  <div className="text-[10px] text-violet-300/60 font-mono">practice_loop</div>
+                </div>
+                <div className="text-sm text-zinc-200 font-medium mb-2 leading-relaxed">
+                  &quot;Thirty-three thieves thought they thrilled the throne throughout Thursday.&quot;
+                </div>
+                <div className="flex flex-wrap items-center gap-2 text-[11px]">
+                  <span className="inline-flex items-center gap-1 bg-white/[0.04] border border-white/10 rounded px-2 py-0.5 text-zinc-400">🎯 /θ/ × 6</span>
+                  <span className="inline-flex items-center gap-1 bg-white/[0.04] border border-white/10 rounded px-2 py-0.5 text-zinc-400">🎯 /r/ × 3</span>
+                  <span className="inline-flex items-center gap-1 bg-white/[0.04] border border-white/10 rounded px-2 py-0.5 text-zinc-400">⏱ 预计 1.5 min</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ━━━ 工作流程: 动态步骤 ━━━ */}
+      <WorkflowSteps />
+
       {/* ━━━ 场景 A · AI 原生场景 ━━━ */}
       <section id="use-cases" data-fp-section className="min-h-screen flex flex-col justify-center py-14 md:py-20 border-t border-border/40 bg-muted/20">
         <div className="container mx-auto px-6">
@@ -709,196 +845,6 @@ score < 70 的音素，给
               <ArrowUpRight className="h-4 w-4" />
             </Link>
           </FadeUp>
-        </div>
-      </section>
-
-      {/* ━━━ 工作流程: 动态步骤 ━━━ */}
-      <WorkflowSteps />
-
-      {/* ━━━ 全部参数展示 ━━━ */}
-      <section id="params" data-fp-section className="min-h-screen flex flex-col justify-center py-14 md:py-20 border-t border-border/40">
-        <div className="container mx-auto px-6">
-          <FadeUp className="text-center mb-10">
-            <span className="inline-block text-[11px] tracking-[0.2em] uppercase text-muted-foreground mb-3">Assessment Parameters</span>
-            <h2 className="text-2xl md:text-3xl font-bold tracking-tight mb-3">{tFeatures('all_params_title')}</h2>
-            <p className="text-muted-foreground max-w-lg mx-auto leading-relaxed">{tFeatures('all_params_desc')}</p>
-          </FadeUp>
-
-          <ParamsShowcase />
-
-          <FadeUp delay={0.4} className="mt-4 max-w-6xl mx-auto text-center">
-            <p className="text-[11px] text-muted-foreground/70">
-              <span className="inline-flex items-center gap-1.5">
-                <span className="w-1 h-1 rounded-full bg-amber-500 animate-pulse" />
-                悬停左侧任意字段，右侧 JSON 中对应位置会实时高亮
-              </span>
-            </p>
-          </FadeUp>
-        </div>
-      </section>
-
-      {/* ━━━ LLM 深度分析演示 ━━━ */}
-      <section id="how-it-works" data-fp-section className="min-h-screen flex flex-col justify-center py-14 md:py-20 border-t border-border/40 bg-zinc-950 text-zinc-50">
-        <div className="container mx-auto px-6">
-          <div className="grid lg:grid-cols-5 gap-12 items-start max-w-6xl mx-auto">
-            <div className="lg:col-span-2">
-              <span className="inline-block text-[11px] tracking-[0.2em] uppercase text-zinc-500 mb-3">Deep Analysis</span>
-              <h2 className="text-2xl md:text-3xl font-bold tracking-tight mb-4">{tValue('demo_title')}</h2>
-              <p className="text-zinc-400 leading-relaxed mb-8">{tValue('demo_desc')}</p>
-              <ul className="space-y-3 mb-8">
-                {[tValue('demo_point1'), tValue('demo_point2'), tValue('demo_point3')].map((p, i) => (
-                  <li key={i} className="flex items-start gap-3">
-                    <Check className="h-4 w-4 text-emerald-400 mt-0.5 shrink-0" />
-                    <span className="text-sm text-zinc-300">{p}</span>
-                  </li>
-                ))}
-              </ul>
-
-              <div className="flex items-center gap-3 py-3 px-4 rounded-lg border border-white/[0.08] bg-white/[0.03] mb-8">
-                <div className="flex -space-x-2">
-                  {['bg-emerald-400', 'bg-violet-400', 'bg-amber-400', 'bg-rose-400'].map((c, i) => (
-                    <div key={i} className={`h-6 w-6 rounded-full ${c} border-2 border-zinc-950`} />
-                  ))}
-                </div>
-                <div className="text-xs text-zinc-400">兼容 <span className="text-zinc-200">GPT · Claude · Gemini · Qwen</span> 等主流 LLM</div>
-              </div>
-
-              <Link href="/demo" className="inline-flex items-center gap-1.5 text-sm font-medium text-zinc-50 hover:underline underline-offset-4">
-                {tAdvanced('cta')} <ArrowUpRight className="h-4 w-4" />
-              </Link>
-            </div>
-
-            <div className="lg:col-span-3 space-y-3">
-              <div className="rounded-lg border border-white/[0.08] bg-white/[0.03] p-5">
-                <div className="flex items-center justify-between mb-3">
-                  <div className="text-xs text-zinc-500 font-mono">① MCP Assessment Output</div>
-                  <div className="text-[10px] text-zinc-600 font-mono">structured_json</div>
-                </div>
-                <pre className="text-xs font-mono text-zinc-300 leading-relaxed">
-{`{
-  "overall": 72,
-  "pron": { "accuracy": 65, "integrity": 95, "fluency": 85, "rhythm": 70 },
-  "details": [
-    { "char": "record", "score": 58, "dp_type": "mispron",
-      "phonemes": [{ "char": "r", "score": 45, "dp_type": "mispron" }] }
-  ]
-}`}
-                </pre>
-              </div>
-
-              <div className="flex items-center justify-center py-0.5">
-                <div className="h-3 w-px bg-white/10" />
-              </div>
-
-              <div className="rounded-lg border border-emerald-500/20 bg-emerald-500/[0.04] p-5">
-                <div className="flex items-center justify-between mb-3">
-                  <div className="text-xs text-emerald-400 font-mono">② LLM Teaching Response</div>
-                  <div className="text-[10px] text-emerald-500/60 font-mono">natural_language</div>
-                </div>
-                <p className="text-sm text-zinc-200 leading-relaxed">
-                  {tValue('demo_llm_response')}
-                </p>
-              </div>
-
-              <div className="flex items-center justify-center py-0.5">
-                <div className="h-3 w-px bg-white/10" />
-              </div>
-
-              <div className="rounded-lg border border-violet-400/20 bg-violet-400/[0.04] p-5">
-                <div className="flex items-center justify-between mb-3">
-                  <div className="text-xs text-violet-300 font-mono">③ Auto-Generated Exercise</div>
-                  <div className="text-[10px] text-violet-300/60 font-mono">practice_loop</div>
-                </div>
-                <div className="text-sm text-zinc-200 font-medium mb-2 leading-relaxed">
-                  &quot;Thirty-three thieves thought they thrilled the throne throughout Thursday.&quot;
-                </div>
-                <div className="flex flex-wrap items-center gap-2 text-[11px]">
-                  <span className="inline-flex items-center gap-1 bg-white/[0.04] border border-white/10 rounded px-2 py-0.5 text-zinc-400">🎯 /θ/ × 6</span>
-                  <span className="inline-flex items-center gap-1 bg-white/[0.04] border border-white/10 rounded px-2 py-0.5 text-zinc-400">🎯 /r/ × 3</span>
-                  <span className="inline-flex items-center gap-1 bg-white/[0.04] border border-white/10 rounded px-2 py-0.5 text-zinc-400">⏱ 预计 1.5 min</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ━━━ 在线体验 CTA ━━━ */}
-      <section id="demo" data-fp-section className="min-h-screen flex flex-col justify-center py-14 md:py-20 border-t border-border/40">
-        <div className="container mx-auto px-6">
-          <div className="relative overflow-hidden rounded-2xl border border-border/60 bg-gradient-to-br from-background via-muted/30 to-muted/60 max-w-5xl mx-auto">
-            <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-gradient-to-bl from-foreground/[0.03] to-transparent rounded-full blur-2xl" />
-            <div className="relative grid lg:grid-cols-2 gap-10 p-8 md:p-12 lg:p-16 items-center">
-              <div>
-                <span className="inline-block text-xs tracking-widest uppercase text-muted-foreground mb-4">Interactive Demo</span>
-                <h2 className="text-2xl md:text-3xl font-bold tracking-tight mb-4">
-                  亲自体验完整工作流
-                </h2>
-                <p className="text-muted-foreground leading-relaxed mb-8 max-w-md">
-                  无需注册，一键模拟从语音评测到 LLM 深度分析、个性化练习生成的完整闭环。
-                </p>
-                <Link href="/demo" className="group inline-flex items-center justify-center h-12 px-8 text-sm font-semibold rounded-full bg-foreground text-background hover:bg-foreground/90 transition-all duration-300 gap-2 shadow-lg shadow-foreground/10 hover:shadow-xl hover:-translate-y-0.5">
-                  立即体验 <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
-                </Link>
-              </div>
-
-              <div className="space-y-3">
-                {[
-                  {
-                    step: '01',
-                    title: '语音评测',
-                    desc: 'MCP 返回总分、准确度、流利度等 6 项核心指标',
-                    preview: (
-                      <div className="flex items-center gap-3 mt-2">
-                        {[
-                          { label: '总分', value: 78, color: 'text-amber-600' },
-                          { label: '准确度', value: 72, color: 'text-amber-600' },
-                          { label: '流利度', value: 85, color: 'text-emerald-600' },
-                        ].map((s, i) => (
-                          <div key={i} className="bg-muted/60 rounded-md px-3 py-1.5 text-center min-w-[60px]">
-                            <div className={`text-sm font-bold tabular-nums ${s.color}`}>{s.value}</div>
-                            <div className="text-[10px] text-muted-foreground">{s.label}</div>
-                          </div>
-                        ))}
-                        <span className="text-xs text-muted-foreground">…</span>
-                      </div>
-                    ),
-                  },
-                  {
-                    step: '02',
-                    title: '深度分析',
-                    desc: 'LLM 定位音素弱项，逐条给出诊断',
-                    preview: (
-                      <div className="flex items-center gap-2 mt-2 text-xs">
-                        <span className="inline-flex items-center gap-1 bg-rose-50 text-rose-600 border border-rose-100 rounded px-2 py-0.5 font-medium">⚠ /θ/</span>
-                        <span className="inline-flex items-center gap-1 bg-rose-50 text-rose-600 border border-rose-100 rounded px-2 py-0.5 font-medium">⚠ 重音</span>
-                        <span className="inline-flex items-center gap-1 bg-emerald-50 text-emerald-600 border border-emerald-100 rounded px-2 py-0.5 font-medium">✓ 连读</span>
-                      </div>
-                    ),
-                  },
-                  {
-                    step: '03',
-                    title: '练习建议',
-                    desc: 'AI 生成绕口令、跟读标注、提分路线',
-                    preview: (
-                      <div className="mt-2 bg-muted/60 rounded-md px-3 py-2 text-xs text-muted-foreground italic truncate">
-                        &quot;The thirty-three thieves thought they thrilled...&quot;
-                      </div>
-                    ),
-                  },
-                ].map((item) => (
-                  <div key={item.step} className="flex gap-4 bg-background/80 backdrop-blur-sm rounded-lg border border-border/40 p-4 hover:border-border/80 transition-colors">
-                    <div className="h-8 w-8 rounded-md bg-foreground text-background flex items-center justify-center shrink-0 text-xs font-bold">{item.step}</div>
-                    <div className="min-w-0 flex-1">
-                      <h4 className="text-sm font-semibold">{item.title}</h4>
-                      <p className="text-xs text-muted-foreground">{item.desc}</p>
-                      {item.preview}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
         </div>
       </section>
 
