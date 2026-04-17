@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { Link } from '@/i18n/routing';
 import { ArrowLeft, BookOpen, Code2, Zap, FileText, Copy, Check, Terminal, Globe, Mic, MessageSquare, BarChart3, AlertTriangle, Lightbulb, Radio, FolderOpen, Settings, Workflow, Sparkles, Plug, Bot, Building2 } from 'lucide-react';
 
@@ -22,16 +22,17 @@ function CodeBlock({ filename, lang, children }: { filename?: string; lang?: str
   return (
     <div className="rounded-lg border border-border/60 bg-zinc-950 text-zinc-100 overflow-hidden my-4 relative">
       {filename && (
-        <div className="flex items-center gap-1.5 px-4 py-2.5 border-b border-white/[0.06] text-xs text-zinc-500 font-mono">
+        <div className="flex items-center gap-1.5 px-3 sm:px-4 py-2 border-b border-white/[0.06] text-[11px] sm:text-xs text-zinc-500 font-mono">
           <span className="h-2.5 w-2.5 rounded-full bg-red-500/60" />
           <span className="h-2.5 w-2.5 rounded-full bg-yellow-500/60" />
           <span className="h-2.5 w-2.5 rounded-full bg-green-500/60" />
-          <span className="ml-2">{filename}</span>
+          <span className="ml-2 truncate">{filename}</span>
           {lang && <span className="ml-auto text-zinc-600">{lang}</span>}
         </div>
       )}
       <CopyButton text={children.trim()} />
-      <pre className="p-4 text-sm font-mono leading-relaxed overflow-x-auto"><code>{children.trim()}</code></pre>
+      <pre className="p-3 sm:p-4 text-[12px] sm:text-sm font-mono leading-relaxed overflow-x-auto"><code>{children.trim()}</code></pre>
+      <div className="sm:hidden px-3 pb-2 text-[10px] text-zinc-500">左右滑动查看完整代码</div>
     </div>
   );
 }
@@ -60,7 +61,7 @@ function SubDoc({ id, title, children }: { id: string; title: string; children: 
 function ParamTable({ params }: { params: { name: string; type: string; required: boolean; desc: string }[] }) {
   return (
     <div className="overflow-x-auto rounded-lg border border-border/60">
-      <table className="w-full text-sm">
+      <table className="w-full min-w-[620px] text-xs sm:text-sm">
         <thead><tr className="border-b border-border/40 bg-muted/30">
           <th className="text-left py-2 px-3 font-medium">参数</th>
           <th className="text-left py-2 px-3 font-medium">类型</th>
@@ -110,7 +111,7 @@ function FlowStep({ title, children }: { title: string; children: React.ReactNod
 function ToolTable({ tools }: { tools: [string, string, string][] }) {
   return (
     <div className="overflow-x-auto rounded-lg border border-border/60">
-      <table className="w-full text-sm">
+      <table className="w-full min-w-[680px] text-xs sm:text-sm">
         <thead><tr className="border-b border-border/40 bg-muted/30">
           <th className="text-left py-2 px-3 font-medium">工具名</th>
           <th className="text-left py-2 px-3 font-medium">功能</th>
@@ -197,6 +198,8 @@ const NAV = [
 
 export default function DocsPage() {
   const [activeId, setActiveId] = useState<string>('quick-start');
+  const contentRef = useRef<HTMLDivElement | null>(null);
+  const navRef = useRef<HTMLElement | null>(null);
 
   // 收集所有可滚动的锚点 id（包含分组和子章节），用于 scroll-spy
   const allIds = useMemo(() => {
@@ -208,38 +211,101 @@ export default function DocsPage() {
     return ids;
   }, []);
 
+  const scrollToAnchor = useCallback((id: string) => {
+    const target = document.getElementById(id);
+    if (!target) return;
+
+    const scroller = contentRef.current;
+    if (scroller && window.innerWidth >= 1024) {
+      const scrollerRect = scroller.getBoundingClientRect();
+      const targetRect = target.getBoundingClientRect();
+      const delta = targetRect.top - scrollerRect.top;
+      const top = scroller.scrollTop + delta - 24;
+      scroller.scrollTo({ top, behavior: 'smooth' });
+      window.history.replaceState(null, '', `#${id}`);
+      return;
+    }
+
+    window.scrollTo({ top: target.offsetTop - 88, behavior: 'smooth' });
+    window.history.replaceState(null, '', `#${id}`);
+  }, []);
+
   useEffect(() => {
-    const elements = allIds
-      .map(id => document.getElementById(id))
-      .filter((el): el is HTMLElement => el !== null);
+    const getAnchors = () =>
+      allIds
+        .map(id => document.getElementById(id))
+        .filter((el): el is HTMLElement => el !== null)
+        .map(el => ({
+          id: el.id,
+          top: (() => {
+            if (useInnerScroller) {
+              const scrollerRect = scroller.getBoundingClientRect();
+              const elRect = el.getBoundingClientRect();
+              return scroller.scrollTop + (elRect.top - scrollerRect.top);
+            }
+            // 使用文档绝对坐标，避免 offsetTop 在复杂父级下失真
+            return el.getBoundingClientRect().top + window.scrollY;
+          })(),
+        }))
+        .sort((a, b) => a.top - b.top);
 
-    if (elements.length === 0) return;
+    let rafId = 0;
+    const scroller = contentRef.current;
+    const useInnerScroller = !!scroller && window.innerWidth >= 1024;
 
-    // 以顶部偏移 120px 作为"激活线"，选取距离激活线最近的上方/同位章节
     const computeActive = () => {
-      const line = 120;
-      let currentId = elements[0]?.id ?? '';
-      for (const el of elements) {
-        const top = el.getBoundingClientRect().top;
-        if (top - line <= 0) {
-          currentId = el.id;
-        } else {
-          break;
-        }
+      const anchors = getAnchors();
+      if (anchors.length === 0) return;
+
+      const scrollTop = useInnerScroller ? scroller.scrollTop : window.scrollY;
+      const probeY = scrollTop + 170; // 顶栏 + 阅读缓冲
+      let currentId = anchors[0].id;
+
+      for (const a of anchors) {
+        if (a.top <= probeY) currentId = a.id;
+        else break;
       }
+
       // 滚到底部时，强制高亮最后一项
-      if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 4) {
-        currentId = elements[elements.length - 1].id;
+      const atBottom = useInnerScroller
+        ? scroller.scrollTop + scroller.clientHeight >= scroller.scrollHeight - 4
+        : window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 4;
+      if (atBottom) {
+        currentId = anchors[anchors.length - 1].id;
       }
+
       setActiveId(prev => (prev === currentId ? prev : currentId));
     };
 
+    const onScroll = () => {
+      if (rafId) return;
+      rafId = window.requestAnimationFrame(() => {
+        rafId = 0;
+        computeActive();
+      });
+    };
+
+    // 初次与异步内容稳定后各计算一次，避免首屏偏差
     computeActive();
-    window.addEventListener('scroll', computeActive, { passive: true });
+    const t = window.setTimeout(computeActive, 120);
+
+    if (useInnerScroller) {
+      scroller.addEventListener('scroll', onScroll, { passive: true });
+    } else {
+      window.addEventListener('scroll', onScroll, { passive: true });
+    }
     window.addEventListener('resize', computeActive);
+    window.addEventListener('hashchange', computeActive);
     return () => {
-      window.removeEventListener('scroll', computeActive);
+      window.clearTimeout(t);
+      if (rafId) window.cancelAnimationFrame(rafId);
+      if (useInnerScroller) {
+        scroller.removeEventListener('scroll', onScroll);
+      } else {
+        window.removeEventListener('scroll', onScroll);
+      }
       window.removeEventListener('resize', computeActive);
+      window.removeEventListener('hashchange', computeActive);
     };
   }, [allIds]);
 
@@ -252,6 +318,24 @@ export default function DocsPage() {
     return activeId;
   }, [activeId]);
 
+  // 左侧目录如果出现滚动，则保证当前激活项自动进入可视区域
+  useEffect(() => {
+    const nav = navRef.current;
+    if (!nav) return;
+    if (window.innerWidth < 1024) return;
+
+    const target = nav.querySelector<HTMLElement>(`[data-nav-id="${activeId}"]`);
+    if (!target) return;
+
+    const navRect = nav.getBoundingClientRect();
+    const targetRect = target.getBoundingClientRect();
+    const outOfView = targetRect.top < navRect.top + 8 || targetRect.bottom > navRect.bottom - 8;
+
+    if (outOfView) {
+      target.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    }
+  }, [activeId]);
+
   return (
     <main className="flex-1">
       <div className="container mx-auto px-6 py-12 md:py-20">
@@ -262,16 +346,24 @@ export default function DocsPage() {
         <h1 className="text-3xl md:text-4xl font-bold tracking-tight mb-2">开发者文档</h1>
         <p className="text-muted-foreground mb-10">驰声语音评测 MCP · chivox-local-mcp</p>
 
-        <div className="flex gap-10">
+        <div className="grid gap-8 md:gap-10 lg:grid-cols-[18rem_minmax(0,1fr)]">
           {/* Sidebar */}
-          <nav className="hidden lg:block w-56 shrink-0 sticky top-24 self-start max-h-[calc(100vh-8rem)] overflow-y-auto">
+          <nav
+            ref={navRef}
+            className="hidden lg:block self-start h-[calc(100vh-6rem)] overflow-y-auto pr-2"
+          >
             {NAV.map(group => {
               const isGroupActive = activeGroupId === group.id;
               return (
                 <div key={group.id} className="mb-5">
                   <a
                     href={`#${group.id}`}
-                    onClick={() => setActiveId(group.id)}
+                    data-nav-id={group.id}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setActiveId(group.id);
+                      scrollToAnchor(group.id);
+                    }}
                     className={`flex items-center gap-2 text-sm font-semibold mb-1.5 transition-colors ${
                       isGroupActive ? 'text-foreground' : 'text-foreground/70 hover:text-foreground'
                     }`}
@@ -289,8 +381,13 @@ export default function DocsPage() {
                           )}
                           <a
                             href={`#${child.id}`}
-                            onClick={() => setActiveId(child.id)}
-                            className={`text-xs block py-0.5 truncate transition-colors ${
+                            data-nav-id={child.id}
+                            onClick={(e) => {
+                              e.preventDefault();
+                              setActiveId(child.id);
+                              scrollToAnchor(child.id);
+                            }}
+                            className={`text-xs block py-0.5 leading-5 transition-colors ${
                               isActive
                                 ? 'text-foreground font-medium'
                                 : 'text-muted-foreground hover:text-foreground'
@@ -308,7 +405,10 @@ export default function DocsPage() {
           </nav>
 
           {/* Content */}
-          <div className="flex-1 min-w-0 max-w-3xl">
+          <div
+            ref={contentRef}
+            className="min-w-0 max-w-3xl lg:max-w-none lg:h-[calc(100vh-6rem)] lg:overflow-y-auto lg:pr-3"
+          >
 
             {/* ══════ MCP 工作原理 ══════ */}
             <DocSection id="concept" icon={Workflow} title="MCP 工作原理">
