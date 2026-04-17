@@ -1221,7 +1221,7 @@ export default function DemoPage() {
   // 如当前题型在该语言下不可用，取第一个可用题型
   const effectiveQType: QType = availableTypes.includes(qtype) ? qtype : availableTypes[0];
   const sample = (samplesForLang[effectiveQType] ?? SAMPLES[effectiveQType]) as Sample;
-  const showRhythmScore = sample.kind === 'pron' && typeof sample.scores.rhythm === 'number';
+  const isWordType = sample.kind === 'pron' && effectiveQType === 'word';
   const mcpJson = useMemo(() => buildMcpJson(sample), [sample]);
 
   const analysisPromptResolved = sample.analysisPrompt.replace('{mcp_response}', mcpJson);
@@ -1485,21 +1485,26 @@ export default function DemoPage() {
               </div>
 
               {/* Main scores grid */}
-              <div className={`grid grid-cols-2 ${showRhythmScore ? 'sm:grid-cols-5' : 'sm:grid-cols-4'} gap-px bg-border/40`}>
+              <div className={`grid grid-cols-2 ${isWordType ? 'sm:grid-cols-3' : 'sm:grid-cols-5'} gap-px bg-border/40`}>
                 <AnimatedScore target={sample.overall} label="Overall" sub="总分" />
                 {sample.kind === 'pron' ? (
                   <>
-                    <AnimatedScore target={sample.scores.accuracy} label="Accuracy" sub="准确度" />
-                    <AnimatedScore target={sample.scores.integrity} label="Integrity" sub="完整度" />
-                    <AnimatedScore target={sample.scores.fluency} label="Fluency" sub="流利度" />
-                    {showRhythmScore && <AnimatedScore target={sample.scores.rhythm!} label="Rhythm" sub="韵律度" />}
+                    {isWordType ? (
+                      <AnimatedScore target={sample.scores.accuracy} label="Pron." sub="发音分" />
+                    ) : (
+                      <>
+                        <AnimatedScore target={sample.scores.accuracy} label="Accuracy" sub="准确度" />
+                        <AnimatedScore target={sample.scores.fluency} label="Fluency" sub="流利度" />
+                        <AnimatedScore target={sample.scores.integrity} label="Integrity" sub="完整度" />
+                      </>
+                    )}
                   </>
                 ) : (
                   <>
-                    <AnimatedScore target={sample.scores.grammar} label="Grammar" sub="语法" />
-                    <AnimatedScore target={sample.scores.content} label="Content" sub="内容" />
-                    <AnimatedScore target={sample.scores.fluency} label="Fluency" sub="流利" />
-                    <AnimatedScore target={sample.scores.pron} label="Pron." sub="发音" />
+                    <AnimatedScore target={sample.scores.pron} label="Pron." sub="发音分" />
+                    <AnimatedScore target={sample.scores.grammar} label="Grammar" sub="语法分" />
+                    <AnimatedScore target={sample.scores.content} label="Content" sub="内容分" />
+                    <AnimatedScore target={sample.scores.fluency} label="Fluency" sub="流利分" />
                   </>
                 )}
               </div>

@@ -54,12 +54,10 @@ const EN_DATA: Record<QKey, PreviewData> = {
         <span className="ml-2 font-mono text-xs text-muted-foreground">/juːˈniːk/</span>
       </>
     ),
-    // 单词题字段：overall / pron / integrity / phoneme-level
+    // 单词题字段：总分 / 发音分
     scores: [
       { label: '总分',    value: 82,  tone: 'amber'   },
       { label: '发音',    value: 78,  tone: 'amber'   },
-      { label: '音素',    value: 85,  tone: 'emerald' },
-      { label: '完整度',  value: 100, tone: 'emerald' },
     ],
     chips: [
       { ok: false, text: '⚠ /juː/ 唇形偏扁' },
@@ -82,12 +80,12 @@ const EN_DATA: Record<QKey, PreviewData> = {
         She sells <span className="bg-rose-500/15 text-rose-700 dark:text-rose-300 px-0.5 rounded border-b border-rose-500/40">seashells</span> by the <span className="bg-amber-500/15 text-amber-700 dark:text-amber-300 px-0.5 rounded border-b border-amber-500/40">seashore</span>.
       </>
     ),
-    // 句子题字段：overall / accuracy / fluency / integrity + 语速
+    // 句子题字段：总分 / 准确度 / 流利度 / 完整度
     scores: [
       { label: '总分',    value: 74, tone: 'amber'   },
       { label: '准确度',  value: 70, tone: 'amber'   },
       { label: '流利度',  value: 80, tone: 'amber'   },
-      { label: '语速',    value: 92, tone: 'emerald' },
+      { label: '完整度',  value: 92, tone: 'emerald' },
     ],
     chips: [
       { ok: false, text: '⚠ /ʃ/ 发成了 /s/' },
@@ -139,12 +137,13 @@ const EN_DATA: Record<QKey, PreviewData> = {
         <span className="text-muted-foreground">&rdquo;</span>
       </>
     ),
-    // 半开放题 5 维：内容/词汇/语法/发音/结构
+    // 半开放题 5 维：总分 / 发音分 / 语法分 / 内容分 / 流利分
     scores: [
-      { label: '内容',    value: 68, tone: 'amber'   },
-      { label: '词汇',    value: 72, tone: 'amber'   },
-      { label: '语法',    value: 80, tone: 'emerald' },
+      { label: '总分',    value: 74, tone: 'amber'   },
       { label: '发音',    value: 76, tone: 'amber'   },
+      { label: '语法',    value: 80, tone: 'emerald' },
+      { label: '内容',    value: 68, tone: 'amber'   },
+      { label: '流利度',  value: 78, tone: 'amber'   },
     ],
     chips: [
       { ok: false, text: '⚠ 语义展开不足（仅 1 句）' },
@@ -175,12 +174,10 @@ const CN_DATA: Record<QKey, PreviewData> = {
         <span className="ml-2 font-mono text-xs text-muted-foreground">dú tè</span>
       </>
     ),
-    // 中文单词字段：总分 / 发音 / 声调 / 完整度 —— 声调是中文独有
+    // 单词题字段：总分 / 发音分
     scores: [
       { label: '总分',    value: 76, tone: 'amber'   },
       { label: '发音',    value: 82, tone: 'emerald' },
-      { label: '声调',    value: 65, tone: 'amber'   },
-      { label: '完整度',  value: 100, tone: 'emerald' },
     ],
     chips: [
       { ok: false, text: '⚠ "独" 二声发成了三声' },
@@ -203,12 +200,12 @@ const CN_DATA: Record<QKey, PreviewData> = {
         妈妈骑着<span className="bg-rose-500/15 text-rose-700 dark:text-rose-300 px-0.5 rounded border-b border-rose-500/40">马儿</span>过<span className="bg-amber-500/15 text-amber-700 dark:text-amber-300 px-0.5 rounded border-b border-amber-500/40">小桥</span>。
       </>
     ),
-    // 句子题字段：总分 / 发音 / 声调 / 流利度
+    // 句子题字段：总分 / 准确度 / 流利度 / 完整度
     scores: [
       { label: '总分',    value: 72, tone: 'amber'   },
-      { label: '发音',    value: 75, tone: 'amber'   },
-      { label: '声调',    value: 68, tone: 'amber'   },
+      { label: '准确度',  value: 75, tone: 'amber'   },
       { label: '流利度',  value: 88, tone: 'emerald' },
+      { label: '完整度',  value: 90, tone: 'emerald' },
     ],
     chips: [
       { ok: false, text: '⚠ "马儿" 儿化不明显' },
@@ -233,9 +230,9 @@ const CN_DATA: Record<QKey, PreviewData> = {
     ),
     scores: [
       { label: '总分',    value: 80, tone: 'emerald' },
-      { label: '发音',    value: 78, tone: 'amber'   },
-      { label: '声调',    value: 74, tone: 'amber'   },
+      { label: '准确度',  value: 78, tone: 'amber'   },
       { label: '流利度',  value: 90, tone: 'emerald' },
+      { label: '完整度',  value: 94, tone: 'emerald' },
     ],
     chips: [
       { ok: false, text: '⚠ "花儿" 儿化缺失' },
@@ -490,8 +487,15 @@ export function DemoPreview() {
                 </div>
               </div>
 
-              {/* 3. 4 维得分卡 */}
-              <div className="grid grid-cols-4 gap-2">
+              {/* 3. 按题型动态得分卡 */}
+              <div className={cn(
+                'grid gap-2',
+                data.scores.length === 2
+                  ? 'grid-cols-2'
+                  : data.scores.length === 5
+                    ? 'grid-cols-2 sm:grid-cols-5'
+                    : 'grid-cols-2 sm:grid-cols-4'
+              )}>
                 {data.scores.map((s) => (
                   <div key={s.label} className="rounded-lg border border-border/40 bg-background p-2 text-center">
                     <div className={cn(
