@@ -611,7 +611,7 @@ score < 70 的音素，给
                     <div key={i} className={`h-6 w-6 rounded-full ${c} border-2 border-zinc-950`} />
                   ))}
                 </div>
-                <div className="text-xs text-zinc-400">兼容 <span className="text-zinc-200">GPT · Claude · Gemini · Qwen</span> 等主流 LLM</div>
+                <div className="text-xs text-zinc-400">兼容 <span className="text-zinc-200">GPT · Claude · Gemini · 豆包 · DeepSeek · 通义千问</span> 等国内外主流 LLM</div>
               </div>
 
               <Link href="/demo" className="inline-flex items-center gap-1.5 text-sm font-medium text-zinc-50 hover:underline underline-offset-4">

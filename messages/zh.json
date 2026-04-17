@@ -50,7 +50,7 @@
     "step_section_desc": "只需 4 步，将语音评测数据转化为 LLM 驱动的个性化教学内容。",
     "demo_title": "LLM 深度分析演示",
     "demo_desc": "MCP 将评测结果以结构化 JSON 输出，大模型可直接消费这些数据进行语义级分析，生成针对性的教学反馈。",
-    "demo_point1": "与 GPT-4、Claude 3 等主流大模型无缝对接",
+    "demo_point1": "与 GPT、Claude、Gemini、豆包、DeepSeek、通义千问等国内外主流大模型无缝对接",
     "demo_point2": "大模型可定位具体音素弱项，给出针对性矫正建议",
     "demo_point3": "智能生成绕口令、跟读素材、个性化提分路线",
     "demo_llm_response": "你的流利度表现优秀（85分）！但准确度（65分）有提升空间。你在 /θ/ 和 /r/ 两个音素上存在混淆，建议练习：\"Thirty-three thieves thought they thrilled the throne throughout Thursday.\" 另外 record 和 present 的重音位置需要注意区分名词和动词用法。",

@@ -60,7 +60,7 @@
   --secondary: oklch(0.96 0 0);
   --secondary-foreground: oklch(0.18 0 0);
   --muted: oklch(0.96 0 0);
-  --muted-foreground: oklch(0.42 0 0);        /* 次级文本：0.556→0.42，对比度 4.5→7+ */
+  --muted-foreground: oklch(0.36 0 0);        /* 次级文本再加深，提升浅灰可读性 */
   --accent: oklch(0.96 0 0);
   --accent-foreground: oklch(0.18 0 0);
   --destructive: oklch(0.577 0.245 27.325);
@@ -95,7 +95,7 @@
   --secondary: oklch(0.27 0 0);
   --secondary-foreground: oklch(0.99 0 0);
   --muted: oklch(0.27 0 0);
-  --muted-foreground: oklch(0.78 0 0);        /* 次级文本：0.708→0.78，在 OLED 屏也清晰 */
+  --muted-foreground: oklch(0.82 0 0);        /* 暗色次级文本再提亮，减少发灰发糊 */
   --accent: oklch(0.27 0 0);
   --accent-foreground: oklch(0.99 0 0);
   --destructive: oklch(0.704 0.191 22.216);
@@ -123,15 +123,41 @@
   }
   body {
     @apply bg-background text-foreground overflow-x-hidden;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
   }
   html {
     @apply font-sans overflow-x-hidden;
   }
 }
 
+/* Safari/Chrome 在浅灰小字号下更容易显细：统一给关键灰阶加一个最低字重 */
+@supports (-webkit-hyphens: none) {
+  :where(.text-muted-foreground, .text-zinc-400, .text-zinc-500, .text-zinc-600) {
+    font-weight: 500;
+  }
+}
+
 @layer utilities {
   .animate-arrow-down {
     animation: arrow-down 2s ease-in-out infinite;
+  }
+
+  /* 全站小字号轻微放大：提升可读性，尽量不破坏既有布局 */
+  .text-xs {
+    font-size: 0.8rem;
+    line-height: 1.2rem;
+  }
+
+  .text-sm {
+    font-size: 0.92rem;
+    line-height: 1.4rem;
+  }
+
+  .text-base {
+    font-size: 1.03rem;
+    line-height: 1.65rem;
   }
 }
 

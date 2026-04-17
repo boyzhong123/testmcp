@@ -50,7 +50,7 @@
     "step_section_desc": "Just 4 steps to transform speech assessment data into LLM-driven personalized teaching content.",
     "demo_title": "LLM Deep Analysis Demo",
     "demo_desc": "MCP outputs assessment results as structured JSON. LLMs can directly consume this data for semantic-level analysis and generate targeted teaching feedback.",
-    "demo_point1": "Seamless integration with GPT-4, Claude 3, and other leading LLMs",
+    "demo_point1": "Seamless integration with global and China LLMs like GPT, Claude, Gemini, Doubao, DeepSeek, and Qwen",
     "demo_point2": "LLMs can pinpoint specific phoneme weaknesses with corrective guidance",
     "demo_point3": "Intelligently generate tongue twisters, shadowing materials, and personalized improvement plans",
     "demo_llm_response": "Your fluency is excellent (85)! But accuracy (65) has room for improvement. You're confusing /θ/ and /r/ phonemes. Try practicing: 'Thirty-three thieves thought they thrilled the throne throughout Thursday.' Also note the stress difference in 'record' and 'present' between noun and verb forms.",

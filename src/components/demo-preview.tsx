@@ -342,8 +342,8 @@ export function DemoPreview() {
                     <span className="font-medium">{it.label}</span>
                     <span
                       className={cn(
-                        'text-[10px]',
-                        isActive ? 'text-background/60' : 'text-muted-foreground/60'
+                        'text-[11px] font-medium',
+                        isActive ? 'text-background/75' : 'text-zinc-600 dark:text-zinc-300'
                       )}
                     >
                       · {it.hint}
@@ -383,7 +383,14 @@ export function DemoPreview() {
                     )}
                   >
                     <span className="font-medium">{t.label}</span>
-                    <span className="opacity-70 font-mono text-[10px]">{coreSub}</span>
+                    <span
+                      className={cn(
+                        'font-mono text-[11px] font-medium',
+                        isActive ? 'text-background/80' : 'text-zinc-600 dark:text-zinc-300'
+                      )}
+                    >
+                      {coreSub}
+                    </span>
                   </button>
                 );
               })}
