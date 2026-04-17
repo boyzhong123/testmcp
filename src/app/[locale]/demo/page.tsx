@@ -1483,7 +1483,7 @@ export default function DemoPage() {
                       key={i}
                       className="flex-1 rounded-full bg-rose-500/70"
                       style={{
-                        height: `${25 + Math.abs(Math.sin((i + Date.now() / 500) / 2)) * 70}%`,
+                        height: `${(25 + Math.abs(Math.sin(i / 2)) * 70).toFixed(2)}%`,
                         animation: `wave-bar 0.9s ease-in-out ${i * 0.04}s infinite`,
                       }}
                     />
@@ -1498,12 +1498,6 @@ export default function DemoPage() {
                 <Square className="h-3.5 w-3.5 fill-current" /> {ui.recBtn}
               </button>
             </div>
-            <style>{`
-              @keyframes wave-bar {
-                0%, 100% { transform: scaleY(0.35); }
-                50%      { transform: scaleY(1); }
-              }
-            `}</style>
           </div>
         )}
 

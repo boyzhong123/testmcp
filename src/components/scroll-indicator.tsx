@@ -65,11 +65,12 @@ export function ScrollIndicator() {
   );
 
   const [activeIdx, setActiveIdx] = useState(0);
-  const [visible, setVisible] = useState(getInitialVisible);
+  const [visible, setVisible] = useState(false);
   const [hoverIdx, setHoverIdx] = useState<number | null>(null);
 
   useEffect(() => {
     setActiveIdx(getInitialActiveIdx(sections));
+    setVisible(getInitialVisible());
   }, [sections]);
 
   const handleScroll = useCallback(() => {

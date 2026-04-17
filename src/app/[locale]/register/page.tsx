@@ -89,10 +89,14 @@ export default function RegisterPage() {
 
         <div className="relative z-10 flex flex-col justify-between p-10 xl:p-12 w-full">
           <Link href="/" className="flex items-center gap-2.5 group">
-            <div className="h-8 w-8 rounded-lg bg-white flex items-center justify-center shadow-lg shadow-white/10">
+            <div className="relative h-8 w-8 rounded-lg bg-white flex items-center justify-center shadow-lg shadow-white/10">
               <AudioWaveform className="h-4 w-4 text-zinc-950" />
+              <span className="absolute -bottom-0.5 -right-0.5 h-1.5 w-1.5 rounded-full bg-emerald-400 ring-2 ring-zinc-900" />
             </div>
-            <span className="font-semibold tracking-tight text-white/90 group-hover:text-white transition-colors">Chivox MCP</span>
+            <span className="font-semibold tracking-[-0.02em] text-white/90 group-hover:text-white transition-colors flex items-baseline gap-1">
+              <span>Chivox</span>
+              <span className="bg-gradient-to-r from-indigo-300 via-sky-300 to-emerald-300 bg-clip-text text-transparent">MCP</span>
+            </span>
           </Link>
 
           <div className="max-w-xs">
@@ -126,10 +130,14 @@ export default function RegisterPage() {
 
         <div className="w-full max-w-[340px] relative z-10">
           <Link href="/" className="lg:hidden flex items-center gap-2 mb-8">
-            <div className="h-7 w-7 rounded-md bg-foreground flex items-center justify-center">
+            <div className="relative h-7 w-7 rounded-md bg-foreground flex items-center justify-center">
               <AudioWaveform className="h-3.5 w-3.5 text-background" />
+              <span className="absolute -bottom-0.5 -right-0.5 h-1.5 w-1.5 rounded-full bg-emerald-500 ring-2 ring-background" />
             </div>
-            <span className="font-semibold tracking-tight">Chivox MCP</span>
+            <span className="font-semibold tracking-[-0.02em] flex items-baseline gap-1">
+              <span>Chivox</span>
+              <span className="bg-gradient-to-r from-indigo-500 via-sky-500 to-emerald-500 bg-clip-text text-transparent">MCP</span>
+            </span>
           </Link>
 
           <h2 className="text-[22px] font-bold tracking-tight mb-1">{t.title}</h2>

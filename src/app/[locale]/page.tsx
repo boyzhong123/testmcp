@@ -136,7 +136,8 @@ export default async function HomePage() {
 
         <div className="container mx-auto px-6 flex flex-col items-center text-center">
           <FadeUp delay={0}>
-            <span className="inline-block text-xs tracking-widest uppercase text-muted-foreground border border-border/60 rounded-full px-4 py-1.5 mb-8 backdrop-blur-sm">
+            <span className="inline-flex items-center gap-2 mb-8 rounded-full px-4 py-1.5 text-xs font-medium bg-gradient-to-r from-indigo-500/10 via-sky-500/10 to-emerald-500/10 border border-indigo-500/20 text-foreground/70 backdrop-blur-sm shadow-[0_0_12px_0_rgba(99,102,241,0.08)]">
+              <span className="flex h-1.5 w-1.5 rounded-full bg-emerald-500 shadow-[0_0_6px_rgba(16,185,129,0.8)] animate-pulse" />
               {tHero('badge')}
             </span>
           </FadeUp>

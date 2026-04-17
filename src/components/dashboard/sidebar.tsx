@@ -48,10 +48,14 @@ export function DashboardSidebar() {
         {/* Header */}
         <div className="flex items-center justify-between h-16 px-5 border-b border-background/10">
           <Link href="/" className="flex items-center gap-2">
-            <div className="h-7 w-7 rounded-md bg-background flex items-center justify-center">
+            <div className="relative h-7 w-7 rounded-md bg-background flex items-center justify-center">
               <AudioWaveform className="h-4 w-4 text-foreground" strokeWidth={2.25} />
+              <span className="absolute -bottom-0.5 -right-0.5 h-1.5 w-1.5 rounded-full bg-emerald-400 ring-2 ring-foreground" />
             </div>
-            <span className="font-semibold tracking-tight text-sm">Chivox MCP</span>
+            <span className="font-semibold tracking-[-0.02em] text-sm flex items-baseline gap-1">
+              <span>Chivox</span>
+              <span className="bg-gradient-to-r from-indigo-400 via-sky-400 to-emerald-400 bg-clip-text text-transparent">MCP</span>
+            </span>
           </Link>
           <button
             onClick={() => setMobileOpen(false)}

@@ -513,7 +513,7 @@ export function DemoPreview() {
                         <div
                           key={i}
                           className={cn('flex-1 rounded-full transition-colors', played ? 'bg-foreground' : 'bg-foreground/20')}
-                          style={{ height: `${Math.min(h, 100)}%` }}
+                          style={{ height: `${Math.min(h, 100).toFixed(2)}%` }}
                         />
                       );
                     })}
