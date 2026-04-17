@@ -41,7 +41,7 @@ const CN_TABS: { k: QKey; label: string }[] = [
 ];
 
 // ─────────────────────────────────────────
-// 英文内核 · en.word.score / en.sent.score / en.pred.score / en.semi
+// 英文内核 · en.word.score / en.sent.score / en.pred.score / en.pqan.score
 // ─────────────────────────────────────────
 const EN_DATA: Record<QKey, PreviewData> = {
   word: {
@@ -102,9 +102,9 @@ const EN_DATA: Record<QKey, PreviewData> = {
     audioProgress: 0.65,
   },
   para: {
-    coreType: 'en.sent.exam',
+    coreType: 'en.pred.score',
     urlHash: 'en-para',
-    kicker: 'Reference Text · 段落题 · en.sent.exam',
+    kicker: 'Reference Text · 段落题 · en.pred.score',
     text: (
       <>
         The boy who had <span className="bg-rose-500/15 text-rose-700 dark:text-rose-300 px-0.5 rounded border-b border-rose-500/40">thought</span> about the <span className="bg-amber-500/15 text-amber-700 dark:text-amber-300 px-0.5 rounded border-b border-amber-500/40">unique</span> opportunity stood still, watching the sunset paint the sky in shades of gold.
@@ -129,9 +129,9 @@ const EN_DATA: Record<QKey, PreviewData> = {
     audioProgress: 0.7,
   },
   semi: {
-    coreType: 'en.scne.exam',
+    coreType: 'en.pqan.score',
     urlHash: 'en-semi',
-    kicker: 'Prompt · 半开放题 · en.scne.exam',
+    kicker: 'Prompt · 半开放题 · en.pqan.score',
     text: (
       <>
         <span className="text-muted-foreground">&ldquo;Tell me about your favorite </span>

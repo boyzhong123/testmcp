@@ -86,8 +86,8 @@ const DEV_STEPS: Step[] = [
           <span className="text-zinc-400">[mcp ]</span> connecting <span className="text-amber-300">https://speech-eval.site/mcp</span>...{'\n'}
           <span className="text-zinc-400">[mcp ]</span> <span className="text-emerald-400">✓</span> handshake ok · protocol <span className="text-amber-300">streamable-http</span>{'\n'}
           <span className="text-zinc-400">[mcp ]</span> <span className="text-emerald-400">✓</span> listTools → <span className="text-amber-300">16</span> tools registered{'\n'}
-          <span className="text-zinc-400">[mcp ]</span>   · <span className="text-sky-300">en.word.score</span>  · <span className="text-sky-300">en.sent.score</span>  · <span className="text-sky-300">en.sent.exam</span>{'\n'}
-          <span className="text-zinc-400">[mcp ]</span>   · <span className="text-sky-300">en.scne.exam</span>  · <span className="text-sky-300">en.prtl.exam</span>  · <span className="text-sky-300">en.word.pron</span>{'\n'}
+          <span className="text-zinc-400">[mcp ]</span>   · <span className="text-sky-300">en.word.score</span>  · <span className="text-sky-300">en.sent.score</span>  · <span className="text-sky-300">en.pred.score</span>{'\n'}
+          <span className="text-zinc-400">[mcp ]</span>   · <span className="text-sky-300">en.pqan.score</span>  · <span className="text-sky-300">en.scne.exam</span>  · <span className="text-sky-300">en.prtl.exam</span>{'\n'}
           <span className="text-zinc-400">[mcp ]</span>   · <span className="text-sky-300">cn.word.raw</span>   · <span className="text-sky-300">cn.sent.raw</span>    · <span className="text-sky-300">cn.pred.raw</span>{'\n'}
           <span className="text-zinc-400">[mcp ]</span>   · ...and <span className="text-amber-300">7</span> more{'\n'}
           {'\n'}

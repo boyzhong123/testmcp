@@ -287,7 +287,7 @@ const SAMPLES: Record<QType, Sample> = {
     kind: 'pron',
     label: '段落',
     desc: 'Paragraph · 段落级 + 节奏',
-    apiTag: 'en.sent.exam',
+    apiTag: 'en.pred.score',
     refText:
       'Every morning, I wake up at seven and make myself a quick breakfast. After that, I walk along the river to the office, watching the boats pass by. The fresh air really helps me focus and think through the day ahead. Sometimes I stop at a small coffee shop to grab a flat white before I arrive. By then, I feel energized and ready to tackle whatever comes my way.',
     overall: 74,
@@ -549,8 +549,8 @@ const SAMPLES: Record<QType, Sample> = {
   semiopen: {
     kind: 'semi',
     label: '半开放题',
-    desc: 'Semi-open · 情景对话 · 仅英文',
-    apiTag: 'en.scne.exam',
+    desc: 'Semi-open · 半开放问答 · 仅英文',
+    apiTag: 'en.pqan.score',
     refText: 'Topic: Describe your daily morning routine.',
     transcript:
       'Usually I wake up at seven, and then I eat breakfast quickly. After that I walk to work. I like the fresh air in the morning.',
