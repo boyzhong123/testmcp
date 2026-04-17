@@ -4,8 +4,30 @@ import { useState, useEffect, useCallback } from 'react';
 import { Plus, Eye, EyeOff, Copy, Pencil, RefreshCw, Trash2, X, Check } from 'lucide-react';
 import { type ApiKey, EVAL_TYPES, getStoredKeys, saveKeys, generateApiKey } from '@/lib/mock-data';
 import { cn } from '@/lib/utils';
+import { useLocale } from 'next-intl';
 
 export default function KeysPage() {
+  const locale = useLocale();
+  const isZh = locale.startsWith('zh');
+  const t = {
+    title: isZh ? 'API Key 管理' : 'API Key Management',
+    createKey: isZh ? '创建 Key' : 'Create Key',
+    name: isZh ? '名称' : 'Name',
+    apiKey: 'API Key',
+    status: isZh ? '状态' : 'Status',
+    evalTypes: isZh ? '评测类型' : 'Eval Types',
+    createdAt: isZh ? '创建时间' : 'Created At',
+    actions: isZh ? '操作' : 'Actions',
+    noData: isZh ? '暂无 API Key，点击上方按钮创建' : 'No API keys yet, click above to create one',
+    hide: isZh ? '隐藏' : 'Hide',
+    show: isZh ? '显示' : 'Show',
+    copy: isZh ? '复制' : 'Copy',
+    edit: isZh ? '编辑' : 'Edit',
+    regenerate: isZh ? '重新生成' : 'Regenerate',
+    confirm: isZh ? '确认' : 'Confirm',
+    cancel: isZh ? '取消' : 'Cancel',
+    delete: isZh ? '删除' : 'Delete',
+  };
   const [keys, setKeys] = useState<ApiKey[]>([]);
   const [showCreate, setShowCreate] = useState(false);
   const [revealedKeys, setRevealedKeys] = useState<Set<string>>(new Set());
@@ -64,7 +86,7 @@ export default function KeysPage() {
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-xl font-bold tracking-tight">API Key 管理</h1>
+        <h1 className="text-xl font-bold tracking-tight">{t.title}</h1>
       </div>
 
       <button
@@ -72,7 +94,7 @@ export default function KeysPage() {
         className="inline-flex items-center gap-2 h-9 px-4 text-sm font-medium rounded-lg bg-foreground text-background hover:bg-foreground/90 transition-colors mb-6"
       >
         <Plus className="h-4 w-4" />
-        创建 Key
+        {t.createKey}
       </button>
 
       {/* Table */}
@@ -81,19 +103,19 @@ export default function KeysPage() {
           <table className="w-full min-w-[920px] text-sm">
             <thead>
               <tr className="border-b border-border bg-muted/30">
-                <th className="text-left py-3 px-4 font-medium text-muted-foreground">名称</th>
+                <th className="text-left py-3 px-4 font-medium text-muted-foreground">{t.name}</th>
                 <th className="text-left py-3 px-4 font-medium text-muted-foreground">API Key</th>
-                <th className="text-left py-3 px-4 font-medium text-muted-foreground">状态</th>
-                <th className="text-left py-3 px-4 font-medium text-muted-foreground">评测类型</th>
-                <th className="text-left py-3 px-4 font-medium text-muted-foreground">创建时间</th>
-                <th className="text-left py-3 px-4 font-medium text-muted-foreground">操作</th>
+                <th className="text-left py-3 px-4 font-medium text-muted-foreground">{t.status}</th>
+                <th className="text-left py-3 px-4 font-medium text-muted-foreground">{t.evalTypes}</th>
+                <th className="text-left py-3 px-4 font-medium text-muted-foreground">{t.createdAt}</th>
+                <th className="text-left py-3 px-4 font-medium text-muted-foreground">{t.actions}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
               {keys.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="py-12 text-center text-muted-foreground">
-                    暂无 API Key，点击上方按钮创建
+                    {t.noData}
                   </td>
                 </tr>
               ) : (
@@ -114,14 +136,14 @@ export default function KeysPage() {
                         <button
                           onClick={() => toggleReveal(k.id)}
                           className="text-muted-foreground hover:text-foreground transition-colors"
-                          title={revealedKeys.has(k.id) ? '隐藏' : '显示'}
+                          title={revealedKeys.has(k.id) ? t.hide : t.show}
                         >
                           {revealedKeys.has(k.id) ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
                         </button>
                         <button
                           onClick={() => copyKey(k.key, k.id)}
                           className="text-muted-foreground hover:text-foreground transition-colors"
-                          title="复制"
+                          title={t.copy}
                         >
                           {copiedId === k.id ? <Check className="h-3.5 w-3.5 text-emerald-500" /> : <Copy className="h-3.5 w-3.5" />}
                         </button>
@@ -158,21 +180,21 @@ export default function KeysPage() {
                       </div>
                     </td>
                     <td className="py-3.5 px-4 text-muted-foreground text-xs whitespace-nowrap">
-                      {new Date(k.createdAt).toLocaleString('zh-CN')}
+                      {new Date(k.createdAt).toLocaleString(isZh ? 'zh-CN' : 'en-US')}
                     </td>
                     <td className="py-3.5 px-4">
                       <div className="flex items-center gap-1">
                         <button
                           onClick={() => {/* edit - placeholder */}}
                           className="h-8 w-8 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-                          title="编辑"
+                          title={t.edit}
                         >
                           <Pencil className="h-3.5 w-3.5" />
                         </button>
                         <button
                           onClick={() => refreshKey(k.id)}
                           className="h-8 w-8 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-                          title="重新生成"
+                          title={t.regenerate}
                         >
                           <RefreshCw className="h-3.5 w-3.5" />
                         </button>
@@ -182,20 +204,20 @@ export default function KeysPage() {
                               onClick={() => deleteKey(k.id)}
                               className="h-7 px-2 rounded text-xs font-medium bg-destructive/10 text-destructive hover:bg-destructive/20 transition-colors"
                             >
-                              确认
+                              {t.confirm}
                             </button>
                             <button
                               onClick={() => setDeleteConfirm(null)}
                               className="h-7 px-2 rounded text-xs text-muted-foreground hover:text-foreground transition-colors"
                             >
-                              取消
+                              {t.cancel}
                             </button>
                           </div>
                         ) : (
                           <button
                             onClick={() => setDeleteConfirm(k.id)}
                             className="h-8 w-8 rounded-lg flex items-center justify-center text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
-                            title="删除"
+                            title={t.delete}
                           >
                             <Trash2 className="h-3.5 w-3.5" />
                           </button>
@@ -213,6 +235,7 @@ export default function KeysPage() {
       {/* Create Modal */}
       {showCreate && (
         <CreateKeyModal
+          locale={locale}
           onClose={() => setShowCreate(false)}
           onCreate={handleCreate}
           existingCount={keys.length}
@@ -223,14 +246,27 @@ export default function KeysPage() {
 }
 
 function CreateKeyModal({
+  locale,
   onClose,
   onCreate,
   existingCount,
 }: {
+  locale: string;
   onClose: () => void;
   onCreate: (key: ApiKey) => void;
   existingCount: number;
 }) {
+  const isZh = locale.startsWith('zh');
+  const t = {
+    title: isZh ? '创建 API Key' : 'Create API Key',
+    name: isZh ? '名称' : 'Name',
+    namePlaceholder: isZh ? '用于标识该 Key 的备注名' : 'A display name for this key',
+    evalTypes: isZh ? '评测类型' : 'Eval Types',
+    cancel: isZh ? '取消' : 'Cancel',
+    create: isZh ? '创建' : 'Create',
+    errName: isZh ? '请输入名称' : 'Please enter a name',
+    errTypes: isZh ? '请至少选择一种评测类型' : 'Please select at least one eval type',
+  };
   const [name, setName] = useState('');
   const [selectedTypes, setSelectedTypes] = useState<Set<string>>(new Set());
   const [error, setError] = useState('');
@@ -245,11 +281,11 @@ function CreateKeyModal({
 
   function handleCreate() {
     if (!name.trim()) {
-      setError('请输入名称');
+      setError(t.errName);
       return;
     }
     if (selectedTypes.size === 0) {
-      setError('请至少选择一种评测类型');
+      setError(t.errTypes);
       return;
     }
 
@@ -272,7 +308,7 @@ function CreateKeyModal({
       <div className="absolute inset-0 bg-black/50" onClick={onClose} />
       <div className="relative w-full max-w-lg bg-background rounded-xl border border-border shadow-xl p-6 max-h-[85vh] overflow-y-auto">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-lg font-bold">创建 API Key</h2>
+          <h2 className="text-lg font-bold">{t.title}</h2>
           <button
             onClick={onClose}
             className="h-8 w-8 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
@@ -288,18 +324,18 @@ function CreateKeyModal({
         )}
 
         <div className="mb-5">
-          <label className="text-sm font-medium mb-1.5 block">名称</label>
+          <label className="text-sm font-medium mb-1.5 block">{t.name}</label>
           <input
             type="text"
             value={name}
             onChange={e => { setName(e.target.value); setError(''); }}
-            placeholder="用于标识该 Key 的备注名"
+            placeholder={t.namePlaceholder}
             className="w-full h-10 px-3 text-sm rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-ring/20 focus:border-foreground/30 transition-colors placeholder:text-muted-foreground"
           />
         </div>
 
         <div className="mb-6">
-          <label className="text-sm font-medium mb-3 block">评测类型</label>
+          <label className="text-sm font-medium mb-3 block">{t.evalTypes}</label>
           <div className="grid grid-cols-2 gap-2">
             {EVAL_TYPES.map(t => (
               <label
@@ -331,13 +367,13 @@ function CreateKeyModal({
             onClick={onClose}
             className="h-9 px-4 text-sm font-medium rounded-lg border border-border hover:bg-muted transition-colors"
           >
-            取消
+            {t.cancel}
           </button>
           <button
             onClick={handleCreate}
             className="h-9 px-4 text-sm font-medium rounded-lg bg-foreground text-background hover:bg-foreground/90 transition-colors"
           >
-            创建
+            {t.create}
           </button>
         </div>
       </div>

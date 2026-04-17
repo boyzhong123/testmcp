@@ -41,7 +41,7 @@ export function Footer() {
         className="fixed bottom-5 right-5 z-50 flex items-center gap-2 px-3 py-1.5 rounded-full bg-background/80 border border-border/60 backdrop-blur-sm shadow-sm text-xs text-muted-foreground/60 hover:text-foreground hover:border-border hover:bg-background transition-all duration-300 group"
       >
         <span className="h-1.5 w-1.5 rounded-full bg-amber-400/70 group-hover:bg-amber-400 transition-colors" />
-        内部计划
+        {t('internal_plan')}
       </Link>
     </footer>
   );

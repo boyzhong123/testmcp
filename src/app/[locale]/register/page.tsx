@@ -5,8 +5,43 @@ import { useAuth } from '@/lib/auth-context';
 import { useRouter } from '@/i18n/routing';
 import { User, Mail, Lock, Eye, EyeOff, ArrowRight, Check, AudioWaveform } from 'lucide-react';
 import { useState } from 'react';
+import { useLocale } from 'next-intl';
 
 export default function RegisterPage() {
+  const locale = useLocale();
+  const isZh = locale.startsWith('zh');
+  const t = {
+    errName: isZh ? '请输入名称' : 'Please enter name',
+    errEmail: isZh ? '请输入邮箱' : 'Please enter email',
+    errEmailValid: isZh ? '请输入有效的邮箱地址' : 'Please enter a valid email address',
+    errPassLen: isZh ? '密码至少 6 位' : 'Password must be at least 6 characters',
+    errPassMatch: isZh ? '两次输入的密码不一致' : 'Passwords do not match',
+    errRegister: isZh ? '注册失败，请重试' : 'Sign up failed, please try again',
+    title: isZh ? '创建账号' : 'Create account',
+    subtitle: isZh ? '免费注册，立即开始' : 'Sign up free and get started',
+    name: isZh ? '名称' : 'Name',
+    namePlaceholder: isZh ? '您的名称' : 'Your name',
+    email: isZh ? '邮箱' : 'Email',
+    password: isZh ? '密码' : 'Password',
+    confirmPassword: isZh ? '确认密码' : 'Confirm Password',
+    passHint: isZh ? '至少 6 位' : 'At least 6 characters',
+    confirmPlaceholder: isZh ? '再次输入' : 'Type again',
+    signing: isZh ? '注册中' : 'Signing up',
+    create: isZh ? '创建账号' : 'Create Account',
+    termsPrefix: isZh ? '注册即表示您同意' : 'By signing up, you agree to',
+    terms: isZh ? '服务条款' : 'Terms',
+    privacy: isZh ? '隐私政策' : 'Privacy Policy',
+    or: isZh ? '或' : 'or',
+    hasAccount: isZh ? '已有账号？' : 'Already have an account?',
+    goLogin: isZh ? '去登录' : 'Log in',
+    heroTitle: isZh ? '开始构建\nAI 口语教学应用' : 'Start building\nAI speaking products',
+    heroDesc: isZh ? '注册后即可获取 API Key，接入语音评测能力，只需几分钟即可上手。' : 'Get API keys after sign-up and integrate speech evaluation in minutes.',
+    b1: isZh ? '每月 1,000 次免费 API 调用' : '1,000 free API calls per month',
+    b2: isZh ? '支持 16 种评测工具' : '16 evaluation tools supported',
+    b3: isZh ? '完整的开发者文档' : 'Complete developer docs',
+    b4: isZh ? '即时获取 API Key' : 'Instant API key access',
+    users: isZh ? '已有 200+ 开发者注册使用' : '200+ developers already registered',
+  };
   const { register } = useAuth();
   const router = useRouter();
   const [name, setName] = useState('');
@@ -21,29 +56,24 @@ export default function RegisterPage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError('');
-    if (!name.trim()) { setError('请输入名称'); return; }
-    if (!email.trim()) { setError('请输入邮箱'); return; }
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { setError('请输入有效的邮箱地址'); return; }
-    if (password.length < 6) { setError('密码至少 6 位'); return; }
-    if (password !== confirmPassword) { setError('两次输入的密码不一致'); return; }
+    if (!name.trim()) { setError(t.errName); return; }
+    if (!email.trim()) { setError(t.errEmail); return; }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { setError(t.errEmailValid); return; }
+    if (password.length < 6) { setError(t.errPassLen); return; }
+    if (password !== confirmPassword) { setError(t.errPassMatch); return; }
 
     setLoading(true);
     try {
       const ok = await register(name, email, password);
       if (ok) router.push('/dashboard/keys');
     } catch {
-      setError('注册失败，请重试');
+      setError(t.errRegister);
     } finally {
       setLoading(false);
     }
   }
 
-  const benefits = [
-    '每月 1,000 次免费 API 调用',
-    '支持 16 种评测工具',
-    '完整的开发者文档',
-    '即时获取 API Key',
-  ];
+  const benefits = [t.b1, t.b2, t.b3, t.b4];
 
   const inputCls = "w-full h-10 pl-9 pr-3 text-sm rounded-lg border border-border/80 bg-background shadow-sm focus:outline-none focus:ring-2 focus:ring-ring/20 focus:border-foreground/30 transition-all placeholder:text-muted-foreground/40";
   const inputWithBtnCls = "w-full h-10 pl-9 pr-10 text-sm rounded-lg border border-border/80 bg-background shadow-sm focus:outline-none focus:ring-2 focus:ring-ring/20 focus:border-foreground/30 transition-all placeholder:text-muted-foreground/40";
@@ -67,10 +97,10 @@ export default function RegisterPage() {
 
           <div className="max-w-xs">
             <h1 className="text-[28px] font-bold tracking-tight leading-[1.2] mb-3">
-              开始构建<br />AI 口语教学应用
+              {t.heroTitle.split('\n')[0]}<br />{t.heroTitle.split('\n')[1]}
             </h1>
             <p className="text-[13px] text-white/50 leading-relaxed mb-6">
-              注册后即可获取 API Key，接入语音评测能力，只需几分钟即可上手。
+              {t.heroDesc}
             </p>
             <ul className="space-y-2.5">
               {benefits.map(b => (
@@ -85,7 +115,7 @@ export default function RegisterPage() {
           </div>
 
           <div className="text-[11px] text-white/30">
-            已有 200+ 开发者注册使用
+            {t.users}
           </div>
         </div>
       </div>
@@ -102,8 +132,8 @@ export default function RegisterPage() {
             <span className="font-semibold tracking-tight">Chivox MCP</span>
           </Link>
 
-          <h2 className="text-[22px] font-bold tracking-tight mb-1">创建账号</h2>
-          <p className="text-sm text-muted-foreground mb-5">免费注册，立即开始</p>
+          <h2 className="text-[22px] font-bold tracking-tight mb-1">{t.title}</h2>
+          <p className="text-sm text-muted-foreground mb-5">{t.subtitle}</p>
 
           {error && (
             <div className="mb-3 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive text-sm px-3 py-2">
@@ -113,15 +143,15 @@ export default function RegisterPage() {
 
           <form onSubmit={handleSubmit} className="space-y-3">
             <div>
-              <label className="text-xs font-medium text-muted-foreground mb-1 block">名称</label>
+              <label className="text-xs font-medium text-muted-foreground mb-1 block">{t.name}</label>
               <div className="relative">
                 <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/50" />
-                <input type="text" value={name} onChange={e => { setName(e.target.value); setError(''); }} placeholder="您的名称" className={inputCls} />
+                <input type="text" value={name} onChange={e => { setName(e.target.value); setError(''); }} placeholder={t.namePlaceholder} className={inputCls} />
               </div>
             </div>
 
             <div>
-              <label className="text-xs font-medium text-muted-foreground mb-1 block">邮箱</label>
+              <label className="text-xs font-medium text-muted-foreground mb-1 block">{t.email}</label>
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/50" />
                 <input type="email" value={email} onChange={e => { setEmail(e.target.value); setError(''); }} placeholder="you@example.com" className={inputCls} />
@@ -130,14 +160,14 @@ export default function RegisterPage() {
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="text-xs font-medium text-muted-foreground mb-1 block">密码</label>
+                <label className="text-xs font-medium text-muted-foreground mb-1 block">{t.password}</label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/50" />
                   <input
                     type={showPassword ? 'text' : 'password'}
                     value={password}
                     onChange={e => { setPassword(e.target.value); setError(''); }}
-                    placeholder="至少 6 位"
+                    placeholder={t.passHint}
                     className={inputWithBtnCls}
                   />
                   <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground/40 hover:text-foreground transition-colors">
@@ -146,14 +176,14 @@ export default function RegisterPage() {
                 </div>
               </div>
               <div>
-                <label className="text-xs font-medium text-muted-foreground mb-1 block">确认密码</label>
+                <label className="text-xs font-medium text-muted-foreground mb-1 block">{t.confirmPassword}</label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/50" />
                   <input
                     type={showConfirm ? 'text' : 'password'}
                     value={confirmPassword}
                     onChange={e => { setConfirmPassword(e.target.value); setError(''); }}
-                    placeholder="再次输入"
+                    placeholder={t.confirmPlaceholder}
                     className={inputWithBtnCls}
                   />
                   <button type="button" onClick={() => setShowConfirm(!showConfirm)} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground/40 hover:text-foreground transition-colors">
@@ -171,11 +201,11 @@ export default function RegisterPage() {
               {loading ? (
                 <>
                   <span className="h-3.5 w-3.5 border-2 border-background/30 border-t-background rounded-full animate-spin" />
-                  注册中
+                  {t.signing}
                 </>
               ) : (
                 <>
-                  创建账号
+                  {t.create}
                   <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
                 </>
               )}
@@ -183,18 +213,18 @@ export default function RegisterPage() {
           </form>
 
           <p className="text-[11px] text-muted-foreground/50 text-center mt-3 leading-relaxed">
-            注册即表示您同意<Link href="/" className="text-muted-foreground/70 hover:text-foreground underline underline-offset-2">服务条款</Link>和<Link href="/" className="text-muted-foreground/70 hover:text-foreground underline underline-offset-2">隐私政策</Link>
+            {t.termsPrefix}<Link href="/" className="text-muted-foreground/70 hover:text-foreground underline underline-offset-2">{t.terms}</Link>{isZh ? '和' : ' and '}<Link href="/" className="text-muted-foreground/70 hover:text-foreground underline underline-offset-2">{t.privacy}</Link>
           </p>
 
           <div className="relative my-5">
             <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-border/60" /></div>
-            <div className="relative flex justify-center"><span className="bg-background px-3 text-[11px] text-muted-foreground/60">或</span></div>
+            <div className="relative flex justify-center"><span className="bg-background px-3 text-[11px] text-muted-foreground/60">{t.or}</span></div>
           </div>
 
           <p className="text-sm text-center text-muted-foreground">
-            已有账号？{' '}
+            {t.hasAccount}{' '}
             <Link href="/login" className="text-foreground font-medium hover:underline underline-offset-4">
-              去登录
+              {t.goLogin}
             </Link>
           </p>
         </div>

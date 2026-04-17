@@ -4,10 +4,39 @@ import { useState, useMemo, useEffect } from 'react';
 import { BarChart3, TrendingUp, AlertCircle } from 'lucide-react';
 import { generateDailyUsage, generateToolDistribution, generateUsageRecords, getStoredKeys, type ApiKey } from '@/lib/mock-data';
 import { cn } from '@/lib/utils';
+import { useLocale } from 'next-intl';
 
 type TimeRange = '7d' | '30d';
 
 export default function UsagePage() {
+  const locale = useLocale();
+  const isZh = locale.startsWith('zh');
+  const t = {
+    title: isZh ? '用量统计' : 'Usage',
+    subtitle: isZh ? '查看 API 调用情况和使用趋势' : 'View API usage and trends',
+    all: isZh ? '全部' : 'All',
+    monthlyUsage: isZh ? '本月调用量' : 'This Month Calls',
+    quota: isZh ? '/ 1,000 配额' : '/ 1,000 quota',
+    todayRequests: isZh ? '今日请求' : "Today's Requests",
+    errorRate: isZh ? '错误率' : 'Error Rate',
+    failedCount: (n: number) => (isZh ? `${n} 次失败` : `${n} failed`),
+    timeRange: isZh ? '时间范围' : 'Time Range',
+    last7d: isZh ? '近 7 天' : 'Last 7 days',
+    last30d: isZh ? '近 30 天' : 'Last 30 days',
+    dailyCalls: isZh ? '每日调用量' : 'Daily Calls',
+    dist: isZh ? '评测类型分布' : 'Eval Type Distribution',
+    times: isZh ? '次' : 'times',
+    requestStatus: isZh ? '请求状态' : 'Request Status',
+    success: isZh ? '成功' : 'Success',
+    failed: isZh ? '失败' : 'Failed',
+    records: isZh ? '调用记录' : 'Call Records',
+    noRecords: isZh ? '该 Key 暂无调用记录' : 'No records for this key',
+    tool: isZh ? '评测类型' : 'Tool',
+    score: isZh ? '分数' : 'Score',
+    duration: isZh ? '耗时' : 'Duration',
+    status: isZh ? '状态' : 'Status',
+    time: isZh ? '时间' : 'Time',
+  };
   const [range, setRange] = useState<TimeRange>('7d');
   const [keys, setKeys] = useState<ApiKey[]>([]);
   const [activeKeyId, setActiveKeyId] = useState<string>('all');
@@ -39,13 +68,13 @@ export default function UsagePage() {
 
   return (
     <div>
-      <h1 className="text-xl font-bold tracking-tight mb-2">用量统计</h1>
-      <p className="text-sm text-muted-foreground mb-6">查看 API 调用情况和使用趋势</p>
+      <h1 className="text-xl font-bold tracking-tight mb-2">{t.title}</h1>
+      <p className="text-sm text-muted-foreground mb-6">{t.subtitle}</p>
 
       {/* Key Tabs */}
       <div className="flex items-center gap-1 mb-6 overflow-x-auto pb-1">
         <TabButton active={activeKeyId === 'all'} onClick={() => setActiveKeyId('all')}>
-          全部
+          {t.all}
         </TabButton>
         {keys.map(k => (
           <TabButton key={k.id} active={activeKeyId === k.id} onClick={() => setActiveKeyId(k.id)}>
@@ -59,14 +88,14 @@ export default function UsagePage() {
 
       {/* Stats Cards */}
       <div className="grid sm:grid-cols-3 gap-4 mb-8">
-        <StatCard icon={BarChart3} label="本月调用量" value={totalCalls.toLocaleString()} sub="/ 1,000 配额" />
-        <StatCard icon={TrendingUp} label="今日请求" value={todayCalls.toLocaleString()} />
-        <StatCard icon={AlertCircle} label="错误率" value={`${errorRate}%`} sub={`${totalErrors} 次失败`} />
+        <StatCard icon={BarChart3} label={t.monthlyUsage} value={totalCalls.toLocaleString()} sub={t.quota} />
+        <StatCard icon={TrendingUp} label={t.todayRequests} value={todayCalls.toLocaleString()} />
+        <StatCard icon={AlertCircle} label={t.errorRate} value={`${errorRate}%`} sub={t.failedCount(totalErrors)} />
       </div>
 
       {/* Time Range */}
       <div className="flex items-center gap-2 mb-4">
-        <span className="text-sm font-medium text-muted-foreground">时间范围</span>
+        <span className="text-sm font-medium text-muted-foreground">{t.timeRange}</span>
         {(['7d', '30d'] as const).map(r => (
           <button
             key={r}
@@ -78,14 +107,14 @@ export default function UsagePage() {
                 : 'bg-muted text-muted-foreground hover:text-foreground'
             )}
           >
-            {r === '7d' ? '近 7 天' : '近 30 天'}
+            {r === '7d' ? t.last7d : t.last30d}
           </button>
         ))}
       </div>
 
       {/* Bar Chart */}
       <div className="rounded-xl border border-border bg-background p-6 mb-8">
-        <h3 className="text-sm font-medium mb-4">每日调用量</h3>
+        <h3 className="text-sm font-medium mb-4">{t.dailyCalls}</h3>
         <div className="flex items-end gap-1 h-40">
           {filteredDaily.map((d, i) => (
             <div key={i} className="flex-1 flex flex-col items-center gap-1 group">
@@ -107,18 +136,18 @@ export default function UsagePage() {
       <div className="grid lg:grid-cols-2 gap-6 mb-8">
         {/* Tool Distribution */}
         <div className="rounded-xl border border-border bg-background p-6">
-          <h3 className="text-sm font-medium mb-4">评测类型分布</h3>
+          <h3 className="text-sm font-medium mb-4">{t.dist}</h3>
           <div className="space-y-3">
-            {toolDist.map(t => (
-              <div key={t.tool}>
+            {toolDist.map(item => (
+              <div key={item.tool}>
                 <div className="flex items-center justify-between text-xs mb-1">
-                  <span>{t.toolName}</span>
-                  <span className="text-muted-foreground tabular-nums">{t.count} 次 ({t.percentage}%)</span>
+                  <span>{item.toolName}</span>
+                  <span className="text-muted-foreground tabular-nums">{item.count} {t.times} ({item.percentage}%)</span>
                 </div>
                 <div className="h-2 bg-muted rounded-full overflow-hidden">
                   <div
                     className="h-full bg-foreground/70 rounded-full transition-all"
-                    style={{ width: `${t.percentage}%` }}
+                    style={{ width: `${item.percentage}%` }}
                   />
                 </div>
               </div>
@@ -128,15 +157,15 @@ export default function UsagePage() {
 
         {/* Status Distribution */}
         <div className="rounded-xl border border-border bg-background p-6">
-          <h3 className="text-sm font-medium mb-4">请求状态</h3>
+          <h3 className="text-sm font-medium mb-4">{t.requestStatus}</h3>
           <div className="flex items-center gap-8 mb-4">
             <div>
               <div className="text-2xl font-bold tabular-nums">{totalCalls - totalErrors}</div>
-              <div className="text-xs text-muted-foreground">成功</div>
+              <div className="text-xs text-muted-foreground">{t.success}</div>
             </div>
             <div>
               <div className="text-2xl font-bold tabular-nums text-destructive">{totalErrors}</div>
-              <div className="text-xs text-muted-foreground">失败</div>
+              <div className="text-xs text-muted-foreground">{t.failed}</div>
             </div>
           </div>
           <div className="h-3 bg-muted rounded-full overflow-hidden flex">
@@ -153,24 +182,24 @@ export default function UsagePage() {
       </div>
 
       {/* Records Table */}
-      <h2 className="text-lg font-bold tracking-tight mb-4">调用记录</h2>
+      <h2 className="text-lg font-bold tracking-tight mb-4">{t.records}</h2>
       <div className="rounded-xl border border-border bg-background overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-border bg-muted/30">
-                <th className="text-left py-3 px-4 font-medium text-muted-foreground">评测类型</th>
-                <th className="text-left py-3 px-4 font-medium text-muted-foreground">分数</th>
-                <th className="text-left py-3 px-4 font-medium text-muted-foreground">耗时</th>
-                <th className="text-left py-3 px-4 font-medium text-muted-foreground">状态</th>
-                <th className="text-left py-3 px-4 font-medium text-muted-foreground">时间</th>
+                <th className="text-left py-3 px-4 font-medium text-muted-foreground">{t.tool}</th>
+                <th className="text-left py-3 px-4 font-medium text-muted-foreground">{t.score}</th>
+                <th className="text-left py-3 px-4 font-medium text-muted-foreground">{t.duration}</th>
+                <th className="text-left py-3 px-4 font-medium text-muted-foreground">{t.status}</th>
+                <th className="text-left py-3 px-4 font-medium text-muted-foreground">{t.time}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
               {filteredRecords.length === 0 ? (
                 <tr>
                   <td colSpan={5} className="py-12 text-center text-muted-foreground">
-                    该 Key 暂无调用记录
+                    {t.noRecords}
                   </td>
                 </tr>
               ) : (
@@ -190,11 +219,11 @@ export default function UsagePage() {
                           ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
                           : 'bg-destructive/10 text-destructive'
                       )}>
-                        {r.status === 'success' ? '成功' : '失败'}
+                        {r.status === 'success' ? t.success : t.failed}
                       </span>
                     </td>
                     <td className="py-2.5 px-4 text-muted-foreground text-xs whitespace-nowrap">
-                      {new Date(r.createdAt).toLocaleString('zh-CN')}
+                      {new Date(r.createdAt).toLocaleString(isZh ? 'zh-CN' : 'en-US')}
                     </td>
                   </tr>
                 ))

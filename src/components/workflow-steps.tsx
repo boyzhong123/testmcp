@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { Settings, FileText, MessageSquare, Brain, Waves, Sparkles, Plug, Code2, Rocket } from 'lucide-react';
+import { useLocale } from 'next-intl';
 
 type TabKey = 'dev' | 'user';
 
@@ -223,6 +224,8 @@ const USER_STEPS: Step[] = [
 ];
 
 export function WorkflowSteps() {
+  const locale = useLocale();
+  const isZh = locale.startsWith('zh');
   const [tab, setTab] = useState<TabKey>('user');
   const [active, setActive] = useState(0);
   const [visible, setVisible] = useState(true);
@@ -261,11 +264,51 @@ export function WorkflowSteps() {
   }, []);
 
   const TAB_META: Record<TabKey, { label: string; hint: string }> = {
-    dev: { label: '开发场景', hint: '一次性工作' },
-    user: { label: '用户场景', hint: '每次使用发生' },
+    dev: { label: isZh ? '开发场景' : 'Developer Flow', hint: isZh ? '一次性工作' : 'One-time setup' },
+    user: { label: isZh ? '用户场景' : 'User Flow', hint: isZh ? '每次使用发生' : 'Happens each run' },
   };
 
   const currentStep = steps[displayed];
+  const enStepText: Record<TabKey, { title: string[]; desc: string[]; role: string[] }> = {
+    dev: {
+      title: ['Configure MCP once', 'Write a system prompt', 'Deploy, verify, done'],
+      desc: [
+        'Set MCP URL and API key once. Your host auto-discovers tools via MCP.',
+        'Tell the model when to call tools and how to turn scores into feedback.',
+        'Restart host and run one test message. After that, calls are automatic.',
+      ],
+      role: ['Developer', 'Developer', 'Developer'],
+    },
+    user: {
+      title: ['User sends audio', 'LLM calls Chivox via MCP', 'Chivox returns exam-grade scores', 'LLM outputs friendly feedback'],
+      desc: [
+        'Audio can be uploaded file URL/base64 or realtime stream chunks.',
+        'The model selects the right tool and sends a standard tools/call request.',
+        'Chivox returns structured JSON including overall, dimensions and phoneme details.',
+        'The model converts scores into actionable and friendly learning guidance.',
+      ],
+      role: ['End User', 'LLM → MCP', 'Chivox Service', 'LLM'],
+    },
+  };
+
+  const panelFallbackEn: Record<TabKey, string[]> = {
+    dev: [
+      `// Configure once, use everywhere\n{\n  "mcpServers": {\n    "chivox_voice_eval": {\n      "type": "streamable-http",\n      "url": "https://speech-eval.site/mcp",\n      "apiKey": "sk-••••••••"\n    }\n  }\n}`,
+      `// System prompt (example)\nYou are a speaking coach.\nWhen user provides audio:\n1) Call chivox tools\n2) Focus on low-score phonemes\n3) Provide actionable correction`,
+      `[mcp] connected\n[mcp] tools discovered: 16\n[mcp] test call passed\nReady.`,
+    ],
+    user: [
+      `// Frontend payload\nuser:\n  Please evaluate this self-intro.\n\naudio:\n  https://cdn.app.com/u123/intro.mp3\n\n// or stream\nstream:\n  audio/pcm · 16k · 16bit · mono\n  -> chunk upload every 200ms`,
+      `{\n  "jsonrpc": "2.0",\n  "method": "tools/call",\n  "params": {\n    "name": "en_sentence_eval",\n    "arguments": {\n      "audio_url": "https://cdn.app.com/u123/intro.mp3",\n      "ref_text": "Hello, my name is Lucy..."\n    }\n  }\n}`,
+      `{\n  "overall": 85,\n  "pron": {\n    "accuracy": 82,\n    "integrity": 95,\n    "fluency": 88\n  },\n  "details": [\n    { "char": "think", "score": 62, "dp_type": "mispron", "phoneme": "/θ/" }\n  ]\n}`,
+      `## Great self-introduction!\n\nOverall score: 85 🎉\nFluency 88, integrity 95.\n\n## One detail to improve\nIn "think", your /θ/ sounds like /s/.\nPlace tongue lightly against upper teeth,\nthen push air through the gap.\nPractice: think · three · thank · path`,
+    ],
+  };
+
+  const displayTitle = !isZh ? enStepText[tab].title[displayed] : currentStep.title;
+  const displayDesc = !isZh ? enStepText[tab].desc[displayed] : currentStep.desc;
+  const displayRole = !isZh ? enStepText[tab].role[displayed] : currentStep.role.label;
+  const displayPanel = !isZh ? panelFallbackEn[tab][displayed] : null;
 
   return (
     <section
@@ -277,10 +320,14 @@ export function WorkflowSteps() {
         <div className="grid lg:grid-cols-5 gap-10 items-start max-w-6xl mx-auto">
           {/* Left: header + tabs + steps */}
           <div className="lg:col-span-2">
-            <span className="text-xs tracking-widest uppercase text-muted-foreground mb-3 block">How it works</span>
-            <h2 className="text-2xl md:text-3xl font-bold tracking-tight mb-3">一段录音如何变成温柔反馈</h2>
+            <span className="text-xs tracking-widest uppercase text-muted-foreground mb-3 block">{isZh ? 'How it works' : 'How It Works'}</span>
+            <h2 className="text-2xl md:text-3xl font-bold tracking-tight mb-3">{isZh ? '一段录音如何变成温柔反馈' : 'How one audio turns into smart feedback'}</h2>
             <p className="text-sm text-muted-foreground leading-relaxed mb-5">
-              以「AI 雅思口语陪练」为例。开发者<span className="text-foreground font-medium">只填一次地址</span>，用户<span className="text-foreground font-medium">每次说话都自动被打分 + 给反馈</span>。
+              {isZh ? (
+                <>以「AI 雅思口语陪练」为例。开发者<span className="text-foreground font-medium">只填一次地址</span>，用户<span className="text-foreground font-medium">每次说话都自动被打分 + 给反馈</span>。</>
+              ) : (
+                <>Take an &quot;AI IELTS speaking coach&quot; as an example. Developers <span className="text-foreground font-medium">configure once</span>, users get <span className="text-foreground font-medium">automatic scoring + feedback every time</span>.</>
+              )}
             </p>
 
             {/* ── Tabs ── */}
@@ -291,6 +338,8 @@ export function WorkflowSteps() {
                   <button
                     key={k}
                     onClick={() => switchTab(k)}
+                    onMouseEnter={() => switchTab(k)}
+                    onFocus={() => switchTab(k)}
                     className={`relative flex items-center gap-2 px-4 py-1.5 text-xs font-medium rounded-full transition-all ${
                       isActive
                         ? 'bg-foreground text-background shadow-sm'
@@ -339,7 +388,7 @@ export function WorkflowSteps() {
                             isActive ? 'text-foreground' : 'text-muted-foreground'
                           }`}
                         >
-                          {step.title}
+                          {!isZh ? enStepText[tab].title[i] : step.title}
                         </h4>
                       </div>
                       {/* desc 只在激活时展开，消除高度抖动 */}
@@ -349,7 +398,7 @@ export function WorkflowSteps() {
                         }`}
                       >
                         <p className="overflow-hidden text-xs leading-relaxed text-muted-foreground">
-                          {step.desc}
+                          {!isZh ? enStepText[tab].desc[i] : step.desc}
                         </p>
                       </div>
                     </div>
@@ -365,11 +414,11 @@ export function WorkflowSteps() {
                 <p className="text-[11px] text-muted-foreground leading-relaxed">
                   {tab === 'dev' ? (
                     <>
-                      开发者只做左侧这点事，<span className="text-foreground">剩下的都是大模型和 MCP 自动完成</span>。
+                      {isZh ? <>开发者只做左侧这点事，<span className="text-foreground">剩下的都是大模型和 MCP 自动完成</span>。</> : <>Developers only do the setup on the left. <span className="text-foreground">Everything else is automated by LLM + MCP</span>.</>}
                     </>
                   ) : (
                     <>
-                      用户场景第 <span className="text-foreground font-medium">②</span> 步就是 MCP 的核心魔法 —— <span className="text-foreground">大模型自动选择并调用工具</span>。
+                      {isZh ? <>用户场景第 <span className="text-foreground font-medium">②</span> 步就是 MCP 的核心魔法 —— <span className="text-foreground">大模型自动选择并调用工具</span>。</> : <>Step <span className="text-foreground font-medium">②</span> is MCP magic — <span className="text-foreground">the LLM auto-selects and calls tools</span>.</>}
                     </>
                   )}
                 </p>
@@ -391,7 +440,7 @@ export function WorkflowSteps() {
                   visible ? 'opacity-100' : 'opacity-0'
                 }`}
               >
-                {currentStep.role.label}
+                {displayRole}
               </span>
             </div>
             <div className="flex-1 p-5 overflow-auto">
@@ -400,7 +449,7 @@ export function WorkflowSteps() {
                   visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2'
                 }`}
               >
-                <code>{currentStep.panel.content}</code>
+                <code>{displayPanel ?? currentStep.panel.content}</code>
               </pre>
             </div>
           </div>

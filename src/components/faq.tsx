@@ -1,13 +1,15 @@
 'use client';
 
 import { Link } from '@/i18n/routing';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { ChevronDown, HelpCircle, MessageSquare, BookOpen, ArrowUpRight } from 'lucide-react';
 import { SALES_CHAT_URL } from '@/lib/links';
 
 export function FAQ() {
   const t = useTranslations('FAQ');
+  const locale = useLocale();
+  const isZh = locale.startsWith('zh');
   const [openIndex, setOpenIndex] = useState<number | null>(0);
 
   const items = [
@@ -21,7 +23,7 @@ export function FAQ() {
   ];
 
   return (
-    <section id="faq" className="py-14 md:py-20 w-full">
+    <section className="py-14 md:py-20 w-full">
       <div className="container mx-auto px-6">
         <div className="grid lg:grid-cols-5 gap-10 lg:gap-14 max-w-6xl mx-auto">
           {/* 左栏：标题 + 联系入口 */}
@@ -31,7 +33,9 @@ export function FAQ() {
               {t('title')}
             </h2>
             <p className="text-sm text-muted-foreground leading-relaxed mb-8">
-              最常被问到的问题都收在这里。没找到答案？直接跟我们聊，从协议细节到私有化部署都可以一起对。
+              {isZh
+                ? '最常被问到的问题都收在这里。没找到答案？直接跟我们聊，从协议细节到私有化部署都可以一起对。'
+                : 'Most frequently asked questions are collected here. Still missing an answer? Talk to us directly—from protocol details to private deployment.'}
             </p>
 
             <div className="space-y-2.5">
@@ -46,8 +50,8 @@ export function FAQ() {
                     <MessageSquare className="h-4 w-4 text-foreground" />
                   </div>
                   <div>
-                    <div className="text-sm font-semibold">联系我们</div>
-                    <div className="text-xs text-muted-foreground">商务合作 / 技术咨询</div>
+                    <div className="text-sm font-semibold">{isZh ? '联系我们' : 'Contact Us'}</div>
+                    <div className="text-xs text-muted-foreground">{isZh ? '商务合作 / 技术咨询' : 'Business / Technical Consulting'}</div>
                   </div>
                 </div>
                 <ArrowUpRight className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors" />
@@ -62,8 +66,8 @@ export function FAQ() {
                     <BookOpen className="h-4 w-4 text-foreground" />
                   </div>
                   <div>
-                    <div className="text-sm font-semibold">开发者文档</div>
-                    <div className="text-xs text-muted-foreground">接入指南 / API / 排障</div>
+                    <div className="text-sm font-semibold">{isZh ? '开发者文档' : 'Developer Docs'}</div>
+                    <div className="text-xs text-muted-foreground">{isZh ? '接入指南 / API / 排障' : 'Integration / API / Troubleshooting'}</div>
                   </div>
                 </div>
                 <ArrowUpRight className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors" />
@@ -78,8 +82,8 @@ export function FAQ() {
                     <HelpCircle className="h-4 w-4 text-foreground" />
                   </div>
                   <div>
-                    <div className="text-sm font-semibold">在线体验</div>
-                    <div className="text-xs text-muted-foreground">无需注册，立即试一下</div>
+                    <div className="text-sm font-semibold">{isZh ? '在线体验' : 'Try Demo'}</div>
+                    <div className="text-xs text-muted-foreground">{isZh ? '无需注册，立即试一下' : 'No signup needed, try now'}</div>
                   </div>
                 </div>
                 <ArrowUpRight className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors" />

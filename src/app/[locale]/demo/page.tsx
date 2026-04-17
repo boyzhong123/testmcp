@@ -17,52 +17,15 @@ import {
   Mic,
   Square,
 } from 'lucide-react';
-import { useState, useEffect, useMemo, useRef } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useSearchParams } from 'next/navigation';
+import { useLocale } from 'next-intl';
 
-// ─── types ───────────────────────────────────────────────────────────────
-type Phase = 'idle' | 'recording' | 'assessing' | 'scores' | 'analyzing' | 'analysis' | 'generating' | 'practice';
-type QType = 'word' | 'sentence' | 'paragraph' | 'semiopen';
-type Lang = 'en' | 'cn';
-type DpType = 'normal' | 'omit' | 'insert' | 'mispron';
+import type { Lang, Phase, QType, Sample, PronSample, SemiSample, WordDetail, DpType } from './demo-sample-types';
+import { SAMPLES_EN } from './demo-samples-en';
+import { CN_SAMPLES_UI_EN } from './demo-samples-cn-en';
 
-type Phoneme = { char: string; score: number; dp_type: DpType };
-type WordDetail = { char: string; score: number; dp_type: DpType; phonemes?: Phoneme[] };
-
-type PronSample = {
-  kind: 'pron';
-  label: string;
-  desc: string;
-  apiTag: string;
-  refText: string;
-  overall: number;
-  scores: { accuracy: number; integrity: number; fluency: number; rhythm?: number };
-  speed?: number;
-  details: WordDetail[];
-  analysisPrompt: string;
-  analysisOutput: string;
-  practicePrompt: string;
-  practice: { category: string; icon: string; items: { label: string; content: string }[] }[];
-};
-
-type SemiSample = {
-  kind: 'semi';
-  label: string;
-  desc: string;
-  apiTag: string;
-  refText: string;
-  transcript: string;
-  overall: number;
-  scores: { grammar: number; content: number; fluency: number; pron: number };
-  speed: number;
-  issues: { level: 'warn' | 'ok'; label: string; detail: string }[];
-  analysisPrompt: string;
-  analysisOutput: string;
-  practicePrompt: string;
-  practice: { category: string; icon: string; items: { label: string; content: string }[] }[];
-};
-
-type Sample = PronSample | SemiSample;
+export type { Phase, QType, Lang };
 
 // ─── SAMPLES (real Chivox API shape) ─────────────────────────────────────
 const SAMPLES: Record<QType, Sample> = {
@@ -1000,7 +963,15 @@ function AnimatedScore({ target, label, sub }: { target: number; label: string; 
   );
 }
 
-function CopyButton({ text, label = '复制' }: { text: string; label?: string }) {
+function CopyButton({
+  text,
+  label = '复制',
+  copiedLabel = '已复制',
+}: {
+  text: string;
+  label?: string;
+  copiedLabel?: string;
+}) {
   const [copied, setCopied] = useState(false);
   return (
     <button
@@ -1012,7 +983,7 @@ function CopyButton({ text, label = '复制' }: { text: string; label?: string }
       className="inline-flex items-center gap-1.5 px-2.5 py-1 text-[11px] rounded border border-white/10 bg-white/[0.03] hover:bg-white/[0.06] text-zinc-300 transition-colors font-mono"
     >
       {copied ? <Check className="h-3 w-3 text-emerald-400" /> : <Copy className="h-3 w-3" />}
-      {copied ? '已复制' : label}
+      {copied ? copiedLabel : label}
     </button>
   );
 }
@@ -1076,8 +1047,10 @@ function WordInline({ d }: { d: WordDetail }) {
   );
 }
 
-function DetailsPanel({ sample }: { sample: PronSample }) {
+function DetailsPanel({ sample, uiZh }: { sample: PronSample; uiZh: boolean }) {
   const problems = sample.details.filter((d) => d.dp_type !== 'normal' || d.score < 75);
+  const missing = uiZh ? '(缺失)' : '(missing)';
+  const headerPb = uiZh ? '问题词展开 · Phoneme Breakdown' : 'Problem words · phoneme breakdown';
   return (
     <div className="space-y-4">
       {/* Inline sentence rendering */}
@@ -1104,14 +1077,14 @@ function DetailsPanel({ sample }: { sample: PronSample }) {
       {problems.length > 0 && (
         <div className="rounded-md border border-border/60 overflow-hidden">
           <div className="px-4 py-2.5 border-b border-border/40 bg-muted/30 flex items-center justify-between">
-            <span className="text-xs font-semibold">问题词展开 · Phoneme Breakdown</span>
+            <span className="text-xs font-semibold">{headerPb}</span>
             <span className="text-[10px] text-muted-foreground font-mono">{problems.length} words</span>
           </div>
           <div className="divide-y divide-border/40">
             {problems.map((w, wi) => (
               <div key={wi} className="px-4 py-3">
                 <div className="flex items-center gap-3 mb-2">
-                  <span className="font-semibold text-sm">{w.char || '(missing)'}</span>
+                  <span className="font-semibold text-sm">{w.char || missing}</span>
                   <span
                     className={`text-[10px] px-1.5 py-0.5 rounded border font-mono ${DP_BADGE[w.dp_type].cls}`}
                   >
@@ -1146,18 +1119,20 @@ function DetailsPanel({ sample }: { sample: PronSample }) {
   );
 }
 
-function SemiPanel({ sample }: { sample: SemiSample }) {
+function SemiPanel({ sample, uiZh }: { sample: SemiSample; uiZh: boolean }) {
+  const asr = uiZh ? 'Transcript · ASR 识别' : 'Transcript · ASR';
+  const diag = uiZh ? '半开放诊断要点' : 'Semi-open · diagnosis';
   return (
     <div className="space-y-4">
       <div className="rounded-md border border-border/60 bg-muted/20 p-4">
-        <div className="text-[10px] uppercase tracking-wider text-muted-foreground mb-2">Transcript · ASR 识别</div>
+        <div className="text-[10px] uppercase tracking-wider text-muted-foreground mb-2">{asr}</div>
         <p className="text-sm leading-relaxed italic">&ldquo;{sample.transcript}&rdquo;</p>
         <div className="mt-2 text-[10px] font-mono text-muted-foreground">
           speed: {sample.speed} WPM · length: {sample.transcript.split(/\s+/).length} words
         </div>
       </div>
       <div className="rounded-md border border-border/60 overflow-hidden">
-        <div className="px-4 py-2.5 border-b border-border/40 bg-muted/30 text-xs font-semibold">半开放诊断要点</div>
+        <div className="px-4 py-2.5 border-b border-border/40 bg-muted/30 text-xs font-semibold">{diag}</div>
         <ul className="divide-y divide-border/40">
           {sample.issues.map((is, i) => (
             <li key={i} className="px-4 py-2.5 flex items-start gap-3 text-sm">
@@ -1192,10 +1167,18 @@ const TAB_ICONS: Record<QType, typeof Type> = {
 const CN_AVAILABLE: QType[] = ['word', 'sentence', 'paragraph'];
 const EN_AVAILABLE: QType[] = ['word', 'sentence', 'paragraph', 'semiopen'];
 
+/** 英文 UI 下中文内核题型卡片的文案（数据仍为 CN_SAMPLES，仅展示层英文化） */
+const CN_CARD_EN: Partial<Record<QType, { label: string; desc: string }>> = {
+  word: { label: 'Words', desc: 'Word-level · pinyin + tone' },
+  sentence: { label: 'Sentences', desc: 'Sentence · pinyin + tone + fluency' },
+  paragraph: { label: 'Paragraphs', desc: 'Paragraph · pinyin, tone & prosody' },
+};
+
 // ─── page ─────────────────────────────────────────────────────────────────
 export default function DemoPage() {
+  const locale = useLocale();
+  const uiZh = locale.startsWith('zh');
   const searchParams = useSearchParams();
-  const initialLang: Lang = searchParams.get('lang') === 'cn' ? 'cn' : 'en';
   const rawType = searchParams.get('type');
   const typeMap: Record<string, QType> = {
     word: 'word',
@@ -1206,6 +1189,8 @@ export default function DemoPage() {
     semi: 'semiopen',
     semiopen: 'semiopen',
   };
+  /** 评测内核（英/中）：与站点语言无关，可选英文或中文内核 */
+  const initialLang: Lang = searchParams.get('lang') === 'cn' ? 'cn' : 'en';
   const mapped = rawType ? typeMap[rawType] : undefined;
   const allowed = initialLang === 'cn' ? CN_AVAILABLE : EN_AVAILABLE;
   const initialQType: QType = mapped && allowed.includes(mapped) ? mapped : 'sentence';
@@ -1215,12 +1200,24 @@ export default function DemoPage() {
   const [phase, setPhase] = useState<Phase>('idle');
   const [showRawJson, setShowRawJson] = useState(false);
 
-  const samplesForLang: Partial<Record<QType, Sample>> = lang === 'cn' ? CN_SAMPLES : SAMPLES;
+  const samplesForLang: Partial<Record<QType, Sample>> =
+    lang === 'cn' ? CN_SAMPLES : uiZh ? SAMPLES : SAMPLES_EN;
   const availableTypes: QType[] = lang === 'cn' ? CN_AVAILABLE : EN_AVAILABLE;
 
   // 如当前题型在该语言下不可用，取第一个可用题型
   const effectiveQType: QType = availableTypes.includes(qtype) ? qtype : availableTypes[0];
-  const sample = (samplesForLang[effectiveQType] ?? SAMPLES[effectiveQType]) as Sample;
+
+  /** 中文内核 + 英文 UI：保留 JSON 数值结构，Prompt / 诊断 / 练习文案走英文展示层 */
+  const sample = useMemo(() => {
+    const pool: Partial<Record<QType, Sample>> =
+      lang === 'cn' ? CN_SAMPLES : uiZh ? SAMPLES : SAMPLES_EN;
+    const base = (pool[effectiveQType] ?? SAMPLES[effectiveQType]) as Sample;
+    if (lang !== 'cn' || uiZh) return base;
+    const patch = CN_SAMPLES_UI_EN[effectiveQType];
+    if (!patch || base.kind !== 'pron') return base;
+    return { ...base, ...patch } as PronSample;
+  }, [lang, uiZh, effectiveQType]);
+
   const isWordType = sample.kind === 'pron' && effectiveQType === 'word';
   const mcpJson = useMemo(() => buildMcpJson(sample), [sample]);
 
@@ -1265,6 +1262,55 @@ export default function DemoPage() {
     setShowRawJson(false);
   }
 
+  const ui = {
+    back: uiZh ? '返回首页' : 'Back to Home',
+    title: uiZh ? '在线体验' : 'Live Demo',
+    lead: uiZh
+      ? '完整还原驰声 MCP 真实 API 输出 + LLM 二次 / 三次分析的 Prompt Skill。每一步的提示词都可复制，直接拿走做你自己 Agent 的模板。'
+      : 'Faithful Chivox MCP API output plus second- and third-pass LLM prompt skills. Copy any step into your own agent.',
+    langLabel: uiZh ? '评测内核（中 / 英可选）' : 'Evaluation engine (CN / EN)',
+    kernEn: uiZh ? '英文内核' : 'EN engine',
+    kernCn: uiZh ? '中文内核' : 'ZH engine',
+    cnNote: uiZh
+      ? '中文内核目前支持字词 / 句子 / 段落三类（cn.word.raw · cn.sent.raw · cn.pred.raw）；半开放与开放题型当前仅英文内核支持。'
+      : 'The Chinese engine supports three task types — words, sentences, and paragraphs (cn.word.raw · cn.sent.raw · cn.pred.raw). Semi-open and open-ended prompts are only available on the English engine for now.',
+    qTypeLabel: uiZh ? '选择题型 · Question Type' : 'Question type',
+    step1: uiZh ? '① 语音评测' : '① Evaluate',
+    step2: uiZh ? '② 二次分析 · LLM 诊断' : '② LLM analysis',
+    step3: uiZh ? '③ 三次分析 · 练习生成' : '③ Practice',
+    readAloud: uiZh ? '请朗读以下文本 · Read aloud' : 'Read aloud',
+    openQ: uiZh ? '半开放题目 · Open question' : 'Open-ended prompt',
+    simRun: uiZh ? '模拟评测' : 'Run demo',
+    rec: uiZh ? '正在录音 · RECORDING' : 'Recording',
+    recBtn: uiZh ? '录音中...' : 'Recording…',
+    assessing: uiZh ? '评测中...' : 'Scoring…',
+    s1title: uiZh ? '① 语音评测 · MCP 原始返回' : '① MCP response',
+    hideJson: uiZh ? '隐藏 JSON' : 'Hide JSON',
+    showJson: uiZh ? '查看 raw JSON' : 'View raw JSON',
+    subOverall: uiZh ? '总分' : 'Total',
+    subPron: uiZh ? '发音分' : 'Pron.',
+    subAcc: uiZh ? '准确度' : 'Accuracy',
+    subFlu: uiZh ? '流利度' : 'Fluency',
+    subInt: uiZh ? '完整度' : 'Integrity',
+    subGram: uiZh ? '语法分' : 'Grammar',
+    subCont: uiZh ? '内容分' : 'Content',
+    subFlu2: uiZh ? '流利分' : 'Fluency',
+    analyze: uiZh ? '开始二次分析 · LLM 诊断' : 'Run LLM analysis',
+    analyzing: uiZh ? '② LLM 正在基于 Prompt 分析 MCP 数据...' : '② LLM is analyzing MCP data…',
+    repTitle: uiZh ? '② 二次分析 · LLM 诊断报告' : '② LLM diagnosis',
+    copyPrompt: uiZh ? '复制 Prompt' : 'Copy prompt',
+    copied: uiZh ? '已复制' : 'Copied',
+    mcpComment: uiZh ? '/* MCP JSON（上方 raw JSON 中） */' : '/* MCP JSON (see raw JSON above) */',
+    llmResp: uiZh ? 'LLM Response · 自然语言' : 'LLM response',
+    genPractice: uiZh ? '三次分析 · 生成练习' : 'Generate practice',
+    genIng: uiZh ? '③ 正在生成针对性练习...' : '③ Generating practice…',
+    practiceTitle: uiZh ? '③ 三次分析 · 个性化练习生成' : '③ Personalized practice',
+    restart: uiZh ? '重新体验' : 'Start over',
+    foot: uiZh
+      ? '模拟数据以展示 MCP → LLM → 练习 的完整链路。接入后所有输出由 LLM 基于真实 MCP 实时数据动态生成。'
+      : 'Sample data illustrates MCP → LLM → practice. With a real integration, outputs are generated from live MCP results.',
+  };
+
   return (
     <main className="flex-1">
       <div className="container mx-auto px-6 py-16 md:py-24">
@@ -1272,27 +1318,30 @@ export default function DemoPage() {
           href="/"
           className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors mb-8"
         >
-          <ArrowLeft className="h-4 w-4" /> 返回首页
+          <ArrowLeft className="h-4 w-4" /> {ui.back}
         </Link>
 
-        <h1 className="text-3xl md:text-4xl font-bold tracking-tight mb-3">在线体验</h1>
-        <p className="text-muted-foreground mb-8 max-w-2xl leading-relaxed">
-          完整还原驰声 MCP 真实 API 输出 + LLM 二次 / 三次分析的 Prompt Skill。每一步的提示词都可复制，直接拿走做你自己 Agent 的模板。
-        </p>
+        <h1 className="text-3xl md:text-4xl font-bold tracking-tight mb-3">{ui.title}</h1>
+        <p className="text-muted-foreground mb-8 max-w-2xl leading-relaxed">{ui.lead}</p>
 
-        {/* Language switcher · 语言切换 */}
+        {/* 评测内核切换（与站点语言独立） */}
         <div className="mb-8">
-          <div className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground mb-3">语言 · Language</div>
+          <div className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground mb-3">{ui.langLabel}</div>
           <div className="inline-flex items-center gap-1 p-1 rounded-full border border-border/60 bg-muted/30">
-            {([
-              { k: 'en' as Lang, label: 'English', sub: '英文内核' },
-              { k: 'cn' as Lang, label: '中文', sub: '中文内核' },
-            ]).map((it) => {
+            {(
+              [
+                { k: 'en' as Lang, label: 'English', sub: ui.kernEn },
+                { k: 'cn' as Lang, label: uiZh ? '中文' : 'Chinese', sub: ui.kernCn },
+              ]
+            ).map((it) => {
               const active = lang === it.k;
               return (
                 <button
                   key={it.k}
+                  type="button"
                   onClick={() => switchLang(it.k)}
+                  onMouseEnter={() => switchLang(it.k)}
+                  onFocus={() => switchLang(it.k)}
                   className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
                     active
                       ? 'bg-foreground text-background shadow-sm'
@@ -1308,24 +1357,28 @@ export default function DemoPage() {
             })}
           </div>
           {lang === 'cn' && (
-            <p className="mt-2 text-[11px] text-muted-foreground">
-              中文内核目前支持字词 / 句子 / 段落三类（cn.word.raw · cn.sent.raw · cn.pred.raw）；半开放与开放题型当前仅英文内核支持。
-            </p>
+            <p className="mt-2 text-[11px] text-muted-foreground">{ui.cnNote}</p>
           )}
         </div>
 
         {/* Question type tabs */}
         <div className="mb-10">
-          <div className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground mb-3">选择题型 · Question Type</div>
+          <div className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground mb-3">{ui.qTypeLabel}</div>
           <div className={`grid gap-2 ${availableTypes.length === 4 ? 'grid-cols-2 sm:grid-cols-4' : 'grid-cols-1 sm:grid-cols-3'}`}>
             {availableTypes.map((t) => {
               const s = (samplesForLang[t] ?? SAMPLES[t]) as Sample;
+              const cardEn = lang === 'cn' && !uiZh ? CN_CARD_EN[t] : undefined;
+              const cardLabel = cardEn?.label ?? s.label;
+              const cardDesc = cardEn?.desc ?? s.desc;
               const Icon = TAB_ICONS[t];
               const active = t === effectiveQType;
               return (
                 <button
                   key={t}
+                  type="button"
                   onClick={() => switchType(t)}
+                  onMouseEnter={() => switchType(t)}
+                  onFocus={() => switchType(t)}
                   className={`text-left rounded-lg border px-3 py-3 transition-colors ${
                     active
                       ? 'border-foreground bg-foreground text-background'
@@ -1334,10 +1387,10 @@ export default function DemoPage() {
                 >
                   <div className="flex items-center gap-2 mb-1">
                     <Icon className="h-4 w-4" />
-                    <span className="text-sm font-semibold">{s.label}</span>
+                    <span className="text-sm font-semibold">{cardLabel}</span>
                   </div>
                   <div className={`text-[11px] ${active ? 'text-background/70' : 'text-muted-foreground'}`}>
-                    {s.desc}
+                    {cardDesc}
                   </div>
                   <div className={`mt-2 text-[10px] font-mono ${active ? 'text-background/60' : 'text-muted-foreground/60'}`}>
                     {s.apiTag}
@@ -1351,9 +1404,9 @@ export default function DemoPage() {
         {/* Progress indicator */}
         <div className="flex items-center gap-0 mb-8">
           {[
-            { label: '① 语音评测', active: phase !== 'idle' },
-            { label: '② 二次分析 · LLM 诊断', active: ['analysis', 'analyzing', 'generating', 'practice'].includes(phase) },
-            { label: '③ 三次分析 · 练习生成', active: phase === 'practice' || phase === 'generating' },
+            { label: ui.step1, active: phase !== 'idle' },
+            { label: ui.step2, active: ['analysis', 'analyzing', 'generating', 'practice'].includes(phase) },
+            { label: ui.step3, active: phase === 'practice' || phase === 'generating' },
           ].map((step, i) => (
             <div key={i} className="flex items-center">
               {i > 0 && (
@@ -1383,7 +1436,7 @@ export default function DemoPage() {
         <div className="border border-border/60 rounded-lg p-6 mb-6 bg-background">
           <div className="flex items-center justify-between mb-3">
             <p className="text-xs text-muted-foreground uppercase tracking-wider">
-              {sample.kind === 'pron' ? '请朗读以下文本 · Read aloud' : '半开放题目 · Open question'}
+              {sample.kind === 'pron' ? ui.readAloud : ui.openQ}
             </p>
             <span className="text-[10px] font-mono text-muted-foreground/70">refText: {sample.apiTag}</span>
           </div>
@@ -1396,7 +1449,7 @@ export default function DemoPage() {
             onClick={runAssess}
             className="inline-flex items-center justify-center gap-2 h-12 px-8 text-sm font-medium rounded-lg bg-foreground text-background hover:bg-foreground/90 transition-colors mb-8"
           >
-            <Play className="h-4 w-4" /> 模拟评测
+            <Play className="h-4 w-4" /> {ui.simRun}
           </button>
         )}
 
@@ -1417,7 +1470,7 @@ export default function DemoPage() {
                 <div className="flex items-center gap-2 mb-2">
                   <span className="inline-flex items-center gap-1 text-xs font-semibold text-rose-600">
                     <span className="h-1.5 w-1.5 rounded-full bg-rose-500 animate-pulse" />
-                    正在录音 · RECORDING
+                    {ui.rec}
                   </span>
                   <span className="text-[10px] text-muted-foreground font-mono">
                     mic 16kHz / mono · WebSocket streaming
@@ -1442,7 +1495,7 @@ export default function DemoPage() {
                 disabled
                 className="inline-flex items-center justify-center gap-2 h-10 px-5 text-sm font-medium rounded-lg border border-rose-500/40 text-rose-600 bg-background cursor-wait shrink-0"
               >
-                <Square className="h-3.5 w-3.5 fill-current" /> 录音中...
+                <Square className="h-3.5 w-3.5 fill-current" /> {ui.recBtn}
               </button>
             </div>
             <style>{`
@@ -1459,7 +1512,7 @@ export default function DemoPage() {
             disabled
             className="inline-flex items-center justify-center gap-2 h-12 px-8 text-sm font-medium rounded-lg bg-foreground text-background opacity-50 cursor-not-allowed mb-8"
           >
-            <Loader2 className="h-4 w-4 animate-spin" /> 评测中...
+            <Loader2 className="h-4 w-4 animate-spin" /> {ui.assessing}
           </button>
         )}
 
@@ -1472,13 +1525,14 @@ export default function DemoPage() {
           <div className="mb-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
             <div className="border border-border/60 rounded-lg overflow-hidden">
               <div className="px-6 py-4 border-b border-border/40 bg-muted/30 flex items-center justify-between">
-                <h3 className="text-sm font-semibold">① 语音评测 · MCP 原始返回</h3>
+                <h3 className="text-sm font-semibold">{ui.s1title}</h3>
                 <div className="flex items-center gap-3">
                   <button
+                    type="button"
                     onClick={() => setShowRawJson((v) => !v)}
                     className="text-[11px] text-muted-foreground hover:text-foreground font-mono"
                   >
-                    {showRawJson ? '隐藏 JSON' : '查看 raw JSON'}
+                    {showRawJson ? ui.hideJson : ui.showJson}
                   </button>
                   <span className="text-[10px] text-muted-foreground font-mono">{sample.apiTag}</span>
                 </div>
@@ -1486,32 +1540,36 @@ export default function DemoPage() {
 
               {/* Main scores grid */}
               <div className={`grid grid-cols-2 ${isWordType ? 'sm:grid-cols-3' : 'sm:grid-cols-5'} gap-px bg-border/40`}>
-                <AnimatedScore target={sample.overall} label="Overall" sub="总分" />
+                <AnimatedScore target={sample.overall} label="Overall" sub={ui.subOverall} />
                 {sample.kind === 'pron' ? (
                   <>
                     {isWordType ? (
-                      <AnimatedScore target={sample.scores.accuracy} label="Pron." sub="发音分" />
+                      <AnimatedScore target={sample.scores.accuracy} label="Pron." sub={ui.subPron} />
                     ) : (
                       <>
-                        <AnimatedScore target={sample.scores.accuracy} label="Accuracy" sub="准确度" />
-                        <AnimatedScore target={sample.scores.fluency} label="Fluency" sub="流利度" />
-                        <AnimatedScore target={sample.scores.integrity} label="Integrity" sub="完整度" />
+                        <AnimatedScore target={sample.scores.accuracy} label="Accuracy" sub={ui.subAcc} />
+                        <AnimatedScore target={sample.scores.fluency} label="Fluency" sub={ui.subFlu} />
+                        <AnimatedScore target={sample.scores.integrity} label="Integrity" sub={ui.subInt} />
                       </>
                     )}
                   </>
                 ) : (
                   <>
-                    <AnimatedScore target={sample.scores.pron} label="Pron." sub="发音分" />
-                    <AnimatedScore target={sample.scores.grammar} label="Grammar" sub="语法分" />
-                    <AnimatedScore target={sample.scores.content} label="Content" sub="内容分" />
-                    <AnimatedScore target={sample.scores.fluency} label="Fluency" sub="流利分" />
+                    <AnimatedScore target={sample.scores.pron} label="Pron." sub={ui.subPron} />
+                    <AnimatedScore target={sample.scores.grammar} label="Grammar" sub={ui.subGram} />
+                    <AnimatedScore target={sample.scores.content} label="Content" sub={ui.subCont} />
+                    <AnimatedScore target={sample.scores.fluency} label="Fluency" sub={ui.subFlu2} />
                   </>
                 )}
               </div>
 
               {/* Detail panel */}
               <div className="p-6 border-t border-border/40">
-                {sample.kind === 'pron' ? <DetailsPanel sample={sample} /> : <SemiPanel sample={sample} />}
+                {sample.kind === 'pron' ? (
+                  <DetailsPanel sample={sample} uiZh={uiZh} />
+                ) : (
+                  <SemiPanel sample={sample} uiZh={uiZh} />
+                )}
               </div>
 
               {/* Raw JSON */}
@@ -1519,7 +1577,7 @@ export default function DemoPage() {
                 <div className="border-t border-border/40 bg-zinc-950 text-zinc-300">
                   <div className="flex items-center justify-between px-4 py-2.5 border-b border-white/[0.06]">
                     <span className="text-[11px] text-zinc-500 font-mono">mcp-response.json</span>
-                    <CopyButton text={mcpJson} />
+                    <CopyButton text={mcpJson} label={ui.copyPrompt} copiedLabel={ui.copied} />
                   </div>
                   <pre className="text-[11px] font-mono p-4 overflow-x-auto max-h-80 leading-relaxed">{mcpJson}</pre>
                 </div>
@@ -1531,7 +1589,7 @@ export default function DemoPage() {
                 onClick={runAnalysis}
                 className="mt-4 inline-flex items-center justify-center gap-2 h-10 px-6 text-sm font-medium rounded-lg bg-foreground text-background hover:bg-foreground/90 transition-colors"
               >
-                <BrainCircuit className="h-4 w-4" /> 开始二次分析 · LLM 诊断
+                <BrainCircuit className="h-4 w-4" /> {ui.analyze}
               </button>
             )}
           </div>
@@ -1543,7 +1601,7 @@ export default function DemoPage() {
             <div className="border border-border/60 rounded-lg overflow-hidden">
               <div className="px-6 py-4 border-b border-border/40 bg-muted/30">
                 <h3 className="text-sm font-semibold flex items-center gap-2">
-                  <Loader2 className="h-3.5 w-3.5 animate-spin" /> ② LLM 正在基于 Prompt 分析 MCP 数据...
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" /> {ui.analyzing}
                 </h3>
               </div>
               <div className="p-6">
@@ -1558,7 +1616,7 @@ export default function DemoPage() {
           <div className="mb-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
             <div className="border border-border/60 rounded-lg overflow-hidden">
               <div className="px-6 py-4 border-b border-border/40 bg-muted/30 flex items-center justify-between">
-                <h3 className="text-sm font-semibold">② 二次分析 · LLM 诊断报告</h3>
+                <h3 className="text-sm font-semibold">{ui.repTitle}</h3>
                 <span className="text-[10px] text-muted-foreground font-mono">analysis_prompt.md</span>
               </div>
 
@@ -1571,10 +1629,10 @@ export default function DemoPage() {
                       <span className="text-zinc-400">LLM System Prompt</span>
                       <span className="text-zinc-600">/ Skill</span>
                     </div>
-                    <CopyButton text={analysisPromptResolved} label="复制 Prompt" />
+                    <CopyButton text={analysisPromptResolved} label={ui.copyPrompt} copiedLabel={ui.copied} />
                   </div>
                   <pre className="text-[11px] font-mono p-4 overflow-auto max-h-[480px] leading-relaxed whitespace-pre-wrap">
-                    {sample.analysisPrompt.replace('{mcp_response}', '/* MCP JSON（上方 raw JSON 中） */')}
+                    {sample.analysisPrompt.replace('{mcp_response}', ui.mcpComment)}
                   </pre>
                 </div>
 
@@ -1582,7 +1640,7 @@ export default function DemoPage() {
                 <div className="p-5 bg-background">
                   <div className="flex items-center gap-2 text-[11px] text-muted-foreground mb-3 font-mono">
                     <span className="text-violet-500">●</span>
-                    <span>LLM Response · 自然语言</span>
+                    <span>{ui.llmResp}</span>
                   </div>
                   <TypewriterMarkdown text={sample.analysisOutput} />
                 </div>
@@ -1594,7 +1652,7 @@ export default function DemoPage() {
                 onClick={runPractice}
                 className="mt-4 inline-flex items-center justify-center gap-2 h-10 px-6 text-sm font-medium rounded-lg bg-foreground text-background hover:bg-foreground/90 transition-colors"
               >
-                <BookOpen className="h-4 w-4" /> 三次分析 · 生成练习
+                <BookOpen className="h-4 w-4" /> {ui.genPractice}
               </button>
             )}
           </div>
@@ -1606,7 +1664,7 @@ export default function DemoPage() {
             <div className="border border-border/60 rounded-lg overflow-hidden">
               <div className="px-6 py-4 border-b border-border/40 bg-muted/30">
                 <h3 className="text-sm font-semibold flex items-center gap-2">
-                  <Loader2 className="h-3.5 w-3.5 animate-spin" /> ③ 正在生成针对性练习...
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" /> {ui.genIng}
                 </h3>
               </div>
               <div className="p-6">
@@ -1621,7 +1679,7 @@ export default function DemoPage() {
           <div className="mb-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
             <div className="border border-border/60 rounded-lg overflow-hidden">
               <div className="px-6 py-4 border-b border-border/40 bg-muted/30 flex items-center justify-between">
-                <h3 className="text-sm font-semibold">③ 三次分析 · 个性化练习生成</h3>
+                <h3 className="text-sm font-semibold">{ui.practiceTitle}</h3>
                 <span className="text-[10px] text-muted-foreground font-mono">practice_prompt.md</span>
               </div>
 
@@ -1633,7 +1691,7 @@ export default function DemoPage() {
                       <span className="text-emerald-400">●</span>
                       <span className="text-zinc-400">LLM Prompt · Practice Skill</span>
                     </div>
-                    <CopyButton text={sample.practicePrompt} label="复制 Prompt" />
+                    <CopyButton text={sample.practicePrompt} label={ui.copyPrompt} copiedLabel={ui.copied} />
                   </div>
                   <pre className="text-[11px] font-mono p-4 overflow-auto max-h-[480px] leading-relaxed whitespace-pre-wrap">
                     {sample.practicePrompt}
@@ -1666,11 +1724,9 @@ export default function DemoPage() {
                 onClick={reset}
                 className="inline-flex items-center justify-center gap-2 h-10 px-6 text-sm font-medium rounded-lg border border-border/60 hover:bg-muted transition-colors"
               >
-                <RotateCcw className="h-4 w-4" /> 重新体验
+                <RotateCcw className="h-4 w-4" /> {ui.restart}
               </button>
-              <p className="text-xs text-muted-foreground flex-1 min-w-[200px]">
-                模拟数据以展示 MCP → LLM → 练习 的完整链路。接入后所有输出由 LLM 基于真实 MCP 实时数据动态生成。
-              </p>
+              <p className="text-xs text-muted-foreground flex-1 min-w-[200px]">{ui.foot}</p>
             </div>
           </div>
         )}

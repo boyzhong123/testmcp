@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { usePathname } from 'next/navigation';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { ChevronDown } from 'lucide-react';
 import { Link } from '@/i18n/routing';
 import { cn } from '@/lib/utils';
@@ -32,6 +32,8 @@ type DirectItem = {
 
 export function NavLinks() {
   const t = useTranslations('Navigation');
+  const locale = useLocale();
+  const isZh = locale.startsWith('zh');
   const pathname = usePathname();
 
   const isHome = pathname === '/' || /^\/[a-z]{2}(-[A-Z]{2})?$/.test(pathname);
@@ -42,22 +44,37 @@ export function NavLinks() {
   const groups: MenuGroup[] = [
     {
       key: 'product',
-      label: '产品',
+      label: isZh ? '产品' : 'Product',
       children: [
-        { label: '工作流程', desc: '从调用到产出的完整链路', hash: '#workflow', sectionId: 'workflow' },
-        { label: '三大核心价值', desc: '多维数据 · 深度分析 · 全场景', hash: '#features', sectionId: 'features' },
-        { label: '双模式评测', desc: '朗读式 + 半开放口语', hash: '#dual-mode', sectionId: 'dual-mode' },
-        { label: '全部评测参数', desc: 'overall / accuracy / rhythm…', hash: '#params', sectionId: 'params' },
-        { label: 'LLM 深度分析', desc: '评分 → 诊断 → 练习', hash: '#how-it-works', sectionId: 'how-it-works' },
+        { label: isZh ? '工作流程' : 'Workflow', desc: isZh ? '从调用到产出的完整链路' : 'From tool call to final output', hash: '#workflow', sectionId: 'workflow' },
+        { label: isZh ? '三大核心价值' : 'Core Value', desc: isZh ? '多维数据 · 深度分析 · 全场景' : 'Data · analysis · full scenarios', hash: '#features', sectionId: 'features' },
+        { label: isZh ? '双模式评测' : 'Dual Mode', desc: isZh ? '朗读式 + 半开放口语' : 'Read-aloud + semi-open speaking', hash: '#dual-mode', sectionId: 'dual-mode' },
+        {
+          label: isZh ? '全部评测参数' : 'All Parameters',
+          desc: isZh ? '整体 · 准确度 · 节奏' : 'Overall · accuracy · rhythm',
+          hash: '#params',
+          sectionId: 'params',
+        },
+        { label: isZh ? 'LLM 深度分析' : 'LLM Analysis', desc: isZh ? '评分 → 诊断 → 练习' : 'Score → diagnose → practice', hash: '#how-it-works', sectionId: 'how-it-works' },
       ],
     },
     {
       key: 'scenes',
-      label: '场景',
+      label: isZh ? '场景' : 'Scenarios',
       children: [
-        { label: '教育与学习', desc: 'AI 口语外教 · 儿童阅读…', hash: '#use-cases', sectionId: 'use-cases' },
-        { label: 'AI 产品落地', desc: '飞书/钉钉机器人 · 内容 QC…', hash: '#use-cases-b', sectionId: 'use-cases-b' },
-        { label: '在线体验', desc: '四种题型，30 秒上手', href: '/demo' },
+        {
+          label: isZh ? '教育与学习' : 'Education',
+          desc: isZh ? '口语外教 · 儿童阅读' : 'Speaking tutor · reading',
+          hash: '#use-cases',
+          sectionId: 'use-cases',
+        },
+        {
+          label: isZh ? 'AI 产品落地' : 'AI Product',
+          desc: isZh ? 'IM 机器人 · 质检' : 'IM bots · QC',
+          hash: '#use-cases-b',
+          sectionId: 'use-cases-b',
+        },
+        { label: isZh ? '在线体验' : 'Try Demo', desc: isZh ? '四种题型，30 秒上手' : '4 types, ready in 30s', href: '/demo' },
       ],
     },
   ];
@@ -66,8 +83,8 @@ export function NavLinks() {
 
   const direct: DirectItem[] = [
     { key: 'pricing', label: t('pricing'), hash: '#pricing', sectionId: 'pricing' },
-    { key: 'docs', label: t('docs'), href: '/docs' },
     { key: 'faq', label: t('faq'), hash: '#faq', sectionId: 'faq' },
+    { key: 'docs', label: t('docs'), href: '/docs' },
   ];
 
   // ── Scroll-spy: 当前视口中心最近的 section ──

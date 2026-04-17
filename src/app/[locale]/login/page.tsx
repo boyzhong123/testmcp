@@ -5,8 +5,40 @@ import { useAuth } from '@/lib/auth-context';
 import { useRouter } from '@/i18n/routing';
 import { Mail, Lock, Eye, EyeOff, ArrowRight, AudioWaveform, Check } from 'lucide-react';
 import { useState } from 'react';
+import { useLocale } from 'next-intl';
 
 export default function LoginPage() {
+  const locale = useLocale();
+  const isZh = locale.startsWith('zh');
+  const t = {
+    errEmail: isZh ? '请输入邮箱' : 'Please enter email',
+    errPassword: isZh ? '请输入密码' : 'Please enter password',
+    errLogin: isZh ? '登录失败，请重试' : 'Login failed, please try again',
+    title: isZh ? '欢迎回来' : 'Welcome back',
+    subtitle: isZh ? '登录您的开发者账号' : 'Sign in to your developer account',
+    email: isZh ? '邮箱' : 'Email',
+    password: isZh ? '密码' : 'Password',
+    forgot: isZh ? '忘记密码？' : 'Forgot password?',
+    loggingIn: isZh ? '登录中' : 'Signing in',
+    login: isZh ? '登 录' : 'Sign In',
+    or: isZh ? '或' : 'or',
+    noAccount: isZh ? '还没有账号？' : "Don't have an account?",
+    createFree: isZh ? '创建免费账号' : 'Create free account',
+    heroTitlePrefix: isZh ? '让语音评测' : 'Bring Speech Assessment',
+    heroTitleHighlight: isZh ? '接入大模型' : 'to LLMs',
+    heroDesc: isZh
+      ? '驰声 MCP 把考试级评测引擎以标准协议直接交给 LLM —— 一份配置，在 Cursor / Claude Desktop / Dify / Coze / 自研 Agent 里通用，不再为接入口语评测写一行 SDK。'
+      : 'Chivox MCP delivers exam-grade speech evaluation to LLMs via a standard protocol. One config works across Cursor, Claude Desktop, Dify, Coze and custom agents.',
+    feature1t: isZh ? '16 个评测工具自动注册' : '16 tools auto-registered',
+    feature1d: isZh ? '中英双语 · 单词 / 句子 / 段落 / 半开放 / 情景对话' : 'Bilingual: word / sentence / paragraph / semi-open / dialogue',
+    feature2t: isZh ? '音素级 dp_type + 多维评分' : 'Phoneme-level dp_type + multi-dim scores',
+    feature2d: isZh ? 'mispron / omit / insert 直接喂给 LLM 做诊断' : 'Use mispron / omit / insert directly for LLM diagnosis',
+    feature3t: isZh ? '标准 MCP 协议，零接入成本' : 'Standard MCP protocol, zero integration cost',
+    feature3d: isZh ? 'stdio / Streamable HTTP 双通道，LLM 自动发现工具' : 'stdio / Streamable HTTP, tools auto-discovered by LLMs',
+    statTools: isZh ? '种评测工具' : 'evaluation tools',
+    statLang: isZh ? '双语内核' : 'bilingual core',
+    statSla: isZh ? '服务可用率' : 'service uptime',
+  };
   const { login } = useAuth();
   const router = useRouter();
   const [email, setEmail] = useState('');
@@ -18,15 +50,15 @@ export default function LoginPage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError('');
-    if (!email.trim()) { setError('请输入邮箱'); return; }
-    if (!password.trim()) { setError('请输入密码'); return; }
+    if (!email.trim()) { setError(t.errEmail); return; }
+    if (!password.trim()) { setError(t.errPassword); return; }
 
     setLoading(true);
     try {
       const ok = await login(email, password);
       if (ok) router.push('/dashboard/keys');
     } catch {
-      setError('登录失败，请重试');
+      setError(t.errLogin);
     } finally {
       setLoading(false);
     }
@@ -60,23 +92,21 @@ export default function LoginPage() {
               Developer Console
             </span>
             <h1 className="text-[30px] xl:text-[34px] font-bold tracking-tight leading-[1.15] mb-4">
-              让语音评测{' '}
+              {t.heroTitlePrefix}{' '}
               <span className="bg-gradient-to-r from-white via-white/85 to-white/40 bg-clip-text text-transparent">
-                接入大模型
+                {t.heroTitleHighlight}
               </span>
             </h1>
             <p className="text-[13px] text-white/50 leading-relaxed mb-7">
-              驰声 MCP 把考试级评测引擎以标准协议直接交给 LLM ——
-              <span className="text-white/70"> 一份配置，在 Cursor / Claude Desktop / Dify / Coze / 自研 Agent 里通用</span>，
-              不再为接入口语评测写一行 SDK。
+              {t.heroDesc}
             </p>
 
             {/* 价值清单 · 4 条 */}
             <ul className="space-y-3 mb-7">
               {[
-                { t: '16 个评测工具自动注册', d: '中英双语 · 单词 / 句子 / 段落 / 半开放 / 情景对话' },
-                { t: '音素级 dp_type + 多维评分', d: 'mispron / omit / insert 直接喂给 LLM 做诊断' },
-                { t: '标准 MCP 协议，零接入成本', d: 'stdio / Streamable HTTP 双通道，LLM 自动发现工具' },
+                { t: t.feature1t, d: t.feature1d },
+                { t: t.feature2t, d: t.feature2d },
+                { t: t.feature3t, d: t.feature3d },
               ].map(f => (
                 <li key={f.t} className="flex items-start gap-3">
                   <div className="mt-0.5 h-5 w-5 rounded-md border border-white/10 bg-white/[0.04] flex items-center justify-center shrink-0">
@@ -110,9 +140,9 @@ export default function LoginPage() {
           {/* Bottom · stats */}
           <div className="flex gap-8 pt-6 border-t border-white/[0.06]">
             {[
-              { value: '16', label: '种评测工具' },
-              { value: '中英', label: '双语内核' },
-              { value: '99.9%', label: '服务可用率' },
+              { value: '16', label: t.statTools },
+              { value: isZh ? '中英' : 'EN/CN', label: t.statLang },
+              { value: '99.9%', label: t.statSla },
             ].map(s => (
               <div key={s.label}>
                 <div className="text-xl font-bold tabular-nums text-white/90">{s.value}</div>
@@ -137,8 +167,8 @@ export default function LoginPage() {
             <span className="font-semibold tracking-tight">Chivox MCP</span>
           </Link>
 
-          <h2 className="text-[22px] font-bold tracking-tight mb-1">欢迎回来</h2>
-          <p className="text-sm text-muted-foreground mb-6">登录您的开发者账号</p>
+          <h2 className="text-[22px] font-bold tracking-tight mb-1">{t.title}</h2>
+          <p className="text-sm text-muted-foreground mb-6">{t.subtitle}</p>
 
           {error && (
             <div className="mb-4 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive text-sm px-3 py-2">
@@ -148,7 +178,7 @@ export default function LoginPage() {
 
           <form onSubmit={handleSubmit} className="space-y-3.5">
             <div>
-              <label className="text-xs font-medium text-muted-foreground mb-1.5 block">邮箱</label>
+              <label className="text-xs font-medium text-muted-foreground mb-1.5 block">{t.email}</label>
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/50" />
                 <input
@@ -163,9 +193,9 @@ export default function LoginPage() {
 
             <div>
               <div className="flex items-center justify-between mb-1.5">
-                <label className="text-xs font-medium text-muted-foreground">密码</label>
+                <label className="text-xs font-medium text-muted-foreground">{t.password}</label>
                 <button type="button" className="text-[11px] text-muted-foreground/60 hover:text-foreground transition-colors">
-                  忘记密码？
+                  {t.forgot}
                 </button>
               </div>
               <div className="relative">
@@ -195,11 +225,11 @@ export default function LoginPage() {
               {loading ? (
                 <>
                   <span className="h-3.5 w-3.5 border-2 border-background/30 border-t-background rounded-full animate-spin" />
-                  登录中
+                  {t.loggingIn}
                 </>
               ) : (
                 <>
-                  登 录
+                  {t.login}
                   <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
                 </>
               )}
@@ -208,13 +238,13 @@ export default function LoginPage() {
 
           <div className="relative my-6">
             <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-border/60" /></div>
-            <div className="relative flex justify-center"><span className="bg-background px-3 text-[11px] text-muted-foreground/60">或</span></div>
+            <div className="relative flex justify-center"><span className="bg-background px-3 text-[11px] text-muted-foreground/60">{t.or}</span></div>
           </div>
 
           <p className="text-sm text-center text-muted-foreground">
-            还没有账号？{' '}
+            {t.noAccount}{' '}
             <Link href="/register" className="text-foreground font-medium hover:underline underline-offset-4">
-              创建免费账号
+              {t.createFree}
             </Link>
           </p>
         </div>

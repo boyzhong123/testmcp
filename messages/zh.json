@@ -135,7 +135,8 @@
     "company": "公司",
     "terms": "服务条款",
     "privacy": "隐私政策",
-    "contact": "联系我们"
+    "contact": "联系我们",
+    "internal_plan": "内部计划"
   },
   "Auth": {
     "login": "登录",

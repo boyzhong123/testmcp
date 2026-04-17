@@ -1,135 +1,37 @@
 'use client';
 
-import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
-import { Link } from '@/i18n/routing';
-import { ArrowLeft, BookOpen, Code2, Zap, FileText, Copy, Check, Terminal, Globe, Mic, MessageSquare, BarChart3, AlertTriangle, Lightbulb, Radio, FolderOpen, Settings, Workflow, Sparkles, Plug, Bot, Building2 } from 'lucide-react';
-
-/* ─── Reusable Components ─── */
-
-function CopyButton({ text }: { text: string }) {
-  const [copied, setCopied] = useState(false);
-  return (
-    <button
-      onClick={() => { navigator.clipboard.writeText(text); setCopied(true); setTimeout(() => setCopied(false), 2000); }}
-      className="absolute top-3 right-3 p-1.5 rounded-md bg-white/5 hover:bg-white/10 transition-colors text-zinc-400 hover:text-zinc-200"
-    >
-      {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
-    </button>
-  );
-}
-
-function CodeBlock({ filename, lang, children }: { filename?: string; lang?: string; children: string }) {
-  return (
-    <div className="rounded-lg border border-border/60 bg-zinc-950 text-zinc-100 overflow-hidden my-4 relative">
-      {filename && (
-        <div className="flex items-center gap-1.5 px-3 sm:px-4 py-2 border-b border-white/[0.06] text-[11px] sm:text-xs text-zinc-500 font-mono">
-          <span className="h-2.5 w-2.5 rounded-full bg-red-500/60" />
-          <span className="h-2.5 w-2.5 rounded-full bg-yellow-500/60" />
-          <span className="h-2.5 w-2.5 rounded-full bg-green-500/60" />
-          <span className="ml-2 truncate">{filename}</span>
-          {lang && <span className="ml-auto text-zinc-600">{lang}</span>}
-        </div>
-      )}
-      <CopyButton text={children.trim()} />
-      <pre className="p-3 sm:p-4 text-[12px] sm:text-sm font-mono leading-relaxed overflow-x-auto"><code>{children.trim()}</code></pre>
-      <div className="sm:hidden px-3 pb-2 text-[10px] text-zinc-500">左右滑动查看完整代码</div>
-    </div>
-  );
-}
-
-function DocSection({ id, icon: Icon, title, children }: { id: string; icon: React.ElementType; title: string; children: React.ReactNode }) {
-  return (
-    <section id={id} className="scroll-mt-24 mb-16">
-      <div className="flex items-center gap-3 mb-6 pb-3 border-b border-border/40">
-        <Icon className="h-5 w-5 text-muted-foreground shrink-0" />
-        <h2 className="text-xl font-bold tracking-tight">{title}</h2>
-      </div>
-      <div className="text-sm leading-relaxed text-foreground/90 space-y-6">{children}</div>
-    </section>
-  );
-}
-
-function SubDoc({ id, title, children }: { id: string; title: string; children: React.ReactNode }) {
-  return (
-    <div id={id} className="scroll-mt-24 mb-10">
-      <h3 className="text-base font-semibold mb-3">{title}</h3>
-      <div className="space-y-4">{children}</div>
-    </div>
-  );
-}
-
-function ParamTable({ params }: { params: { name: string; type: string; required: boolean; desc: string }[] }) {
-  return (
-    <div className="overflow-x-auto rounded-lg border border-border/60">
-      <table className="w-full min-w-[620px] text-xs sm:text-sm">
-        <thead><tr className="border-b border-border/40 bg-muted/30">
-          <th className="text-left py-2 px-3 font-medium">参数</th>
-          <th className="text-left py-2 px-3 font-medium">类型</th>
-          <th className="text-left py-2 px-3 font-medium">必填</th>
-          <th className="text-left py-2 px-3 font-medium">说明</th>
-        </tr></thead>
-        <tbody className="divide-y divide-border/30">
-          {params.map(p => (
-            <tr key={p.name}>
-              <td className="py-2 px-3 font-mono text-xs">{p.name}</td>
-              <td className="py-2 px-3 font-mono text-xs text-muted-foreground">{p.type}</td>
-              <td className="py-2 px-3">{p.required ? <span className="text-emerald-600 dark:text-emerald-400">✓</span> : <span className="text-muted-foreground">—</span>}</td>
-              <td className="py-2 px-3 text-muted-foreground">{p.desc}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  );
-}
-
-function Callout({ type = 'info', children }: { type?: 'info' | 'warning' | 'tip'; children: React.ReactNode }) {
-  const styles = {
-    info: 'border-blue-200 bg-blue-50 text-blue-900 dark:border-blue-900 dark:bg-blue-950/30 dark:text-blue-200',
-    warning: 'border-amber-200 bg-amber-50 text-amber-900 dark:border-amber-900 dark:bg-amber-950/30 dark:text-amber-200',
-    tip: 'border-emerald-200 bg-emerald-50 text-emerald-900 dark:border-emerald-900 dark:bg-emerald-950/30 dark:text-emerald-200',
-  };
-  const icons = { info: Globe, warning: AlertTriangle, tip: Lightbulb };
-  const Ic = icons[type];
-  return (
-    <div className={`flex gap-3 rounded-lg border p-4 text-sm ${styles[type]}`}>
-      <Ic className="h-4 w-4 mt-0.5 shrink-0" />
-      <div>{children}</div>
-    </div>
-  );
-}
-
-function FlowStep({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <div className="flex gap-4 items-start">
-      <div className="h-7 w-7 rounded-full bg-foreground text-background flex items-center justify-center text-xs font-bold shrink-0 mt-0.5">{title}</div>
-      <div className="flex-1 text-sm">{children}</div>
-    </div>
-  );
-}
-
-function ToolTable({ tools }: { tools: [string, string, string][] }) {
-  return (
-    <div className="overflow-x-auto rounded-lg border border-border/60">
-      <table className="w-full min-w-[680px] text-xs sm:text-sm">
-        <thead><tr className="border-b border-border/40 bg-muted/30">
-          <th className="text-left py-2 px-3 font-medium">工具名</th>
-          <th className="text-left py-2 px-3 font-medium">功能</th>
-          <th className="text-left py-2 px-3 font-medium">典型场景</th>
-        </tr></thead>
-        <tbody className="divide-y divide-border/30">
-          {tools.map(([name, desc, scene]) => (
-            <tr key={name}>
-              <td className="py-2 px-3 font-mono text-xs">{name}</td>
-              <td className="py-2 px-3">{desc}</td>
-              <td className="py-2 px-3 text-muted-foreground">{scene}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  );
-}
+import { useLocale } from 'next-intl';
+import { DocsShell, type NavGroup } from './docs-shell';
+import {
+  CodeBlock,
+  DocSection,
+  SubDoc,
+  ParamTable,
+  Callout,
+  FlowStep,
+  ToolTable,
+} from './docs-shared';
+import { DocsEnglishBody } from './docs-content-en';
+import {
+  BookOpen,
+  Code2,
+  Zap,
+  FileText,
+  Terminal,
+  Globe,
+  Mic,
+  MessageSquare,
+  BarChart3,
+  AlertTriangle,
+  Radio,
+  FolderOpen,
+  Workflow,
+  Sparkles,
+  Plug,
+  Bot,
+  Building2,
+  Check,
+} from 'lucide-react';
 
 /* ─── Navigation Structure ─── */
 
@@ -194,222 +96,90 @@ const NAV = [
   ]},
 ];
 
-/* ─── Page ─── */
+const NAV_EN: NavGroup[] = [
+  { id: 'concept', icon: Workflow, label: 'How MCP works', children: [
+    { id: 'why-mcp', label: 'Why MCP' },
+    { id: 'scenario-walkthrough', label: 'Scenario · 6 steps' },
+    { id: 'dev-responsibility', label: 'Two developer tasks' },
+    { id: 'integration-paths', label: 'Three integration styles' },
+  ]},
+  { id: 'quick-start', icon: Zap, label: 'Quick start', children: [
+    { id: 'overview', label: 'Overview' },
+    { id: 'requirements', label: 'Requirements' },
+    { id: 'install', label: 'Install' },
+    { id: 'env-vars', label: 'Environment' },
+  ]},
+  { id: 'config', icon: Plug, label: 'Zero-code clients', children: [
+    { id: 'config-cursor', label: 'Cursor' },
+    { id: 'config-claude-desktop', label: 'Claude Desktop' },
+    { id: 'config-claude-code', label: 'Claude Code' },
+    { id: 'config-ai-ide', label: 'Windsurf / Zed / Continue' },
+    { id: 'config-coze', label: 'Coze' },
+    { id: 'config-coze-workflow', label: 'Coze workflows' },
+    { id: 'config-ai-workspace', label: 'Enterprise AI workspaces' },
+    { id: 'config-workflow-platforms', label: 'Dify / n8n / Flowise' },
+    { id: 'config-other', label: 'Other MCP clients' },
+  ]},
+  { id: 'config-code', icon: Code2, label: 'SDK / code integration', children: [
+    { id: 'code-mcp-sdk', label: 'Official MCP SDK' },
+    { id: 'code-agent-frameworks', label: 'Agent frameworks' },
+    { id: 'code-function-calling', label: 'chat.completions + tools' },
+    { id: 'code-selfhosted-agent', label: 'Custom backend' },
+  ]},
+  { id: 'eval-modes', icon: Radio, label: 'Evaluation modes', children: [
+    { id: 'stream-eval', label: 'Streaming mic' },
+    { id: 'stream-flow', label: 'Streaming flow' },
+    { id: 'file-eval', label: 'Audio files' },
+  ]},
+  { id: 'api-reference', icon: BookOpen, label: 'API reference', children: [
+    { id: 'tools-en', label: 'English tools' },
+    { id: 'tools-cn', label: 'Chinese tools' },
+    { id: 'result-fields', label: 'Result fields' },
+    { id: 'error-codes', label: 'Errors' },
+  ]},
+  { id: 'architecture', icon: Terminal, label: 'Architecture', children: [
+    { id: 'arch-diagram', label: 'Diagram' },
+    { id: 'transport', label: 'Transports' },
+  ]},
+  { id: 'integration', icon: Code2, label: 'Sample code', children: [
+    { id: 'code-python', label: 'Python' },
+    { id: 'code-javascript', label: 'JavaScript' },
+  ]},
+  { id: 'best-practices', icon: FileText, label: 'Best practices', children: [
+    { id: 'prompt-templates', label: 'Prompt templates' },
+    { id: 'error-handling', label: 'Errors & retries' },
+    { id: 'performance', label: 'Performance' },
+  ]},
+  { id: 'service-info', icon: Globe, label: 'Service info', children: [
+    { id: 'endpoints', label: 'Endpoints' },
+    { id: 'limits', label: 'Limits' },
+    { id: 'changelog', label: 'Changelog' },
+  ]},
+];
 
-export default function DocsPage() {
-  const [activeId, setActiveId] = useState<string>('quick-start');
-  const contentRef = useRef<HTMLDivElement | null>(null);
-  const navRef = useRef<HTMLElement | null>(null);
+/* ─── Page（英文 / 中文拆成两个组件，避免切换语言时 Hooks 数量变化导致白屏）─── */
 
-  // 收集所有可滚动的锚点 id（包含分组和子章节），用于 scroll-spy
-  const allIds = useMemo(() => {
-    const ids: string[] = [];
-    NAV.forEach(g => {
-      ids.push(g.id);
-      g.children.forEach(c => ids.push(c.id));
-    });
-    return ids;
-  }, []);
-
-  const scrollToAnchor = useCallback((id: string) => {
-    const target = document.getElementById(id);
-    if (!target) return;
-
-    const scroller = contentRef.current;
-    if (scroller && window.innerWidth >= 1024) {
-      const scrollerRect = scroller.getBoundingClientRect();
-      const targetRect = target.getBoundingClientRect();
-      const delta = targetRect.top - scrollerRect.top;
-      const top = scroller.scrollTop + delta - 24;
-      scroller.scrollTo({ top, behavior: 'smooth' });
-      window.history.replaceState(null, '', `#${id}`);
-      return;
-    }
-
-    window.scrollTo({ top: target.offsetTop - 88, behavior: 'smooth' });
-    window.history.replaceState(null, '', `#${id}`);
-  }, []);
-
-  useEffect(() => {
-    const getAnchors = () =>
-      allIds
-        .map(id => document.getElementById(id))
-        .filter((el): el is HTMLElement => el !== null)
-        .map(el => ({
-          id: el.id,
-          top: (() => {
-            if (useInnerScroller) {
-              const scrollerRect = scroller.getBoundingClientRect();
-              const elRect = el.getBoundingClientRect();
-              return scroller.scrollTop + (elRect.top - scrollerRect.top);
-            }
-            // 使用文档绝对坐标，避免 offsetTop 在复杂父级下失真
-            return el.getBoundingClientRect().top + window.scrollY;
-          })(),
-        }))
-        .sort((a, b) => a.top - b.top);
-
-    let rafId = 0;
-    const scroller = contentRef.current;
-    const useInnerScroller = !!scroller && window.innerWidth >= 1024;
-
-    const computeActive = () => {
-      const anchors = getAnchors();
-      if (anchors.length === 0) return;
-
-      const scrollTop = useInnerScroller ? scroller.scrollTop : window.scrollY;
-      const probeY = scrollTop + 170; // 顶栏 + 阅读缓冲
-      let currentId = anchors[0].id;
-
-      for (const a of anchors) {
-        if (a.top <= probeY) currentId = a.id;
-        else break;
-      }
-
-      // 滚到底部时，强制高亮最后一项
-      const atBottom = useInnerScroller
-        ? scroller.scrollTop + scroller.clientHeight >= scroller.scrollHeight - 4
-        : window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 4;
-      if (atBottom) {
-        currentId = anchors[anchors.length - 1].id;
-      }
-
-      setActiveId(prev => (prev === currentId ? prev : currentId));
-    };
-
-    const onScroll = () => {
-      if (rafId) return;
-      rafId = window.requestAnimationFrame(() => {
-        rafId = 0;
-        computeActive();
-      });
-    };
-
-    // 初次与异步内容稳定后各计算一次，避免首屏偏差
-    computeActive();
-    const t = window.setTimeout(computeActive, 120);
-
-    if (useInnerScroller) {
-      scroller.addEventListener('scroll', onScroll, { passive: true });
-    } else {
-      window.addEventListener('scroll', onScroll, { passive: true });
-    }
-    window.addEventListener('resize', computeActive);
-    window.addEventListener('hashchange', computeActive);
-    return () => {
-      window.clearTimeout(t);
-      if (rafId) window.cancelAnimationFrame(rafId);
-      if (useInnerScroller) {
-        scroller.removeEventListener('scroll', onScroll);
-      } else {
-        window.removeEventListener('scroll', onScroll);
-      }
-      window.removeEventListener('resize', computeActive);
-      window.removeEventListener('hashchange', computeActive);
-    };
-  }, [allIds]);
-
-  // 根据当前激活的子节点，找出其所属分组 id，用于同步高亮父级
-  const activeGroupId = useMemo(() => {
-    for (const g of NAV) {
-      if (g.id === activeId) return g.id;
-      if (g.children.some(c => c.id === activeId)) return g.id;
-    }
-    return activeId;
-  }, [activeId]);
-
-  // 左侧目录如果出现滚动，则保证当前激活项自动进入可视区域
-  useEffect(() => {
-    const nav = navRef.current;
-    if (!nav) return;
-    if (window.innerWidth < 1024) return;
-
-    const target = nav.querySelector<HTMLElement>(`[data-nav-id="${activeId}"]`);
-    if (!target) return;
-
-    const navRect = nav.getBoundingClientRect();
-    const targetRect = target.getBoundingClientRect();
-    const outOfView = targetRect.top < navRect.top + 8 || targetRect.bottom > navRect.bottom - 8;
-
-    if (outOfView) {
-      target.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
-    }
-  }, [activeId]);
-
+function DocsPageEn() {
   return (
-    <main className="flex-1">
-      <div className="container mx-auto px-6 py-12 md:py-20">
-        <Link href="/" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors mb-8">
-          <ArrowLeft className="h-4 w-4" /> 返回首页
-        </Link>
+    <DocsShell
+      nav={NAV_EN}
+      backLabel="Back to Home"
+      title="Developer documentation"
+      subtitle="Chivox Speech Evaluation MCP · chivox-local-mcp"
+    >
+      <DocsEnglishBody />
+    </DocsShell>
+  );
+}
 
-        <h1 className="text-3xl md:text-4xl font-bold tracking-tight mb-2">开发者文档</h1>
-        <p className="text-muted-foreground mb-10">驰声语音评测 MCP · chivox-local-mcp</p>
-
-        <div className="grid gap-8 md:gap-10 lg:grid-cols-[18rem_minmax(0,1fr)]">
-          {/* Sidebar */}
-          <nav
-            ref={navRef}
-            className="hidden lg:block self-start h-[calc(100vh-6rem)] overflow-y-auto pr-2"
-          >
-            {NAV.map(group => {
-              const isGroupActive = activeGroupId === group.id;
-              return (
-                <div key={group.id} className="mb-5">
-                  <a
-                    href={`#${group.id}`}
-                    data-nav-id={group.id}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      setActiveId(group.id);
-                      scrollToAnchor(group.id);
-                    }}
-                    className={`flex items-center gap-2 text-sm font-semibold mb-1.5 transition-colors ${
-                      isGroupActive ? 'text-foreground' : 'text-foreground/70 hover:text-foreground'
-                    }`}
-                  >
-                    <group.icon className={`h-4 w-4 ${isGroupActive ? 'text-foreground' : 'text-muted-foreground'}`} />
-                    {group.label}
-                  </a>
-                  <ul className="ml-6 space-y-1 border-l border-border/40 pl-3 relative">
-                    {group.children.map(child => {
-                      const isActive = activeId === child.id;
-                      return (
-                        <li key={child.id} className="relative">
-                          {isActive && (
-                            <span className="absolute -left-[13px] top-0 bottom-0 w-0.5 bg-foreground rounded-full" />
-                          )}
-                          <a
-                            href={`#${child.id}`}
-                            data-nav-id={child.id}
-                            onClick={(e) => {
-                              e.preventDefault();
-                              setActiveId(child.id);
-                              scrollToAnchor(child.id);
-                            }}
-                            className={`text-xs block py-0.5 leading-5 transition-colors ${
-                              isActive
-                                ? 'text-foreground font-medium'
-                                : 'text-muted-foreground hover:text-foreground'
-                            }`}
-                          >
-                            {child.label}
-                          </a>
-                        </li>
-                      );
-                    })}
-                  </ul>
-                </div>
-              );
-            })}
-          </nav>
-
-          {/* Content */}
-          <div
-            ref={contentRef}
-            className="min-w-0 max-w-3xl lg:max-w-none lg:h-[calc(100vh-6rem)] lg:overflow-y-auto lg:pr-3"
-          >
-
+function DocsPageZh() {
+  return (
+    <DocsShell
+      nav={NAV}
+      backLabel="返回首页"
+      title="开发者文档"
+      subtitle="驰声语音评测 MCP · chivox-local-mcp"
+    >
             {/* ══════ MCP 工作原理 ══════ */}
             <DocSection id="concept" icon={Workflow} title="MCP 工作原理">
 
@@ -1771,9 +1541,11 @@ console.log('audioId:', result.audioId);`}</CodeBlock>
               </SubDoc>
             </DocSection>
 
-          </div>
-        </div>
-      </div>
-    </main>
+    </DocsShell>
   );
+}
+
+export default function DocsPage() {
+  const locale = useLocale();
+  return locale.startsWith('zh') ? <DocsPageZh /> : <DocsPageEn />;
 }

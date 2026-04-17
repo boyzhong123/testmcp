@@ -135,7 +135,8 @@
     "company": "Company",
     "terms": "Terms of Service",
     "privacy": "Privacy Policy",
-    "contact": "Contact Us"
+    "contact": "Contact Us",
+    "internal_plan": "Internal plan"
   },
   "Auth": {
     "login": "Log In",

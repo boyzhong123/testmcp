@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useLocale } from 'next-intl';
 
-const SECTIONS = [
+const SECTIONS_ZH = [
   { id: 'hero', label: '首页' },
   { id: 'demo', label: '在线体验' },
   { id: 'workflow', label: '工作流程' },
@@ -15,13 +16,28 @@ const SECTIONS = [
   { id: 'pricing', label: '收费细则' },
   { id: 'faq', label: '常见问题' },
   { id: 'about', label: '关于驰声' },
-];
+] as const;
 
-function getInitialActiveIdx() {
+const SECTIONS_EN = [
+  { id: 'hero', label: 'Home' },
+  { id: 'demo', label: 'Live demo' },
+  { id: 'workflow', label: 'Workflow' },
+  { id: 'features', label: 'Core value' },
+  { id: 'dual-mode', label: 'Dual mode' },
+  { id: 'params', label: 'Scoring params' },
+  { id: 'how-it-works', label: 'LLM analysis' },
+  { id: 'use-cases', label: 'AI-native' },
+  { id: 'use-cases-b', label: 'Embedded' },
+  { id: 'pricing', label: 'Pricing' },
+  { id: 'faq', label: 'FAQ' },
+  { id: 'about', label: 'About Chivox' },
+] as const;
+
+function getInitialActiveIdx(sections: { id: string; label: string }[]) {
   if (typeof window === 'undefined') return 0;
   
   const scrollY = window.scrollY;
-  const offsets = SECTIONS.map(s => {
+  const offsets = sections.map(s => {
     const el = document.getElementById(s.id);
     return el ? el.offsetTop - 200 : 0;
   });
@@ -42,15 +58,25 @@ function getInitialVisible() {
 }
 
 export function ScrollIndicator() {
-  const [activeIdx, setActiveIdx] = useState(getInitialActiveIdx);
+  const locale = useLocale();
+  const sections = useMemo(
+    () => (locale.startsWith('zh') ? [...SECTIONS_ZH] : [...SECTIONS_EN]),
+    [locale]
+  );
+
+  const [activeIdx, setActiveIdx] = useState(0);
   const [visible, setVisible] = useState(getInitialVisible);
   const [hoverIdx, setHoverIdx] = useState<number | null>(null);
+
+  useEffect(() => {
+    setActiveIdx(getInitialActiveIdx(sections));
+  }, [sections]);
 
   const handleScroll = useCallback(() => {
     const scrollY = window.scrollY;
     setVisible(scrollY > 300);
 
-    const offsets = SECTIONS.map(s => {
+    const offsets = sections.map(s => {
       const el = document.getElementById(s.id);
       return el ? el.offsetTop - 200 : 0;
     });
@@ -63,7 +89,7 @@ export function ScrollIndicator() {
       }
     }
     setActiveIdx(idx);
-  }, []);
+  }, [sections]);
 
   useEffect(() => {
     window.addEventListener('scroll', handleScroll, { passive: true });
@@ -87,7 +113,7 @@ export function ScrollIndicator() {
       <div className="relative flex flex-col items-center">
         {/* Dots */}
         <div className="relative flex flex-col items-center gap-4">
-          {SECTIONS.map((s, i) => {
+          {sections.map((s, i) => {
             const isActive = activeIdx === i;
             const isHovered = hoverIdx === i;
             

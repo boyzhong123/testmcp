@@ -5,16 +5,18 @@ import { useAuth } from '@/lib/auth-context';
 import { Key, CreditCard, BarChart3, Receipt, LogOut, Menu, X, AudioWaveform } from 'lucide-react';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
-
-const navItems = [
-  { href: '/dashboard/keys', icon: Key, label: 'API Key 管理' },
-  { href: '/dashboard/plans', icon: CreditCard, label: '会员套餐' },
-  { href: '/dashboard/usage', icon: BarChart3, label: '用量统计' },
-  { href: '/dashboard/billing', icon: Receipt, label: '费用账单' },
-];
+import { useLocale } from 'next-intl';
 
 export function DashboardSidebar() {
   const pathname = usePathname();
+  const locale = useLocale();
+  const isZh = locale.startsWith('zh');
+  const navItems = [
+    { href: '/dashboard/keys', icon: Key, label: isZh ? 'API Key 管理' : 'API Key Management' },
+    { href: '/dashboard/plans', icon: CreditCard, label: isZh ? '会员套餐' : 'Plans' },
+    { href: '/dashboard/usage', icon: BarChart3, label: isZh ? '用量统计' : 'Usage' },
+    { href: '/dashboard/billing', icon: Receipt, label: isZh ? '费用账单' : 'Billing' },
+  ];
   const { user, logout } = useAuth();
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -93,7 +95,7 @@ export function DashboardSidebar() {
               <button
                 onClick={logout}
                 className="shrink-0 h-8 w-8 rounded-lg flex items-center justify-center text-background/50 hover:text-background hover:bg-background/10 transition-colors"
-                title="退出登录"
+                title={isZh ? '退出登录' : 'Log out'}
               >
                 <LogOut className="h-4 w-4" />
               </button>
