@@ -2,7 +2,7 @@
 
 import { Link, usePathname } from '@/i18n/routing';
 import { useAuth } from '@/lib/auth-context';
-import { Key, CreditCard, BarChart3, Receipt, LogOut, Menu, X } from 'lucide-react';
+import { Key, CreditCard, BarChart3, Receipt, LogOut, Menu, X, AudioWaveform } from 'lucide-react';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
 
@@ -47,7 +47,7 @@ export function DashboardSidebar() {
         <div className="flex items-center justify-between h-16 px-5 border-b border-background/10">
           <Link href="/" className="flex items-center gap-2">
             <div className="h-7 w-7 rounded-md bg-background flex items-center justify-center">
-              <span className="text-foreground text-xs font-bold">C</span>
+              <AudioWaveform className="h-4 w-4 text-foreground" strokeWidth={2.25} />
             </div>
             <span className="font-semibold tracking-tight text-sm">Chivox MCP</span>
           </Link>

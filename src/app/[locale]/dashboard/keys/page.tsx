@@ -98,7 +98,13 @@ export default function KeysPage() {
                 </tr>
               ) : (
                 keys.map(k => (
-                  <tr key={k.id} className="hover:bg-muted/20 transition-colors">
+                  <tr
+                    key={k.id}
+                    className={cn(
+                      'hover:bg-muted/20 transition-colors',
+                      !k.enabled && 'bg-muted/20 opacity-60'
+                    )}
+                  >
                     <td className="py-3.5 px-4 font-medium">{k.name}</td>
                     <td className="py-3.5 px-4">
                       <div className="flex items-center gap-2">

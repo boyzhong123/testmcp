@@ -5,6 +5,9 @@ import { useState, useEffect, useCallback } from 'react';
 const SECTIONS = [
   { id: 'hero', label: '首页' },
   { id: 'features', label: '核心价值' },
+  { id: 'dual-mode', label: '双模式评测' },
+  { id: 'use-cases', label: 'AI 原生场景' },
+  { id: 'use-cases-b', label: '载体嵌入场景' },
   { id: 'workflow', label: '工作流程' },
   { id: 'params', label: '评测参数' },
   { id: 'how-it-works', label: 'LLM 分析' },
@@ -69,7 +72,9 @@ export function ScrollIndicator() {
 
   const scrollTo = (id: string) => {
     const el = document.getElementById(id);
-    if (el) el.scrollIntoView({ behavior: 'smooth' });
+    if (el) {
+      window.scrollTo({ top: el.offsetTop - 64 + 1, behavior: 'smooth' });
+    }
   };
 
   return (

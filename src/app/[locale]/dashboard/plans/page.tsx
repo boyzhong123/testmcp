@@ -1,133 +1,236 @@
 'use client';
 
+import Image from 'next/image';
 import { useAuth } from '@/lib/auth-context';
-import { PLAN_DETAILS } from '@/lib/mock-data';
 import { Link } from '@/i18n/routing';
-import { Check, Crown } from 'lucide-react';
+import { Check, ArrowUpRight, Crown, Sparkles } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-const plans = ['free', 'pro', 'enterprise'] as const;
+// ── 阶梯档位示意（不展示具体调用量 / 价格，仅相对单价示意） ──
+const TIERS = [
+  { key: 'starter',    label: '起步档',  h: 92, tone: 'bg-foreground',       desc: '注册即用，适合产品原型验证' },
+  { key: 'standard',   label: '标准档',  h: 74, tone: 'bg-foreground/75',    desc: '业务正式上线，稳定商用' },
+  { key: 'growth',     label: '成长档',  h: 58, tone: 'bg-foreground/55',    desc: '用户量上升，单价首次下探' },
+  { key: 'scale',      label: '规模档',  h: 42, tone: 'bg-foreground/35',    desc: '高并发高吞吐，单价显著优惠' },
+  { key: 'enterprise', label: '企业档',  h: 28, tone: 'bg-foreground/20',    desc: '私有部署 / 定制 SLA / 专属支持' },
+] as const;
+
+// ── 当前账号档位映射（auth 里 plan 只有 free/pro/enterprise，简单对应一下）──
+const PLAN_TO_TIER: Record<string, typeof TIERS[number]['key']> = {
+  free: 'starter',
+  pro: 'standard',
+  enterprise: 'enterprise',
+};
+
+const PLAN_LABEL: Record<string, string> = {
+  free: '起步档 · 免费试用',
+  pro: '标准档 · 正式商用',
+  enterprise: '企业档 · 定制合作',
+};
+
+// ── 套餐能力对比（改为相对强度示意，不展示具体数字） ──
+const COMPARISON: { feature: string; cells: [string, string, string] }[] = [
+  { feature: '调用量', cells: ['试用额度', '稳定商用', '海量 · 阶梯递减'] },
+  { feature: '并发数', cells: ['基础', '可扩容', '企业级 · 支持独立部署'] },
+  { feature: '评测工具', cells: ['基础题型', '全部 16 项', '全部 + 定制题型'] },
+  { feature: '批量评测', cells: ['—', '支持', '支持 · 更大批量'] },
+  { feature: 'LLM 二次 / 三次分析', cells: ['—', '支持', '支持 · 不限量'] },
+  { feature: '多维度打分字段', cells: ['全部 8 项', '全部 8 项', '全部 + 定制字段'] },
+  { feature: '结果缓存', cells: ['基础', '可配置', '自定义策略'] },
+  { feature: '调度优先级', cells: ['普通队列', '优先队列', '最高优先'] },
+  { feature: '技术支持', cells: ['文档 / 社区', '邮件 · 工作日响应', '7×24 专属群'] },
+  { feature: 'SLA', cells: ['—', '标准 SLA', '企业级 SLA'] },
+  { feature: '结算方式', cells: ['体验额度', '月度结算', '协商 · 支持私有化'] },
+];
 
 export default function PlansPage() {
   const { user } = useAuth();
   const currentPlan = user?.plan || 'free';
+  const currentTier = PLAN_TO_TIER[currentPlan];
 
   return (
     <div>
-      <h1 className="text-xl font-bold tracking-tight mb-2">会员套餐</h1>
-      <p className="text-sm text-muted-foreground mb-8">选择适合您业务规模的套餐方案</p>
-
-      {/* Plan Cards */}
-      <div className="grid md:grid-cols-3 gap-6 max-w-4xl mb-12">
-        {plans.map(planKey => {
-          const plan = PLAN_DETAILS[planKey];
-          const isCurrent = currentPlan === planKey;
-          const isPopular = planKey === 'pro';
-
-          return (
-            <div
-              key={planKey}
-              className={cn(
-                'relative rounded-xl border p-6 flex flex-col bg-background transition-shadow',
-                isPopular ? 'border-foreground border-2 shadow-lg' : 'border-border',
-                isCurrent && 'ring-2 ring-foreground/20'
-              )}
-            >
-              {isPopular && (
-                <span className="absolute -top-3 left-5 text-xs font-medium bg-foreground text-background px-2.5 py-0.5 rounded-full flex items-center gap-1">
-                  <Crown className="h-3 w-3" /> 推荐
-                </span>
-              )}
-
-              <h3 className="text-lg font-semibold mb-1">{plan.name}</h3>
-              <div className="mb-5">
-                {plan.price === 0 ? (
-                  <span className="text-3xl font-bold">免费</span>
-                ) : plan.price === -1 ? (
-                  <span className="text-3xl font-bold">定制</span>
-                ) : (
-                  <span>
-                    <span className="text-3xl font-bold">¥{plan.price}</span>
-                    <span className="text-sm text-muted-foreground">/月</span>
-                  </span>
-                )}
-              </div>
-
-              <ul className="space-y-3 text-sm text-muted-foreground mb-8 flex-1">
-                {plan.features.map((f, i) => (
-                  <li key={i} className="flex items-start gap-2">
-                    <Check className="h-4 w-4 text-foreground shrink-0 mt-0.5" />
-                    <span>
-                      <span className="text-foreground font-medium">{f.label}</span>
-                      {' '}
-                      {f.value}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-
-              {isCurrent ? (
-                <div className="h-9 flex items-center justify-center text-sm font-medium rounded-lg border border-border bg-muted/50 text-muted-foreground">
-                  当前套餐
-                </div>
-              ) : planKey === 'enterprise' ? (
-                <Link
-                  href="/contact"
-                  className="h-9 flex items-center justify-center text-sm font-medium rounded-lg border border-border hover:bg-muted transition-colors"
-                >
-                  联系销售
-                </Link>
-              ) : (
-                <Link
-                  href="/contact"
-                  className={cn(
-                    'h-9 flex items-center justify-center text-sm font-medium rounded-lg transition-colors',
-                    isPopular
-                      ? 'bg-foreground text-background hover:bg-foreground/90'
-                      : 'border border-border hover:bg-muted'
-                  )}
-                >
-                  联系我们升级
-                </Link>
-              )}
-            </div>
-          );
-        })}
+      {/* ── 页头 ── */}
+      <div className="flex flex-wrap items-start justify-between gap-4 mb-8">
+        <div>
+          <h1 className="text-xl font-bold tracking-tight mb-2">会员套餐</h1>
+          <p className="text-sm text-muted-foreground">
+            驰声按<span className="text-foreground font-medium"> 调用量 + 并发数 </span>阶梯计费，用得越多，单价自动下调。
+            具体报价以销售报价为准。
+          </p>
+        </div>
+        <div className="flex items-center gap-2 rounded-full border border-border/60 bg-muted/30 px-3 py-1.5 text-xs">
+          <Crown className="h-3.5 w-3.5 text-foreground" />
+          <span className="text-muted-foreground">当前档位</span>
+          <span className="font-medium text-foreground">{PLAN_LABEL[currentPlan]}</span>
+        </div>
       </div>
 
-      {/* Feature Comparison Table */}
-      <h2 className="text-lg font-bold tracking-tight mb-4">套餐功能对比</h2>
-      <div className="rounded-xl border border-border bg-background overflow-hidden max-w-4xl">
+      {/* ── 主体：左阶梯示意 + 右联系销售 ── */}
+      <div className="grid lg:grid-cols-5 gap-6 mb-10">
+        {/* ── 左：阶梯价示意 ── */}
+        <div className="lg:col-span-3">
+          <div className="rounded-2xl border border-border bg-background p-6 md:p-7 h-full">
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <div className="text-[11px] tracking-[0.2em] uppercase text-muted-foreground mb-1">Tiered Pricing</div>
+                <h3 className="text-base font-semibold">阶梯价模型示意</h3>
+              </div>
+              <div className="hidden md:flex items-center gap-1.5 text-[11px] text-muted-foreground border border-border/60 rounded-full px-2.5 py-1">
+                <span className="h-1.5 w-1.5 rounded-full bg-foreground/70" />
+                单价随调用量递减
+              </div>
+            </div>
+
+            {/* 柱状示意 */}
+            <div className="flex items-stretch justify-between gap-3 md:gap-4 h-48 md:h-52">
+              {TIERS.map((t) => {
+                const active = t.key === currentTier;
+                return (
+                  <div key={t.key} className="flex-1 flex flex-col items-center min-w-0">
+                    <div className="w-full flex-1 flex items-end justify-center pb-1.5 relative">
+                      {active && (
+                        <span className="absolute -top-1 text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-foreground text-background whitespace-nowrap">
+                          你在这
+                        </span>
+                      )}
+                      <div
+                        className={cn(
+                          'w-full rounded-t-md transition-all',
+                          t.tone,
+                          active && 'ring-2 ring-offset-2 ring-offset-background ring-foreground/40'
+                        )}
+                        style={{ height: `${t.h}%` }}
+                      />
+                    </div>
+                    <div className="w-full border-t border-border/60 pt-2 text-center">
+                      <div className={cn('text-[11px]', active ? 'text-foreground font-semibold' : 'text-muted-foreground font-medium')}>
+                        {t.label}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+            {/* X 轴示意 */}
+            <div className="mt-3 flex items-center justify-between px-1 text-[11px] text-muted-foreground">
+              <span>调用量 / 并发 小</span>
+              <div className="flex-1 mx-3 relative h-px bg-border/60">
+                <span className="absolute -right-0.5 -top-1 text-muted-foreground/70">▸</span>
+              </div>
+              <span>调用量 / 并发 大</span>
+            </div>
+            <div className="text-[11px] text-muted-foreground text-center mt-3 mb-5">
+              ↑ 柱高仅代表相对单价示意，具体阶梯与折扣以销售报价为准
+            </div>
+
+            <div className="h-px bg-border/60 my-4" />
+
+            {/* 计费要点 */}
+            <div className="grid sm:grid-cols-2 gap-x-5 gap-y-3">
+              {[
+                { k: '调用量计费', v: '按每次成功评测计费，失败请求不扣量' },
+                { k: '并发数弹性', v: '可单独购买加并发包，平滑应对流量高峰' },
+                { k: '阶梯自动递减', v: '每上一档单价自动下调，无需重新签约' },
+                { k: '免费试用额度', v: '注册即送试用次数，产品验证零门槛' },
+              ].map((r) => (
+                <div key={r.k} className="flex items-start gap-2.5">
+                  <Check className="h-4 w-4 text-foreground mt-0.5 shrink-0" />
+                  <div className="min-w-0">
+                    <div className="text-sm font-medium">{r.k}</div>
+                    <div className="text-xs text-muted-foreground leading-relaxed">{r.v}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* ── 右：联系销售 + 小程序扫码 ── */}
+        <div className="lg:col-span-2">
+          <div className="rounded-2xl border border-border bg-background p-6 h-full flex flex-col">
+            <div className="text-[11px] tracking-[0.2em] uppercase text-muted-foreground mb-1">Contact Sales</div>
+            <h3 className="text-base font-semibold mb-2">获取专属阶梯报价</h3>
+            <p className="text-sm text-muted-foreground leading-relaxed mb-5">
+              告诉我们你的业务场景、预估调用量和并发需求，销售会在 1 个工作日内提供精准阶梯报价与 PoC 支持。
+            </p>
+
+            <Link
+              href="/contact"
+              className="inline-flex items-center justify-center gap-1.5 h-10 px-4 text-sm font-medium rounded-lg bg-foreground text-background hover:bg-foreground/90 transition-colors w-full"
+            >
+              在线咨询销售 <ArrowUpRight className="h-4 w-4" />
+            </Link>
+
+            <a
+              href="mailto:sales@chivox.com"
+              className="inline-flex items-center justify-center gap-1.5 h-10 px-4 text-sm font-medium rounded-lg border border-border hover:bg-muted/60 transition-colors w-full mt-2.5"
+            >
+              发送邮件 · sales@chivox.com
+            </a>
+
+            <div className="flex items-center gap-3 my-5">
+              <div className="flex-1 h-px bg-border/60" />
+              <span className="text-[11px] text-muted-foreground">或扫码咨询</span>
+              <div className="flex-1 h-px bg-border/60" />
+            </div>
+
+            <div className="flex items-center gap-4">
+              <div className="relative shrink-0 rounded-lg border border-border/60 overflow-hidden bg-white p-1.5">
+                <Image
+                  src="/wechat-qr.png"
+                  alt="驰声微信小程序"
+                  width={96}
+                  height={96}
+                  unoptimized
+                  className="h-[96px] w-[96px] object-contain"
+                />
+              </div>
+              <div className="min-w-0">
+                <div className="text-sm font-medium mb-1">微信扫码</div>
+                <div className="text-xs text-muted-foreground leading-relaxed">
+                  了解更多驰声技术，<br />体验小程序评测 Demo。
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ── 套餐能力对比（无具体数字，只示意相对强度） ── */}
+      <div className="flex items-center gap-2 mb-4">
+        <Sparkles className="h-4 w-4 text-foreground" />
+        <h2 className="text-base font-bold tracking-tight">套餐能力对比</h2>
+        <span className="text-xs text-muted-foreground">· 能力强度示意，不代表最终配额</span>
+      </div>
+
+      <div className="rounded-xl border border-border bg-background overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-border bg-muted/30">
-                <th className="text-left py-3 px-4 font-medium text-muted-foreground">功能</th>
-                <th className="text-center py-3 px-4 font-medium text-muted-foreground">开发者</th>
-                <th className="text-center py-3 px-4 font-medium text-muted-foreground">专业版</th>
-                <th className="text-center py-3 px-4 font-medium text-muted-foreground">企业版</th>
+                <th className="text-left py-3 px-4 font-medium text-muted-foreground w-1/4">能力维度</th>
+                <th className="text-center py-3 px-4 font-medium">
+                  <div className={cn(currentTier === 'starter' && 'text-foreground')}>起步档</div>
+                  <div className="text-[11px] font-normal text-muted-foreground mt-0.5">免费试用</div>
+                </th>
+                <th className="text-center py-3 px-4 font-medium">
+                  <div className={cn(currentTier === 'standard' && 'text-foreground')}>标准档</div>
+                  <div className="text-[11px] font-normal text-muted-foreground mt-0.5">正式商用</div>
+                </th>
+                <th className="text-center py-3 px-4 font-medium">
+                  <div className={cn(currentTier === 'enterprise' && 'text-foreground')}>企业档</div>
+                  <div className="text-[11px] font-normal text-muted-foreground mt-0.5">定制合作</div>
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
-              {[
-                ['月调用量', '1,000 次', '50,000 次', '不限'],
-                ['并发数', '2', '10', '50+'],
-                ['评测工具', '基础 3 项', '全部 18 项', '全部 + 定制'],
-                ['批量评测', '—', '≤20条/批', '≤50条/批'],
-                ['LLM 分析 API', '—', '100 次/月', '不限'],
-                ['发音对比', '—', '✓', '✓'],
-                ['学习进度', '—', '30 天历史', '90 天历史'],
-                ['结果缓存', '10 分钟', '1 小时', '自定义'],
-                ['优先队列', '—', '✓', '最高优先'],
-                ['技术支持', 'GitHub Issue', '邮件 48h', '7×24 专属群'],
-                ['SLA', '—', '99.5%', '99.9%+'],
-                ['超额计费', '不可超额', '¥0.003/次', '协商'],
-              ].map(([feature, ...values], i) => (
+              {COMPARISON.map((row, i) => (
                 <tr key={i} className="hover:bg-muted/20 transition-colors">
-                  <td className="py-2.5 px-4 font-medium">{feature}</td>
-                  {values.map((v, j) => (
-                    <td key={j} className="py-2.5 px-4 text-center text-muted-foreground">
-                      {v}
+                  <td className="py-2.5 px-4 font-medium">{row.feature}</td>
+                  {row.cells.map((v, j) => (
+                    <td key={j} className="py-2.5 px-4 text-center text-muted-foreground text-xs">
+                      {v === '—' ? <span className="text-muted-foreground/50">—</span> : v}
                     </td>
                   ))}
                 </tr>
@@ -135,6 +238,19 @@ export default function PlansPage() {
             </tbody>
           </table>
         </div>
+      </div>
+
+      {/* ── 底部 CTA ── */}
+      <div className="mt-6 rounded-xl border border-border/60 bg-muted/30 px-5 py-4 flex flex-wrap items-center justify-between gap-3">
+        <div className="text-sm text-muted-foreground">
+          没有看到合适的档位？<span className="text-foreground font-medium">阶梯方案可以自由组合</span>，调用量包 + 并发包 + 定制工具按需搭配。
+        </div>
+        <Link
+          href="/contact"
+          className="inline-flex items-center gap-1 text-sm font-medium text-foreground hover:opacity-70 transition-opacity"
+        >
+          联系销售定制 <ArrowUpRight className="h-3.5 w-3.5" />
+        </Link>
       </div>
     </div>
   );

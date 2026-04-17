@@ -6,6 +6,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import { ThemeProvider } from "@/components/theme-provider";
 import { AuthProvider } from "@/lib/auth-context";
 import { ConditionalShell } from "@/components/conditional-shell";
+import { RouteProgress } from "@/components/route-progress";
 import "../globals.css";
 
 const geistSans = Geist({
@@ -48,6 +49,7 @@ export default async function LocaleLayout({
         <ThemeProvider>
           <AuthProvider>
             <NextIntlClientProvider messages={messages}>
+              <RouteProgress />
               <ConditionalShell>
                 {children}
               </ConditionalShell>

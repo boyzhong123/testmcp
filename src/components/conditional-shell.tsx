@@ -7,8 +7,9 @@ import { Footer } from './footer';
 export function ConditionalShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const isDashboard = pathname.startsWith('/dashboard');
+  const isAuth = pathname === '/login' || pathname === '/register';
 
-  if (isDashboard) {
+  if (isDashboard || isAuth) {
     return <>{children}</>;
   }
 

@@ -1,39 +1,22 @@
-import { useTranslations } from 'next-intl';
+import { AudioWaveform } from 'lucide-react';
 import { Link } from '@/i18n/routing';
 import { LanguageSwitcher } from './language-switcher';
 import { ThemeToggle } from './theme-toggle';
 import { AuthNavButton } from './auth-nav-button';
+import { NavLinks } from './nav-links';
 
 export function Navigation() {
-  const t = useTranslations('Navigation');
-
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/80 backdrop-blur-xl">
       <div className="container mx-auto px-6 flex h-16 items-center justify-between">
         <Link href="/" className="flex items-center gap-2 shrink-0">
           <div className="h-7 w-7 rounded-md bg-foreground flex items-center justify-center">
-            <span className="text-background text-xs font-bold">C</span>
+            <AudioWaveform className="h-4 w-4 text-background" strokeWidth={2.25} />
           </div>
           <span className="font-semibold tracking-tight hidden sm:block">Chivox MCP</span>
         </Link>
 
-        <nav className="hidden lg:flex items-center gap-1">
-          <a href="#features" className="px-3 py-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors rounded-md">
-            {t('features')}
-          </a>
-          <a href="#how-it-works" className="px-3 py-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors rounded-md">
-            {t('value')}
-          </a>
-          <a href="#pricing" className="px-3 py-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors rounded-md">
-            {t('pricing')}
-          </a>
-          <a href="#faq" className="px-3 py-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors rounded-md">
-            {t('faq')}
-          </a>
-          <Link href="/docs" className="px-3 py-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors rounded-md">
-            {t('docs')}
-          </Link>
-        </nav>
+        <NavLinks />
 
         <div className="flex items-center gap-2">
           <ThemeToggle />

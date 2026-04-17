@@ -1,8 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Link } from '@/i18n/routing';
-import { ArrowLeft, BookOpen, Code2, Zap, FileText, Copy, Check, Terminal, Globe, Mic, MessageSquare, BarChart3, AlertTriangle, Lightbulb, Radio, FolderOpen, Settings } from 'lucide-react';
+import { ArrowLeft, BookOpen, Code2, Zap, FileText, Copy, Check, Terminal, Globe, Mic, MessageSquare, BarChart3, AlertTriangle, Lightbulb, Radio, FolderOpen, Settings, Workflow, Sparkles } from 'lucide-react';
 
 /* ─── Reusable Components ─── */
 
@@ -133,6 +133,12 @@ function ToolTable({ tools }: { tools: [string, string, string][] }) {
 /* ─── Navigation Structure ─── */
 
 const NAV = [
+  { id: 'concept', icon: Workflow, label: 'MCP 工作原理', children: [
+    { id: 'why-mcp', label: '为什么需要 MCP' },
+    { id: 'scenario-walkthrough', label: '场景走查 · 6 步' },
+    { id: 'dev-responsibility', label: '开发者只做两件事' },
+    { id: 'integration-paths', label: '三种接入姿势' },
+  ]},
   { id: 'quick-start', icon: Zap, label: '快速开始', children: [
     { id: 'overview', label: '概述' },
     { id: 'requirements', label: '系统要求' },
@@ -181,7 +187,61 @@ const NAV = [
 /* ─── Page ─── */
 
 export default function DocsPage() {
-  const [, setActiveSection] = useState('quick-start');
+  const [activeId, setActiveId] = useState<string>('quick-start');
+
+  // 收集所有可滚动的锚点 id（包含分组和子章节），用于 scroll-spy
+  const allIds = useMemo(() => {
+    const ids: string[] = [];
+    NAV.forEach(g => {
+      ids.push(g.id);
+      g.children.forEach(c => ids.push(c.id));
+    });
+    return ids;
+  }, []);
+
+  useEffect(() => {
+    const elements = allIds
+      .map(id => document.getElementById(id))
+      .filter((el): el is HTMLElement => el !== null);
+
+    if (elements.length === 0) return;
+
+    // 以顶部偏移 120px 作为"激活线"，选取距离激活线最近的上方/同位章节
+    const computeActive = () => {
+      const line = 120;
+      let currentId = elements[0]?.id ?? '';
+      for (const el of elements) {
+        const top = el.getBoundingClientRect().top;
+        if (top - line <= 0) {
+          currentId = el.id;
+        } else {
+          break;
+        }
+      }
+      // 滚到底部时，强制高亮最后一项
+      if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 4) {
+        currentId = elements[elements.length - 1].id;
+      }
+      setActiveId(prev => (prev === currentId ? prev : currentId));
+    };
+
+    computeActive();
+    window.addEventListener('scroll', computeActive, { passive: true });
+    window.addEventListener('resize', computeActive);
+    return () => {
+      window.removeEventListener('scroll', computeActive);
+      window.removeEventListener('resize', computeActive);
+    };
+  }, [allIds]);
+
+  // 根据当前激活的子节点，找出其所属分组 id，用于同步高亮父级
+  const activeGroupId = useMemo(() => {
+    for (const g of NAV) {
+      if (g.id === activeId) return g.id;
+      if (g.children.some(c => c.id === activeId)) return g.id;
+    }
+    return activeId;
+  }, [activeId]);
 
   return (
     <main className="flex-1">
@@ -196,25 +256,373 @@ export default function DocsPage() {
         <div className="flex gap-10">
           {/* Sidebar */}
           <nav className="hidden lg:block w-56 shrink-0 sticky top-24 self-start max-h-[calc(100vh-8rem)] overflow-y-auto">
-            {NAV.map(group => (
-              <div key={group.id} className="mb-5">
-                <a href={`#${group.id}`} onClick={() => setActiveSection(group.id)} className="flex items-center gap-2 text-sm font-semibold mb-1.5 hover:text-foreground transition-colors">
-                  <group.icon className="h-4 w-4 text-muted-foreground" />
-                  {group.label}
-                </a>
-                <ul className="ml-6 space-y-1 border-l border-border/40 pl-3">
-                  {group.children.map(child => (
-                    <li key={child.id}>
-                      <a href={`#${child.id}`} className="text-xs text-muted-foreground hover:text-foreground transition-colors block py-0.5 truncate">{child.label}</a>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
+            {NAV.map(group => {
+              const isGroupActive = activeGroupId === group.id;
+              return (
+                <div key={group.id} className="mb-5">
+                  <a
+                    href={`#${group.id}`}
+                    onClick={() => setActiveId(group.id)}
+                    className={`flex items-center gap-2 text-sm font-semibold mb-1.5 transition-colors ${
+                      isGroupActive ? 'text-foreground' : 'text-foreground/70 hover:text-foreground'
+                    }`}
+                  >
+                    <group.icon className={`h-4 w-4 ${isGroupActive ? 'text-foreground' : 'text-muted-foreground'}`} />
+                    {group.label}
+                  </a>
+                  <ul className="ml-6 space-y-1 border-l border-border/40 pl-3 relative">
+                    {group.children.map(child => {
+                      const isActive = activeId === child.id;
+                      return (
+                        <li key={child.id} className="relative">
+                          {isActive && (
+                            <span className="absolute -left-[13px] top-0 bottom-0 w-0.5 bg-foreground rounded-full" />
+                          )}
+                          <a
+                            href={`#${child.id}`}
+                            onClick={() => setActiveId(child.id)}
+                            className={`text-xs block py-0.5 truncate transition-colors ${
+                              isActive
+                                ? 'text-foreground font-medium'
+                                : 'text-muted-foreground hover:text-foreground'
+                            }`}
+                          >
+                            {child.label}
+                          </a>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </div>
+              );
+            })}
           </nav>
 
           {/* Content */}
           <div className="flex-1 min-w-0 max-w-3xl">
+
+            {/* ══════ MCP 工作原理 ══════ */}
+            <DocSection id="concept" icon={Workflow} title="MCP 工作原理">
+
+              <SubDoc id="why-mcp" title="为什么需要 MCP">
+                <p>
+                  大模型（GPT / Claude / Gemini / 通义千问 等）本质上是<strong>文字大脑</strong>：它擅长读和写，但天生<strong>听不到</strong>音频、<strong>打不开</strong>你的数据库、<strong>调不通</strong>第三方 API。
+                </p>
+                <p>
+                  <strong>MCP（Model Context Protocol）</strong>是一套由 Anthropic 主导、业界共同推进的开放协议，它像一根"对讲机"：让大模型可以在需要时主动去调用外部能力（工具、数据源、服务），然后把结果接回来继续对话。
+                </p>
+                <div className="grid sm:grid-cols-2 gap-3 my-4">
+                  <div className="rounded-lg border border-border/60 p-4">
+                    <div className="flex items-center gap-2 mb-2">
+                      <AlertTriangle className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+                      <span className="text-sm font-semibold">没有 MCP 的做法</span>
+                    </div>
+                    <ul className="text-xs text-muted-foreground space-y-1.5 leading-relaxed">
+                      <li>· 研究评测服务的 REST 文档</li>
+                      <li>· 自己写鉴权 / 上传 / 轮询代码</li>
+                      <li>· 把结果序列化后塞进 prompt</li>
+                      <li>· 每换一个大模型都得重写一遍</li>
+                    </ul>
+                  </div>
+                  <div className="rounded-lg border-2 border-foreground/60 p-4 bg-foreground/[0.02]">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Check className="h-4 w-4 text-foreground" />
+                      <span className="text-sm font-semibold">用驰声 MCP 之后</span>
+                    </div>
+                    <ul className="text-xs space-y-1.5 leading-relaxed">
+                      <li>· 填一行 MCP Server 地址</li>
+                      <li>· 大模型自动发现&amp;调用评测工具</li>
+                      <li>· 换任何支持 MCP 的大模型都能用</li>
+                      <li>· 不写一行调用代码</li>
+                    </ul>
+                  </div>
+                </div>
+                <Callout type="info">
+                  MCP 让"接入语音评测"从一个"后端工程"变成了一个"配置项"。这也是为什么 Cursor、Claude Desktop、Dify、Coze、字节豆包、飞书智能助手都已经原生支持 MCP。
+                </Callout>
+              </SubDoc>
+
+              <SubDoc id="scenario-walkthrough" title="场景走查 · 从一段录音到温柔反馈">
+                <p>
+                  想象一个具体场景：一位开发者用 Claude 做了一款 <strong>「AI 雅思口语陪练」小程序</strong>，接入驰声语音评测 MCP。当用户发来一段录音，整个链路是这样的：
+                </p>
+                <div className="rounded-lg border border-border/60 bg-muted/20 p-5 my-4 space-y-5">
+                  <FlowStep title="1">
+                    <p><strong className="text-foreground">配置阶段</strong>（开发者 · 一次性）</p>
+                    <p className="text-muted-foreground mt-1">在 AI 后端的配置文件里填一行驰声 MCP Server 地址。大模型启动时自动发现：「我多了一个叫<strong>语音评测</strong>的工具」。</p>
+                  </FlowStep>
+                  <FlowStep title="2">
+                    <p><strong className="text-foreground">接收用户指令</strong>（终端用户）</p>
+                    <p className="text-muted-foreground mt-1">小程序用户发来一段自我介绍录音：「帮我听听，发音哪里有问题？」后端把「文字 + 录音链接」打包给大模型。</p>
+                  </FlowStep>
+                  <FlowStep title="3">
+                    <p><strong className="text-foreground">大模型自主思考</strong>（LLM · 最核心的魔法）</p>
+                    <div className="text-muted-foreground mt-1 rounded-md bg-background/80 border border-border/40 px-3 py-2 text-xs leading-relaxed">
+                      「用户让我听发音。」<br />
+                      「但我只是文字大脑，我听不到。」<br />
+                      「等等 —— 开发者给了我一个叫 <code className="bg-muted px-1 rounded">chivox_voice_eval</code> 的 MCP 工具！」
+                    </div>
+                  </FlowStep>
+                  <FlowStep title="4">
+                    <p><strong className="text-foreground">MCP 协议 · 自动调用</strong>（LLM → 驰声）</p>
+                    <p className="text-muted-foreground mt-1">大模型自动按 MCP 标准构造 <code className="bg-muted px-1 rounded text-xs font-mono">tools/call</code> 请求，把录音链接和参考文本发到驰声服务。<span className="text-foreground">开发者不需要写任何调用代码。</span></p>
+                  </FlowStep>
+                  <FlowStep title="5">
+                    <p><strong className="text-foreground">驰声服务处理</strong>（评测引擎）</p>
+                    <p className="text-muted-foreground mt-1">驰声对音频进行考试级打分，把结构化结果通过 MCP 原路返回：<code className="bg-muted px-1 rounded text-xs font-mono">overall 85</code>、<code className="bg-muted px-1 rounded text-xs font-mono">/θ/ 音发音错误</code>、<code className="bg-muted px-1 rounded text-xs font-mono">流利度 88</code>。</p>
+                  </FlowStep>
+                  <FlowStep title="6">
+                    <p><strong className="text-foreground">大模型整合并输出反馈</strong>（LLM）</p>
+                    <p className="text-muted-foreground mt-1">大模型把冷冰冰的分数翻译成温柔反馈：</p>
+                    <div className="text-foreground/80 mt-2 rounded-md bg-background/80 border border-border/40 px-3 py-2 text-xs leading-relaxed italic">
+                      「你的自我介绍很棒！综合 85 分 🎉 不过 <strong>think</strong> 这个词的 /θ/ 咬舌音不太标准，我们一起来练一下……」
+                    </div>
+                  </FlowStep>
+                </div>
+                <Callout type="tip">
+                  <strong>整条链路里，MCP 只出现在 ① 和 ④</strong>：① 让开发者一次性告诉大模型「你多了一个工具」，④ 让大模型可以自动调用它。这两步的标准化，就是 MCP 的全部价值。
+                </Callout>
+              </SubDoc>
+
+              <SubDoc id="dev-responsibility" title="开发者只做两件事">
+                <p>听起来复杂，但对开发者来说只需要两件事：</p>
+                <div className="grid sm:grid-cols-2 gap-3 my-4">
+                  <div className="rounded-lg border border-border/60 p-5">
+                    <div className="flex items-center gap-2 mb-3">
+                      <span className="h-6 w-6 rounded-full bg-foreground text-background text-xs font-bold flex items-center justify-center">1</span>
+                      <span className="text-sm font-semibold">填一次 MCP 配置</span>
+                    </div>
+                    <p className="text-xs text-muted-foreground leading-relaxed mb-3">
+                      在 AI 后端的配置里填入驰声 MCP Server 地址和 API Key，就这一次，以后新加评测能力完全免开发。
+                    </p>
+                    <CodeBlock filename="mcp-config.json" lang="json">{`{
+  "chivox_voice_eval": {
+    "type": "streamable-http",
+    "url": "https://speech-eval.site/mcp",
+    "apiKey": "sk-••••••••••"
+  }
+}`}</CodeBlock>
+                  </div>
+                  <div className="rounded-lg border border-border/60 p-5">
+                    <div className="flex items-center gap-2 mb-3">
+                      <span className="h-6 w-6 rounded-full bg-foreground text-background text-xs font-bold flex items-center justify-center">2</span>
+                      <span className="text-sm font-semibold">写一段 System Prompt</span>
+                    </div>
+                    <p className="text-xs text-muted-foreground leading-relaxed mb-3">
+                      告诉大模型这个工具是做什么的、什么时候调用、结果怎么转成用户友好的反馈。
+                    </p>
+                    <CodeBlock filename="system-prompt.md">{`你是一位英语口语教练。
+当用户发来录音时：
+1. 调用 chivox_voice_eval 评分
+2. 聚焦 <70 分的音素家族
+3. 用高情商话术给出练习建议`}</CodeBlock>
+                  </div>
+                </div>
+                <p className="text-muted-foreground">
+                  其余所有事情 —— 音频上传、鉴权、工具发现、调用时机、返回格式、结果整合 —— 都由 MCP 协议和大模型自己搞定。
+                </p>
+              </SubDoc>
+
+              <SubDoc id="integration-paths" title="三种典型接入姿势">
+                <p>根据你的技术栈，有三种等价的接入方式，底层都走完全相同的 MCP 协议：</p>
+
+                {/* ── 姿势一：可视化 ── */}
+                <div className="rounded-lg border border-border/60 p-5 mt-4">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Sparkles className="h-4 w-4 text-foreground" />
+                    <h4 className="text-sm font-semibold">姿势一 · 可视化拖拽（扣子 / Coze / 飞书智能助手）</h4>
+                  </div>
+                  <p className="text-xs text-muted-foreground leading-relaxed mb-3">
+                    适合产品经理、运营、不写后端代码的开发者。整个过程像在手机上装 App。
+                  </p>
+                  <ol className="list-decimal list-inside space-y-2 ml-1 text-sm">
+                    <li><strong>找到入口</strong>：在扣子平台的 <strong>「插件 / 工具」</strong> 配置区，点击<strong>「添加 MCP 服务」</strong>。</li>
+                    <li><strong>填两个字段</strong>（这也是你未来会从驰声这边拿到的）：
+                      <div className="mt-2 overflow-x-auto rounded-lg border border-border/60">
+                        <table className="w-full text-sm">
+                          <tbody className="divide-y divide-border/30">
+                            <tr><td className="py-2 px-3 font-medium w-32">服务器地址</td><td className="py-2 px-3 font-mono text-xs">https://speech-eval.site/mcp</td></tr>
+                            <tr><td className="py-2 px-3 font-medium">鉴权密钥</td><td className="py-2 px-3 font-mono text-xs">sk-•••••••••• <span className="text-muted-foreground ml-2">（由驰声分配，用于计费与识别）</span></td></tr>
+                          </tbody>
+                        </table>
+                      </div>
+                    </li>
+                    <li><strong>平台自动发现能力</strong>：扣子会访问你填的地址，读取 MCP Server 自描述的"说明书"。瞬间明白：「这是个语音评测工具，需要传音频，会返发音分」。</li>
+                    <li><strong>右侧测试</strong>：在平台的聊天框里发一段语音，大模型就会自动调用工具。<strong>整个过程不需要写一行代码。</strong></li>
+                  </ol>
+                </div>
+
+                {/* ── 姿势二：代码框架 ── */}
+                <div className="rounded-lg border border-border/60 p-5 mt-3">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Code2 className="h-4 w-4 text-foreground" />
+                    <h4 className="text-sm font-semibold">姿势二 · 代码框架配置（Dify / LangChain / 自研后端）</h4>
+                  </div>
+                  <p className="text-xs text-muted-foreground leading-relaxed mb-3">
+                    适合做独立 APP / 小程序、用 Dify 或 LangChain 写 Agent 的极客开发者。核心就是往配置文件里加一段 JSON。
+                  </p>
+                  <ol className="list-decimal list-inside space-y-2 ml-1 text-sm">
+                    <li><strong>打开配置文件</strong>（项目根目录下的 <code className="bg-muted px-1 rounded text-xs font-mono">mcp.json</code> 或框架指定的配置路径）。</li>
+                    <li><strong>在 <code className="bg-muted px-1 rounded text-xs font-mono">mcpServers</code> 下增加一个节点</strong>：
+                      <CodeBlock filename="mcp.json" lang="json">{`{
+  "mcpServers": {
+    "chivox_voice_eval": {
+      "type": "streamable-http",
+      "url": "https://speech-eval.site/mcp",
+      "env": {
+        "API_KEY": "你的专属密钥"
+      }
+    }
+  }
+}`}</CodeBlock>
+                    </li>
+                    <li><strong>重启后端服务</strong>。大模型的底层调度器会在启动时自动连上驰声 MCP Server，把 16 种评测工具注册成<strong>随时待命</strong>的 tools。</li>
+                    <li><strong>触发调用</strong>：用户发来录音后，大模型看到 system prompt 的引导，自动选择合适的工具（单词/句子/段落/半开放）调用。</li>
+                  </ol>
+                </div>
+
+                {/* ── 姿势三：Function Calling 直连（分 A / B 两种做法） ── */}
+                <div className="rounded-lg border border-border/60 p-5 mt-3">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Terminal className="h-4 w-4 text-foreground" />
+                    <h4 className="text-sm font-semibold">姿势三 · 原生 Function Calling（豆包 / DeepSeek / OpenAI 兼容 API）</h4>
+                  </div>
+                  <p className="text-xs text-muted-foreground leading-relaxed mb-3">
+                    适合不用任何 Agent 框架、直接调用 LLM API 的后端开发者。豆包 1.5+ / DeepSeek / GPT / Qwen 等模型都走标准 <code className="bg-muted px-1 rounded text-xs font-mono">chat.completions</code> 的 <code className="bg-muted px-1 rounded text-xs font-mono">tools</code> 参数。这里又分 A / B 两种做法，<strong>B 才是生产推荐</strong>。
+                  </p>
+
+                  <Callout type="warning">
+                    常见疑问：<em>"要不要手写一个 tool 定义？"</em><br />
+                    — <strong>姿势一 / 二不用</strong>（Coze、Dify、火山方舟控制台、Claude Desktop 会自动从 MCP Server 拉工具列表）。<br />
+                    — <strong>姿势三看你选 A 还是 B</strong>：A 要手写，B 用 MCP 客户端库自动拉。
+                  </Callout>
+
+                  {/* ── 3-A：手写 tool schema ── */}
+                  <div className="mt-4 rounded-md border border-border/40 bg-muted/20 p-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <p className="text-xs font-semibold">3-A · 手写 tool schema（最快验证，不推荐生产）</p>
+                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">快速 Demo</span>
+                    </div>
+                    <p className="text-[11px] text-muted-foreground leading-relaxed mb-3">
+                      自己写一段 JSON Schema 告诉豆包"有个工具叫 xxx，参数长这样"，豆包返回 tool_call 后你再手动去调驰声 MCP。<strong>缺点</strong>：驰声有 16 个评测工具，你每加一个题型都要改代码。
+                    </p>
+                    <CodeBlock filename="3a_hardcode_tool.py" lang="python">{`import os, json
+from openai import OpenAI
+
+client = OpenAI(
+    base_url="https://ark.cn-beijing.volces.com/api/v3",
+    api_key=os.getenv('ARK_API_KEY'),
+)
+
+# ─── 手写一段 tool schema（不推荐：16 个工具就要写 16 段）───
+tools = [{
+    "type": "function",
+    "function": {
+        "name": "en_word_eval",
+        "description": "英语单词发音评测。当用户让你评价英语发音并提供录音链接时调用。",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "audio_url":      {"type": "string", "description": "录音 URL"},
+                "reference_text": {"type": "string", "description": "参考文本，如 Apple"},
+            },
+            "required": ["audio_url", "reference_text"]
+        }
+    }
+}]
+
+resp = client.chat.completions.create(
+    model="ep-xxx-doubao-tools",
+    messages=[
+        {"role": "system", "content": "你是英语老师，拿到评测结果后温柔地反馈，不要直接报分数。"},
+        {"role": "user",   "content": "老师，我读了 Apple，录音 https://demo.com/u1.mp3"},
+    ],
+    tools=tools,
+    tool_choice="auto",
+)
+
+msg = resp.choices[0].message
+if msg.tool_calls:
+    args = json.loads(msg.tool_calls[0].function.arguments)
+    # ↓↓↓ 这里手动调驰声 MCP，再把结果回填给豆包做第二趟 ↓↓↓
+    # result = requests.post("https://speech-eval.site/mcp", json={...})`}</CodeBlock>
+                  </div>
+
+                  {/* ── 3-B：MCP 自动发现 ── */}
+                  <div className="mt-3 rounded-md border border-foreground/30 bg-foreground/[0.03] dark:bg-white/[0.03] p-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <p className="text-xs font-semibold flex items-center gap-1.5">
+                        3-B · 用 MCP 客户端库自动发现 <Sparkles className="h-3 w-3 text-foreground" />
+                      </p>
+                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-foreground text-background">生产推荐</span>
+                    </div>
+                    <p className="text-[11px] text-muted-foreground leading-relaxed mb-3">
+                      启动时连上驰声 MCP Server，调一次 <code className="bg-muted px-1 rounded">tools/list</code>，把 16 个评测工具自动转成 Function Calling 的 tools 格式。<strong>驰声加新工具，你代码不用改</strong>。这才是 MCP 协议的真正价值。
+                    </p>
+                    <CodeBlock filename="3b_mcp_autodiscover.py" lang="python">{`import asyncio, os
+from openai import AsyncOpenAI
+from mcp import ClientSession
+from mcp.client.streamable_http import streamablehttp_client
+
+client = AsyncOpenAI(
+    base_url="https://ark.cn-beijing.volces.com/api/v3",
+    api_key=os.getenv("ARK_API_KEY"),
+)
+
+async def main():
+    # ─── 1. 连驰声 MCP Server，自动拉取全部 16 个工具 ───
+    async with streamablehttp_client(
+        "https://speech-eval.site/mcp",
+        headers={"Authorization": f"Bearer {os.getenv('CHIVOX_KEY')}"},
+    ) as (read, write, _):
+        async with ClientSession(read, write) as session:
+            await session.initialize()
+            mcp_tools = (await session.list_tools()).tools  # ← 一行拿到全部工具
+
+            # ─── 2. MCP schema → OpenAI Function Calling schema ───
+            tools = [{
+                "type": "function",
+                "function": {
+                    "name": t.name,
+                    "description": t.description,
+                    "parameters": t.inputSchema,  # MCP 直接给 JSON Schema
+                }
+            } for t in mcp_tools]
+
+            # ─── 3. 正常调豆包，tools 由 MCP 动态注入 ───
+            resp = await client.chat.completions.create(
+                model="ep-xxx-doubao-tools",
+                messages=[
+                    {"role": "system", "content": "你是英语老师，收到评测结果后温柔反馈。"},
+                    {"role": "user",   "content": "老师，我读了 Apple，录音 https://demo.com/u1.mp3"},
+                ],
+                tools=tools,
+                tool_choice="auto",
+            )
+
+            # ─── 4. 折返跑：豆包选好工具后，直接走 MCP 调驰声 ───
+            msg = resp.choices[0].message
+            if msg.tool_calls:
+                call = msg.tool_calls[0]
+                result = await session.call_tool(
+                    call.function.name,
+                    arguments=__import__("json").loads(call.function.arguments),
+                )
+                # 把 result 回填给豆包做第二趟 chat.completions 即可
+
+asyncio.run(main())`}</CodeBlock>
+                    <p className="text-[11px] text-muted-foreground mt-3 leading-relaxed">
+                      想要更省心？直接用 <a href="https://github.com/modelcontextprotocol/python-sdk" target="_blank" rel="noreferrer" className="text-foreground underline underline-offset-2">官方 mcp python sdk</a>、<code className="bg-muted px-1 rounded text-xs">mcp-use</code>、<code className="bg-muted px-1 rounded text-xs">openai-agents</code>，或火山官方 <code className="bg-muted px-1 rounded text-xs">Arkitect</code> 高代码 SDK，它们都把上面这段"MCP → Function Calling"的桥接封装好了。
+                    </p>
+                  </div>
+                </div>
+
+                <Callout type="info">
+                  三种姿势走的是完全相同的 MCP 协议，能力完全等价。选型建议：<strong>产品经理 / 原型验证用姿势一</strong>（Coze 填表单）；<strong>AI 客户端用户用姿势二</strong>（Cursor / Claude Desktop 填 <code className="bg-black/5 dark:bg-white/10 px-1 rounded text-xs">mcp.json</code>）；<strong>后端生产服务用姿势三-B</strong>（MCP 客户端库自动发现工具，不要手写 tool schema）。
+                </Callout>
+              </SubDoc>
+
+            </DocSection>
 
             {/* ══════ 快速开始 ══════ */}
             <DocSection id="quick-start" icon={Zap} title="快速开始">
