@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useLocale } from 'next-intl';
 import { Link } from '@/i18n/routing';
 import { Mic, Sparkles, Zap, ArrowRight, Check, Languages, BookOpen } from 'lucide-react';
@@ -298,6 +298,178 @@ const DATA: Record<Lang, Record<QKey, PreviewData>> = {
   cn: CN_DATA,
 };
 
+/** 英文内核 + 中文站：Mock 外壳中文化（样例文本 / 数值不变） */
+const EN_KICKER_ZH: Record<QKey, string> = {
+  word: '参考单词 · en.word.score',
+  sent: '参考句子 · en.sent.score',
+  para: '参考段落 · en.pred.score',
+  semi: '半开放题 · en.pqan.score',
+};
+
+/** 中文内核 + 英文站：Mock 外壳英文化 */
+const CN_KICKER_EN: Record<QKey, string> = {
+  word: 'Reference word · cn.word.raw',
+  sent: 'Reference sentence · cn.sent.raw',
+  para: 'Reference paragraph · cn.pred.raw',
+  semi: 'Semi-open (N/A) · cn.semi',
+};
+
+const EN_PRACTICE_LABEL_ZH: Record<QKey, string> = {
+  word: 'LLM 生成 · 单词纠音',
+  sent: 'LLM 生成 · 句子纠音',
+  para: 'LLM 生成 · 段落纠音',
+  semi: 'LLM 生成 · 内容拓展',
+};
+
+/** 英文内核 + 中文站：LLM 练习段落中文化（与 EN_DATA.practice 对应） */
+const EN_PRACTICE_BODY_ZH: Record<QKey, string> = {
+  word:
+    '"跟读 3 遍：舌尖配合 /j/，双唇收圆发 /uː/，读成 YOU-niːk，重音落在第二音节…"',
+  sent:
+    '"练 /ʃ/：舌尖抬起、别碰齿缘 —— 慢读 5 遍：SHE-sells、SHE-shells、by the SHE-shore…"',
+  para:
+    '"针对 /θ/ 舌位，可跟读整句：The thirty-three thieves thought they thrilled the throne throughout Thursday…"',
+  semi:
+    '"扩展为 3 句：① 你做了什么；② 为什么喜欢；③ 举一个具体例子，可连用 because / so that / for example…"',
+};
+
+const CN_PRACTICE_LABEL_EN: Record<QKey, string> = {
+  word: 'LLM generated · word drill',
+  sent: 'LLM generated · sentence drill',
+  para: 'LLM generated · paragraph drill',
+  semi: 'LLM generated · expansion',
+};
+
+/** 中文内核 + 英文站：LLM 练习段落英文化（与 CN_DATA.practice 对应） */
+const CN_PRACTICE_BODY_EN: Record<QKey, string> = {
+  word:
+    '"Repeat 3×: for 独 (dú), start mid and rise for 2nd tone; for 特 (tè), drop sharply from high for 4th tone. Keep the pitch contour clean and decisive…"',
+  sent:
+    '"Focus on erhua in 马儿: curl the tongue at the end of 马 (mǎ) toward /r/—do not pronounce 儿 as its own syllable. The second 妈 in 妈妈 is neutral tone: short and light…"',
+  para:
+    '"Drill erhua first: 花儿 (huār), 鸟儿 (niǎor)—curl the main vowel at the end. Then 3rd-tone sandhi: in 你好, the first 你 shifts from 3rd to 2nd when read in a phrase…"',
+  semi:
+    '"Expand to 3 sentences: ① what I like most ___; ② because ___; ③ one example ___. Use 首先 / 因为 / 比如 to clarify logic…"',
+};
+
+const SCORE_EN_TO_ZH: Record<string, string> = {
+  Overall: '总分',
+  'Pron.': '发音',
+  Accuracy: '准确度',
+  Fluency: '流利度',
+  Integrity: '完整度',
+  Grammar: '语法',
+  Content: '内容',
+};
+
+const SCORE_ZH_TO_EN: Record<string, string> = {
+  总分: 'Overall',
+  发音: 'Pron.',
+  准确度: 'Accuracy',
+  流利度: 'Fluency',
+  完整度: 'Integrity',
+  语法: 'Grammar',
+  内容: 'Content',
+  语言: 'Language',
+  声调: 'Tone',
+};
+
+/** 英文内核 chips：中文站下的展示文案（与 EN_DATA 一一对应） */
+const EN_CHIPS_ZH: Record<QKey, string[]> = {
+  word: [
+    '⚠ /juː/ 唇圆度不足',
+    '⚠ 第二音节重音偏弱',
+    '✓ /niː/ 准确',
+    '✓ 词尾 /k/ 清晰',
+  ],
+  sent: [
+    '⚠ /ʃ/ 读成 /s/',
+    '⚠ "seashore" 中间停顿不当',
+    '✓ 语速合适',
+    '✓ 句末语调自然',
+  ],
+  para: [
+    '⚠ /θ/ 舌位不足',
+    '⚠ "unique" 重音偏移',
+    '✓ 连读顺畅',
+    '✓ 语速良好',
+  ],
+  semi: [
+    '⚠ 展开偏少（仅 1 句）',
+    '⚠ 连接词 "and" 过多',
+    '✓ 时态一致',
+    '✓ 整体发音清晰',
+  ],
+};
+
+const CN_CHIPS_EN: Record<QKey, string[]> = {
+  word: [
+    '⚠ 独: pronounced with 3rd tone instead of 2nd',
+    '⚠ 特: 4th-tone fall too weak / not decisive enough',
+    '✓ dú / tè: syllables and pinyin boundaries clear',
+    '✓ Initial /t/ aspiration sounds natural',
+  ],
+  sent: [
+    '⚠ 马儿: erhua weak—merge vowel + curled /r/, one syllable',
+    '⚠ 妈妈: second 妈 should be neutral tone (short, unstressed)',
+    '✓ Phrase linking and overall fluency smooth',
+    '✓ No obvious skipped syllables or words',
+  ],
+  para: [
+    '⚠ 花儿: erhua missing—should be one syllable e.g. huār',
+    '⚠ 不 + 4th tone: read 不 as 2nd tone (bú) before a 4th-tone syllable',
+    '✓ Phrase breaks and pauses sound natural',
+    '✓ Steady reading pace (~4 chars/s)',
+  ],
+  semi: [
+    '⚠ Answer too thin (only two short sentences)',
+    '⚠ Overuse of 的 as filler / structural glue',
+    '✓ Standard Mandarin articulation clear',
+    '✓ Few disfluencies or verbal fillers',
+  ],
+};
+
+function buildPreviewShell(
+  data: PreviewData,
+  lang: Lang,
+  q: QKey,
+  siteZh: boolean
+): PreviewData {
+  if (lang === 'en' && siteZh) {
+    const chipsZh = EN_CHIPS_ZH[q];
+    return {
+      ...data,
+      kicker: EN_KICKER_ZH[q] ?? data.kicker,
+      practiceLabel: EN_PRACTICE_LABEL_ZH[q] ?? data.practiceLabel,
+      practice: EN_PRACTICE_BODY_ZH[q] ?? data.practice,
+      scores: data.scores.map((s) => ({
+        ...s,
+        label: SCORE_EN_TO_ZH[s.label] ?? s.label,
+      })),
+      chips: chipsZh
+        ? data.chips.map((c, i) => ({ ...c, text: chipsZh[i] ?? c.text }))
+        : data.chips,
+    };
+  }
+  if (lang === 'cn' && !siteZh) {
+    const chipsEn = CN_CHIPS_EN[q];
+    return {
+      ...data,
+      kicker: CN_KICKER_EN[q] ?? data.kicker,
+      practiceLabel: CN_PRACTICE_LABEL_EN[q] ?? data.practiceLabel,
+      practice: CN_PRACTICE_BODY_EN[q] ?? data.practice,
+      scores: data.scores.map((s) => ({
+        ...s,
+        label: SCORE_ZH_TO_EN[s.label] ?? s.label,
+      })),
+      chips: chipsEn
+        ? data.chips.map((c, i) => ({ ...c, text: chipsEn[i] ?? c.text }))
+        : data.chips,
+    };
+  }
+  return data;
+}
+
 export function DemoPreview() {
   const locale = useLocale();
   const siteZh = locale.startsWith('zh');
@@ -313,6 +485,11 @@ export function DemoPreview() {
     : availableTabs[0].k;
 
   const data = DATA[lang][effectiveActive];
+  /** 右侧 Mock：随站点语言（顶部中/英）切换外壳文案，评测样例仍由内核 lang 决定 */
+  const shellData = useMemo(
+    () => buildPreviewShell(DATA[lang][effectiveActive], lang, effectiveActive, siteZh),
+    [lang, effectiveActive, siteZh]
+  );
 
   function switchLang(next: Lang) {
     if (next === lang) return;
@@ -331,7 +508,7 @@ export function DemoPreview() {
   }
 
   const BAR_COUNT = 44;
-  const playedUpTo = Math.floor(BAR_COUNT * data.audioProgress);
+  const playedUpTo = Math.floor(BAR_COUNT * shellData.audioProgress);
 
   return (
     <>
@@ -476,27 +653,30 @@ export function DemoPreview() {
               </div>
               <div className="flex-1 flex justify-center">
                 <div className="h-5 max-w-[280px] w-full rounded-full bg-background border border-border/60 px-3 flex items-center justify-center text-[10px] text-muted-foreground font-mono truncate">
-                  speech-eval.site/demo · {data.urlHash}
+                  speech-eval.site/demo · {shellData.urlHash}
                 </div>
               </div>
               <div className="shrink-0 flex items-center gap-1 text-[10px] text-muted-foreground">
                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                LIVE
+                {siteZh ? '实时' : 'LIVE'}
               </div>
             </div>
 
-            {/* 内容（随 lang + active 变） · 带淡入动画 */}
-            <div key={`${lang}-${effectiveActive}`} className="p-5 space-y-4 animate-in fade-in-0 slide-in-from-right-2 duration-300">
+            {/* 内容：内核 lang + 题型 + 站点语言 locale 变化时均刷新 */}
+            <div
+              key={`${locale}-${lang}-${effectiveActive}`}
+              className="p-5 space-y-4 animate-in fade-in-0 slide-in-from-right-2 duration-300"
+            >
               {/* 1. 参考文本 */}
               <div>
                 <div className="text-[10px] tracking-[0.18em] uppercase text-muted-foreground mb-1.5 flex items-center gap-2">
-                  <span>{data.kicker}</span>
+                  <span>{shellData.kicker}</span>
                   <span className="h-0.5 w-0.5 rounded-full bg-muted-foreground/40" />
                   <span className="font-mono text-muted-foreground/70 normal-case tracking-normal">
-                    coreType: <span className="text-foreground">{data.coreType}</span>
+                    {siteZh ? '内核' : 'coreType'}: <span className="text-foreground">{shellData.coreType}</span>
                   </span>
                 </div>
-                <div className="text-sm leading-relaxed">{data.text}</div>
+                <div className="text-sm leading-relaxed">{shellData.text}</div>
               </div>
 
               {/* 2. 波形 + 播放条 */}
@@ -513,13 +693,13 @@ export function DemoPreview() {
                         <div
                           key={i}
                           className={cn('flex-1 rounded-full transition-colors', played ? 'bg-foreground' : 'bg-foreground/20')}
-                          style={{ height: `${Math.min(h, 100).toFixed(2)}%` }}
+                          style={{ height: `${Math.min(h, 100)}%` }}
                         />
                       );
                     })}
                   </div>
                   <div className="text-[10px] text-muted-foreground font-mono tabular-nums shrink-0">
-                    {data.audioCur} / {data.audioTotal}
+                    {shellData.audioCur} / {shellData.audioTotal}
                   </div>
                 </div>
               </div>
@@ -527,14 +707,14 @@ export function DemoPreview() {
               {/* 3. 按题型动态得分卡 */}
               <div className={cn(
                 'grid gap-2',
-                data.scores.length === 2
+                shellData.scores.length === 2
                   ? 'grid-cols-2'
-                  : data.scores.length === 5
+                  : shellData.scores.length === 5
                     ? 'grid-cols-2 sm:grid-cols-5'
                     : 'grid-cols-2 sm:grid-cols-4'
               )}>
-                {data.scores.map((s) => (
-                  <div key={s.label} className="rounded-lg border border-border/40 bg-background p-2 text-center">
+                {shellData.scores.map((s, si) => (
+                  <div key={`${s.label}-${si}`} className="rounded-lg border border-border/40 bg-background p-2 text-center">
                     <div className={cn(
                       'text-lg font-bold tabular-nums',
                       s.tone === 'amber' ? 'text-amber-600 dark:text-amber-400' : 'text-emerald-600 dark:text-emerald-400'
@@ -552,7 +732,7 @@ export function DemoPreview() {
                   {siteZh ? 'LLM 诊断 · 次生分析' : 'LLM Diagnosis · Secondary Analysis'}
                 </div>
                 <div className="flex flex-wrap gap-1.5">
-                  {data.chips.map((c, i) => (
+                  {shellData.chips.map((c, i) => (
                     <span
                       key={i}
                       className={cn(
@@ -572,9 +752,9 @@ export function DemoPreview() {
               <div className="rounded-lg bg-foreground/[0.03] border border-dashed border-border/60 p-3">
                 <div className="flex items-center gap-1.5 mb-1.5">
                   <Sparkles className="h-3.5 w-3.5 text-foreground" />
-                  <span className="text-[10px] tracking-[0.18em] uppercase text-muted-foreground">{data.practiceLabel}</span>
+                  <span className="text-[10px] tracking-[0.18em] uppercase text-muted-foreground">{shellData.practiceLabel}</span>
                 </div>
-                <div className="text-xs text-muted-foreground italic leading-relaxed">{data.practice}</div>
+                <div className="text-xs text-muted-foreground italic leading-relaxed">{shellData.practice}</div>
               </div>
             </div>
           </div>

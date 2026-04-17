@@ -61,7 +61,9 @@ export function ParamsShowcase() {
                 onMouseEnter={() => setActive(f.key)}
                 onMouseLeave={() => setActive(null)}
                 className={`bg-background p-5 flex gap-4 cursor-pointer h-full transition-colors duration-200 ${
-                  isActive ? 'bg-amber-50/60 dark:bg-amber-500/[0.04]' : 'hover:bg-muted/30'
+                  isActive
+                    ? 'bg-muted/25 dark:bg-muted/15'
+                    : 'hover:bg-muted/15 dark:hover:bg-muted/10'
                 }`}
               >
                 <IconWrap

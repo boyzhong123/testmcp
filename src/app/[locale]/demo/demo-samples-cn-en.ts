@@ -77,13 +77,20 @@ Think of a quick fist-strike downward.
   },
 
   sentence: {
-    analysisPrompt: `You are a Mandarin speaking coach. Below is sentence-level data from Chivox MCP (cn.sent.raw).
+    analysisPrompt: `You are a Mandarin speaking coach. Below is sentence-level data from Chivox MCP (cn.sent.raw): whole-sentence scores plus per-word details, optional phonemes, and fluency / rhythm fields.
 
-## Sentence-level focus
-- Erhua (r-colored vowel): is it one syllable or two?
-- Neutral tone (e.g. second 妈 in 妈妈, 子, 头): short and light?
-- Tone sandhi: consecutive 3rd tones, 不+4th, 一+1st/2nd/3rd/4th
-- Prosodic groups: comma pauses ≤ ~0.3s
+## Task
+Read the MCP JSON together with the reference sentence (refText). Produce a **learner-facing** diagnosis: open with a brief summary (overall + pace if present), then list issues by **severity**. For each issue name the **exact word(s)**, the **phenomenon** (erhua / neutral tone / sandhi / chunking), **why points were lost**, and a concrete correction cue.
+
+## Checklist (cover each; say "none notable" if absent)
+1. **Erhua**: when phonemes include "r(儿化)" or dp_type suggests it, check for a two-beat "main syllable + separate 儿".
+2. **Neutral tone**: reduplication, suffixes, sentence-final particles — second syllable short, light, no full tone contour.
+3. **Sandhi**: 3rd-tone chains, 不 + following tone, 一 + following tone — match Standard Mandarin rules.
+4. **Prosody**: use rhythm and comma positions to flag pauses that are too long or too choppy; suggest chunk boundaries.
+
+## Output shape
+- Use Markdown subheads (e.g. Summary, Erhua, Neutral tone, Rhythm, Study priorities).
+- End with **1–3 clear study priorities** (biggest impact on sounding natural first).
 
 ## MCP response
 \`\`\`json
@@ -107,8 +114,26 @@ Neutral tone is short, light, and unstressed — like a tap on water.
 1. Erhua on 马儿 — biggest impact on natural Mandarin
 2. Neutral tone on 妈妈
 3. Linking and rhythm on 摇啊摇`,
-    practicePrompt:
-      'From the diagnosis, generate Mandarin sentence drills focusing on erhua, neutral tone, and phrase linking. Return JSON.',
+    practicePrompt: `You are still this learner's Mandarin coach. A second-pass diagnosis already exists — design shadowing / contrast drills **strictly from the weaknesses it names**, not generic exercises.
+
+## Task
+Produce **sentence-level** practice: center on **erhua, neutral tone, and phrase linking**; every line must be speakable and map to a low-scoring span in the MCP payload.
+
+## Output JSON (single valid JSON array only; no prose outside it)
+Each element must have category (string), icon (one emoji), and items (array of { label, content }):
+\`\`\`json
+[
+  { "category": "Erhua", "icon": "🌀", "items": [ { "label": "…", "content": "…" } ] },
+  { "category": "Neutral tone", "icon": "🪶", "items": [ { "label": "…", "content": "…" } ] },
+  { "category": "Chunking", "icon": "🎵", "items": [ { "label": "…", "content": "…" } ] }
+]
+\`\`\`
+
+## Rules
+- At least **three categories**, aligned with diagnosis priorities; put one extra item in the heaviest weakness.
+- content may include pinyin and pause marks (e.g. / for a short pause); avoid empty slogans.
+- If a category barely applies, shorten items but keep three top-level categories for a stable UI schema.
+`,
     practice: [
       {
         category: 'Erhua',
@@ -153,13 +178,20 @@ Neutral tone is short, light, and unstressed — like a tap on water.
   },
 
   paragraph: {
-    analysisPrompt: `You are a Mandarin speaking coach. Below is paragraph-level data from Chivox MCP (cn.pred.raw).
+    analysisPrompt: `You are a Mandarin speaking coach. Below is paragraph-level data from Chivox MCP (cn.pred.raw): long text with many word-level details, rhythm, speed, and integrity.
 
-## Paragraph focus
-- Erhua distribution: 花儿, 鸟儿, etc.
-- 不 / 一 sandhi: 不+4th→2nd, 一+4th→2nd, 一+1st/2nd/3rd→4th in common patterns
-- Short prosodic groups (often 2–4 characters)
-- Overall pace ≈ 4–5 characters per second
+## Task
+Diagnose in **full-passage context**: note not only isolated errors but whether the **same pattern repeats** (e.g. multiple erhua failures, multiple 不 without correct sandhi) and how that affects overall naturalness / exam-style delivery. Tone: professional and encouraging.
+
+## Dimensions
+1. **Erhua**: scan details / phonemes for "r(儿化)"; separate "missing erhua where expected" from "erhua split into two syllables".
+2. **不 / 一 sandhi**: list relevant collocations in the passage; contrast current vs canonical reading (pinyin welcome).
+3. **Prosody**: using rhythm and punctuation, flag unnatural micro-chunks or missing pauses; suggest 2–4 character grouping where helpful.
+4. **Global fit**: relate overall, accuracy, fluency, integrity to details; call out contradictions (e.g. high fluency but many erhua issues).
+
+## Output shape
+- Markdown sections such as Summary, Erhua, Sandhi, Prosody & chunks, Study priorities.
+- **At most three** study priorities, ordered by impact on score / naturalness.
 
 ## MCP response
 \`\`\`json
@@ -183,7 +215,28 @@ Pattern: 不 + 4th tone → 2nd tone on 不 → **bú yuǎn chù**.
 1. Erhua (most impact on sounding native)
 2. 不 / 一 sandhi rules
 3. Smoother phrase linking`,
-    practicePrompt: 'From the diagnosis, generate integrated Mandarin paragraph practice. Return JSON.',
+    practicePrompt: `You are still this learner's Mandarin coach. The second-pass analysis already covers passage-level weaknesses; now output **integrated paragraph practice** so erhua, sandhi, and chunking are trained inside longer utterances.
+
+## Task
+Deliver **shadow-ready drills**: contrast pairs, quick sandhi reference lines, and a marked passage for read-aloud — slightly harder than the hardest lines in the original text, but still common written vocabulary.
+
+## Output JSON (single valid JSON array only; no prose outside it)
+Each element: category, icon (one emoji), items (array of { label, content }):
+\`\`\`json
+[
+  { "category": "Erhua", "icon": "🌀", "items": [ { "label": "…", "content": "…" } ] },
+  { "category": "Sandhi", "icon": "📐", "items": [ { "label": "…", "content": "…" } ] },
+  { "category": "Chunking", "icon": "🎵", "items": [ { "label": "…", "content": "…" } ] }
+]
+\`\`\`
+
+## Rules
+- **Three categories** aligned with diagnosis priorities; the weakest area needs at least two items.
+- Erhua category: include **non-erhua vs erhua** contrasts or a note on full-passage erhua reading.
+- Sandhi category: include 不 / 一 with following-tone examples drawn from the diagnosis themes.
+- Chunking: use [] for groups and // or / for pause hints with rough duration (seconds).
+- All content must be plain display text — no nested JSON inside strings.
+`,
     practice: [
       {
         category: 'Erhua',

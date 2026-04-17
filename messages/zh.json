@@ -18,7 +18,13 @@
     "description": "驰声 MCP 将语音评测的高颗粒度元数据以标准协议输出，使 LLM 能够理解、分析并生成个性化的口语教学反馈。",
     "cta_primary": "立即体验",
     "cta_secondary": "阅读文档",
-    "trusted": "已服务超过"
+    "trusted": "已服务超过",
+    "typewriter_lines": [
+      "一键接入大模型",
+      "结构化输出可消费",
+      "音素级诊断进模型",
+      "闭环英语口语学习"
+    ]
   },
   "Features": {
     "title": "丰富的数据维度",
@@ -44,8 +50,8 @@
   },
   "Value": {
     "label": "工作流程",
-    "title": "深度的二次分析",
-    "description": "开发者可引导大模型消费这些参数，结合特定的教育提示词（Prompt），对用户的口语表现进行语义级别的深度诊断。",
+    "title": "LLM 二次诊断",
+    "description": "用提示词引导大模型读取 MCP 多维评测结果，把分数与音素标记转成教学向的诊断、纠音优先级与练习建议。",
     "step_section_title": "从评测数据到教学反馈",
     "step_section_desc": "只需 4 步，将语音评测数据转化为 LLM 驱动的个性化教学内容。",
     "demo_title": "LLM 深度分析演示",
@@ -54,6 +60,11 @@
     "demo_point2": "大模型可定位具体音素弱项，给出针对性矫正建议",
     "demo_point3": "智能生成绕口令、跟读素材、个性化提分路线",
     "demo_llm_response": "你的流利度表现优秀（85分）！但准确度（65分）有提升空间。你在 /θ/ 和 /r/ 两个音素上存在混淆，建议练习：\"Thirty-three thieves thought they thrilled the throne throughout Thursday.\" 另外 record 和 present 的重音位置需要注意区分名词和动词用法。",
+    "demo_card_1_title": "① MCP 评测输出",
+    "demo_card_2_title": "② 大模型教学反馈",
+    "demo_card_3_title": "③ 自动生成练习",
+    "demo_exercise_body": "跟读材料与上方教学反馈中的示范句一致。请先分词慢读（如 three、thieves、through、Thursday），再连成整句；舌尖轻抵上齿发清辅音 /θ/，/r/ 用卷舌近音，避免读成汉语里的「日」。建议连读 3 遍，每遍侧重一类音素。",
+    "demo_exercise_est": "预计约 1.5 分钟",
     "step1_title": "语音输入",
     "step1_desc": "用户朗读指定文本，音频经 MCP 服务实时处理",
     "step2_title": "多维评测",

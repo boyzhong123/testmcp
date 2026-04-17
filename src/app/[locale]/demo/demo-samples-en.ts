@@ -28,12 +28,19 @@ export const SAMPLES_EN: Record<QType, Sample> = {
         ],
       },
     ],
-    analysisPrompt: `You are a professional English pronunciation coach. Below is word-level exam-grade data from the Chivox MCP API. Use phonemes[].score and dp_type to write a learner-facing phoneme diagnosis.
+    analysisPrompt: `You are a professional English pronunciation coach. Below is **word-level** exam-grade data from the Chivox MCP API (en.word.score): one headword, overall + pron scores, and a phoneme array with per-phoneme score and dp_type.
 
-## Rules
-- Group phonemes by dp_type; prioritize mispron
-- For each mispron phoneme: common learner error + mouth/tongue fix
-- List up to 4 items, weakest to strongest
+## Task
+Write a **learner-facing** diagnosis of this single word. Tie every claim to phoneme scores (cite symbols). Assume the learner can read IPA-lite labels in the payload.
+
+## Method
+- Group phonemes by **dp_type**; treat **mispron** first, then borderline **normal** scores below 70 if they explain the word score.
+- For each problem phoneme: **typical L1 interference**, **what it sounds like now**, **one concrete articulation fix** (jaw, tongue, airstream, lip rounding).
+- Respect **lexical stress** if marked (e.g. ˈ): mis-stress counts as a rhythm issue even when individual phones look fine.
+- Cap at **four** numbered issues, ordered **weakest → strongest** impact on intelligibility.
+
+## Output shape
+Short Markdown: optional one-line summary, then numbered items, then a single-line **🎯 Priority** ranking.
 
 ## Tone
 Friendly, concrete, actionable — no empty cheerleading.
@@ -51,19 +58,24 @@ Friendly, concrete, actionable — no empty cheerleading.
 ③ First /ə/ — score 60. Jaw is tight; relax it.
 
 🎯 Priority: ˈtɪ > jʊ > ə₁`,
-    practicePrompt: `From the diagnosis, generate micro-drills as JSON:
+    practicePrompt: `You are still the same learner's coach. The **second-pass diagnosis** already lists weak phonemes — generate **micro-drills** that map 1:1 to those weaknesses (no generic packs).
 
-{
-  "categories": [
-    { "category": "...", "icon": "emoji",
-      "items": [ { "label": "...", "content": "..." } ] }
-  ]
-}
+## Output JSON (single valid JSON array only; no prose outside it)
+Root must be an **array** of objects, each with **category** (string), **icon** (one emoji), and **items** (array of { "label", "content" }):
+\`\`\`json
+[
+  { "category": "Phoneme drills", "icon": "🎯", "items": [ { "label": "…", "content": "…" } ] },
+  { "category": "Awareness", "icon": "🗣️", "items": [ { "label": "…", "content": "…" } ] },
+  { "category": "Whole word", "icon": "📝", "items": [ { "label": "…", "content": "…" } ] }
+]
+\`\`\`
 
 ## Rules
-- Phoneme drills: 1 minimal pair + 1 tongue twister per mispron phoneme
-- Awareness: 1 mouth/tongue self-check
-- Whole word: 2–3 real sentences containing the word`,
+- **Phoneme drills**: for each **mispron** phoneme from the diagnosis, at least **one** minimal pair or near-minimal pair **and** one short tongue-twister or repetition line that reuses the sound.
+- **Awareness**: one item that targets **stress** or **jaw/tongue posture** if stress was weak.
+- **Whole word**: **2–3** natural sentences that include the headword in different positions (initial / medial / final).
+- All **content** strings must be speakable aloud; no nested JSON inside strings.
+`,
     practice: [
       {
         category: 'Phoneme drills',
@@ -139,20 +151,22 @@ Friendly, concrete, actionable — no empty cheerleading.
       { char: 'lazy', score: 85, dp_type: 'normal' },
       { char: 'dog', score: 80, dp_type: 'normal' },
     ],
-    analysisPrompt: `You are a professional English pronunciation coach. Below is sentence-level exam-grade data from Chivox MCP. Diagnose using details[].dp_type and phonemes.
+    analysisPrompt: `You are a professional English pronunciation coach. Below is **sentence-level** exam-grade data from Chivox MCP (en.sent.score): refText, overall, pron sub-scores (accuracy, integrity, fluency, rhythm), optional **speed** (e.g. WPM), and **details[]** with per-token scores, dp_type, and optional phonemes[].
 
-## Focus
-1. Group by dp_type: mispron / omit / insert
-2. For words with score < 70, go to phoneme level
-3. Relate rhythm / fluency to pacing
+## Task
+Produce a **structured, learner-readable** diagnosis of this single sentence. Open with a compact **scoreboard line** (overall + sub-scores + speed if present), then move from **phones → words → prosody**.
 
-## Output
-- Pronunciation · phoneme level: one issue → one fix
-- Prosody · stress / intonation from rhythm and weak words
-- Priority: one sentence
+## Checklist (cover each; say "none material" if not applicable)
+1. **Segmental**: for each token with score under 70 or dp_type not "normal", open **phonemes** when present; name the likely error (e.g. /ð/ realized as /d/) and one fix.
+2. **Omissions / insertions**: flag dp_type **omit** / **insert** and how they affect integrity.
+3. **Prosody**: use **rhythm** + stressed syllables in mispronounced words — misplaced lexical stress, flat intonation on declaratives, choppy chunking.
+4. **Fluency vs accuracy**: if fluency is high but accuracy low, say so explicitly (helps learners prioritize).
+
+## Output format
+Use Markdown subheads such as **Pronunciation**, **Prosody**, **Study priority** (one short ranked line, highest ROI first).
 
 ## Tone
-Like a human coach: concrete and actionable.
+Like a human coach: concrete, non-jargony where possible, actionable.
 
 ## MCP payload
 \`\`\`json
@@ -172,12 +186,27 @@ Prosody
 ⑤ Declarative sentence: fall on "dog" ↘; your pitch is a bit flat.
 
 🎯 Priority: /ð/ > /ɒ/ > "over" stress. /ð/ is high-frequency — best ROI.`,
-    practicePrompt: `From the diagnosis, output practice JSON.
+    practicePrompt: `You are still the same learner's coach. A **second-pass diagnosis** already exists for this sentence — design drills **only from weaknesses it names** (specific phonemes, words, and prosody flags).
+
+## Task
+Emit **sentence-level** practice: phoneme contrast + shadowing + a timed challenge that references the learner's current pace from MCP **speed** when available.
+
+## Output JSON (single valid JSON array only; no prose outside it)
+Each element: **category** (string), **icon** (one emoji), **items** (array of { "label", "content" }). Use **three** top-level categories for a stable UI:
+\`\`\`json
+[
+  { "category": "Phoneme drills", "icon": "🎯", "items": [ { "label": "…", "content": "…" } ] },
+  { "category": "Prosody", "icon": "🎵", "items": [ { "label": "…", "content": "…" } ] },
+  { "category": "Challenge", "icon": "📈", "items": [ { "label": "…", "content": "…" } ] }
+]
+\`\`\`
 
 ## Rules
-- One tongue twister + one minimal pair per mispron phoneme
-- One stress-marked shadowing line for prosody
-- One timed read challenge at the learner’s WPM`,
+- **Phoneme drills**: for each **mispron** phoneme called out in the diagnosis, include **at least** one minimal-pair or near-pair line **and** one short tongue-twister or dense repetition line.
+- **Prosody**: one shadowing line with **CAPS** for lexical stress and a **↘** or **↗** cue on the clause that needs clearer intonation.
+- **Challenge**: one **timed read** of the same refText (or a shortened variant) with a WPM target ±5–10 of the reported speed, plus one success criterion (e.g. "keep /ð/ audible").
+- Keep every **content** string plain text suitable for on-screen display.
+`,
     practice: [
       {
         category: 'Phoneme drills',
@@ -374,18 +403,22 @@ Prosody
       { char: 'my', score: 88, dp_type: 'normal' },
       { char: 'way', score: 86, dp_type: 'normal' },
     ],
-    analysisPrompt: `You are a professional English pronunciation coach. Below is paragraph-level data from Chivox MCP. Integrate details, dp_type, integrity, and rhythm.
+    analysisPrompt: `You are a professional English pronunciation coach. Below is **paragraph-level** data from Chivox MCP (en.pred.score): long refText, overall, pron sub-scores, optional **speed**, **integrity**, and many **details[]** rows (tokens may repeat across clauses; some rows may be empty char for **omit**).
 
-## Focus
-- Paragraphs: watch omit/insert — learners often drop function words
-- Cluster recurring errors by phoneme family
-- rhythm reflects chunking and pauses
+## Task
+Diagnose the **whole passage in context**: (a) completeness / skipping, (b) recurring **phoneme families**, (c) rhythm & chunking, (d) how sub-scores agree or disagree.
 
-## Output
-- Completeness: where omitted/inserted and why
-- Pronunciation: group similar errors
-- Rhythm: chunking quality
-- Priority list
+## Checklist
+1. **Integrity / dp_type**: list every **omit** / **insert** with clause context; explain why function words disappear in long reads.
+2. **Segmental clusters**: group weak tokens by shared phoneme issue (/θ/ chain, /e/ chain, /ɒ/, weak stress on ˈe, etc.); cite example words from details.
+3. **Prosody**: use **rhythm** + punctuation — flag over-pausing inside phrases, or missing boundaries before new clauses.
+4. **Global coherence**: if **fluency** looks fine but **accuracy** is weak (or vice versa), call it out and say what that implies for practice design.
+
+## Output format
+Markdown sections such as **Summary**, **Completeness**, **Pronunciation (families)**, **Rhythm**, **Study priorities** (≤4 bullets, most impactful first).
+
+## Tone
+Exam-aware but supportive; every bullet should suggest **what to rehearse next**.
 
 ## MCP payload
 \`\`\`json
@@ -409,12 +442,27 @@ Priority
 2) /θ/ (high frequency)
 3) Prepositions inside chunks, not isolated pauses
 4) Polish prosody last`,
-    practicePrompt: `Generate paragraph drills as JSON.
+    practicePrompt: `You are still the same learner's coach. The **second-pass paragraph diagnosis** already names omission spots and phoneme families — build **passage-length** practice that chains those families instead of isolated minimal pairs only.
+
+## Task
+Return drills that move **sound → phrase → paragraph**: family chains, **chunk maps** that glue weak function words, and a **metacognitive** record–replay step.
+
+## Output JSON (single valid JSON array only; no prose outside it)
+Each element: **category**, **icon** (one emoji), **items** (array of { "label", "content" }). Default to **three** categories:
+\`\`\`json
+[
+  { "category": "Phoneme families", "icon": "🎯", "items": [ { "label": "…", "content": "…" } ] },
+  { "category": "Chunking", "icon": "🎵", "items": [ { "label": "…", "content": "…" } ] },
+  { "category": "Metacognition", "icon": "🧠", "items": [ { "label": "…", "content": "…" } ] }
+]
+\`\`\`
 
 ## Rules
-- Chain drills by phoneme family
-- Use chunk shadowing for omitted prepositions
-- Add record–replay self-check for long texts`,
+- **Phoneme families**: at least **three items** total across the category, grouping minimal pairs / word chains that reuse the diagnosed families (/θ/, /e/, /ɒ/, etc.).
+- **Chunking**: include one **bracketed chunk map** of the passage (use [ ] and / or // with rough pause hints in seconds) and one item that **targets any omitted preposition / function word** by embedding it inside a phrase (not drilling it alone).
+- **Metacognition**: one item that prescribes **record → replay → compare to MCP details** for N passes (N explicit, 2–3).
+- All strings are plain display text; no nested JSON.
+`,
     practice: [
       {
         category: 'Phoneme families',
@@ -478,15 +526,24 @@ Priority
       { level: 'ok', label: 'Coherence', detail: '"and then", "After that" keep time order clear' },
       { level: 'warn', label: '/θ/ vs /r/', detail: '/r/ in "morning" / "fresh" drifts toward /w/' },
     ],
-    analysisPrompt: `You are an IELTS-style speaking coach. Below is semi-open data from Chivox MCP (en.pqan.score): five dimensions + transcript.
+    analysisPrompt: `You are an **IELTS-style / classroom speaking** coach. Below is **semi-open** data from Chivox MCP (en.pqan.score): prompt refText, learner **transcript**, **overall**, four rubric scores (**grammar**, **content**, **fluency**, **pron**), **speed** (WPM if present), and structured **issues[]** flags.
 
-## Weights
-- grammar 25% · content 30% · fluency 25% · pronunciation 20%
+## Task
+Give a **rubric-grounded** diagnosis: estimate a **0–100** overall band in plain language, then explain **each dimension** with **quoted snippets** from the transcript (short phrases, not the whole text). End with **3–5 concrete upgrades** to reach the **next band** (sentence stems / patterns, not vague "practice more").
 
-## Output
-1. Estimated band (0–100 scale)
-2. Main deduction per dimension (quote learner lines)
-3. What to add next band — sentence patterns, not fluff
+## Weights (communicate these to the learner)
+- **Content ~30%** — idea depth, elaboration, specificity
+- **Grammar ~25%** — range, agreement, subordination
+- **Fluency ~25%** — pace, pausing, fillers, cohesion
+- **Pronunciation ~20%** — segmentals + intelligibility
+
+## Cross-dimension checks
+- If **content** is the lowest score, prioritize **elaboration templates** before micro-pron drills.
+- If **fluency** lags with low WPM, separate **planning pauses** from **articulation issues**.
+- If **pron** flags specific phones, tie them to **actual words** in the transcript.
+
+## Output format
+Markdown: **Band estimate**, a compact **score table**, then **"To reach the next band"** with numbered pattern upgrades.
 
 ## MCP payload
 \`\`\`json
@@ -510,13 +567,28 @@ To reach 80+
 
 ③ Reduce fillers (+fluency)
 Replace "and then" with "Once I've had breakfast, I walk to work."`,
-    practicePrompt: `Generate targeted practice as JSON.
+    practicePrompt: `You are still the same learner's coach. The **second-pass semi-open diagnosis** already names weak dimensions and example transcript spots — generate **targeted rehearsal** that forces the learner to use **new syntax + richer content + clearer pron** in one loop.
+
+## Task
+Output **four practice blocks** (grammar, content expansion, pronunciation, recording) as JSON categories that an app can render directly.
+
+## Output JSON (single valid JSON array only; no prose outside it)
+\`\`\`json
+[
+  { "category": "Grammar", "icon": "📐", "items": [ { "label": "…", "content": "…" } ] },
+  { "category": "Content", "icon": "💡", "items": [ { "label": "…", "content": "…" } ] },
+  { "category": "Pronunciation", "icon": "🎯", "items": [ { "label": "…", "content": "…" } ] },
+  { "category": "Recording", "icon": "🎙️", "items": [ { "label": "…", "content": "…" } ] }
+]
+\`\`\`
 
 ## Rules
-- Grammar: 2–3 clause templates (because / although / once)
-- Content: AREA (Answer · Reason · Example · Alternative)
-- Pron: only sounds from the diagnosis
-- Final: one comparison recording task`,
+- **Grammar**: supply **2–3 reusable clause frames** (e.g. because / although / once / which) and require the learner to **rewrite two original simple clauses** using them.
+- **Content**: include an **AREA-style** expansion recipe (Answer → Reason → Example → Alternative) with one worked micro-example tied to the topic.
+- **Pronunciation**: **only** phones or clusters explicitly criticized in the diagnosis; add **4–6** drill words drawn from safe vocabulary.
+- **Recording**: one **timed re-record** spec (minimum duration, minimum subordinate clauses, keyword quotas) so progress is measurable.
+- Plain text only inside **content** fields.
+`,
     practice: [
       {
         category: 'Grammar',

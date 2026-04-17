@@ -18,7 +18,13 @@
     "description": "Chivox MCP outputs high-granularity speech assessment metadata via a standard protocol, enabling LLMs to understand, analyze, and generate personalized oral teaching feedback.",
     "cta_primary": "Try Now",
     "cta_secondary": "Read the Docs",
-    "trusted": "Already serving over"
+    "trusted": "Already serving over",
+    "typewriter_lines": [
+      "One-Click LLM Integration",
+      "Structured Outputs LLMs Consume",
+      "Phoneme Diagnostics Into the LLM",
+      "Closed-Loop English Speaking Learning"
+    ]
   },
   "Features": {
     "title": "Rich Data Dimensions",
@@ -44,8 +50,8 @@
   },
   "Value": {
     "label": "Workflow",
-    "title": "Deep Secondary Analysis",
-    "description": "Developers can guide LLMs to consume these parameters, combining specific educational prompts for semantic-level deep diagnosis of users' oral performance.",
+    "title": "LLM Second-Pass Diagnosis",
+    "description": "Prompt the model to read MCP scores and phoneme flags, then turn them into teaching-oriented findings, correction priorities, and practice ideas.",
     "step_section_title": "From Assessment Data to Teaching Feedback",
     "step_section_desc": "Just 4 steps to transform speech assessment data into LLM-driven personalized teaching content.",
     "demo_title": "LLM Deep Analysis Demo",
@@ -54,6 +60,11 @@
     "demo_point2": "LLMs can pinpoint specific phoneme weaknesses with corrective guidance",
     "demo_point3": "Intelligently generate tongue twisters, shadowing materials, and personalized improvement plans",
     "demo_llm_response": "Your fluency is excellent (85)! But accuracy (65) has room for improvement. You're confusing /θ/ and /r/ phonemes. Try practicing: 'Thirty-three thieves thought they thrilled the throne throughout Thursday.' Also note the stress difference in 'record' and 'present' between noun and verb forms.",
+    "demo_card_1_title": "① MCP Assessment Output",
+    "demo_card_2_title": "② LLM Teaching Response",
+    "demo_card_3_title": "③ Auto-Generated Exercise",
+    "demo_exercise_body": "The drill matches the sample tongue twister in the teaching feedback above. Chunk slowly first (e.g. three, thieves, through, Thursday), then read the full line at a steady pace: \"Thirty-three thieves thought they thrilled the throne throughout Thursday.\" For /θ/, use light tongue-to-teeth contact with clear airflow; for /r/, use an English-style curled /ɹ/, not Mandarin Pinyin r. Do three full passes, focusing on one phoneme class each time.",
+    "demo_exercise_est": "Est. 1.5 min",
     "step1_title": "Speech Input",
     "step1_desc": "User reads the designated text, audio is processed in real time by MCP",
     "step2_title": "Multi-dimensional Assessment",

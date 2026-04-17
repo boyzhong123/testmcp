@@ -144,7 +144,7 @@ export default async function HomePage() {
           <FadeUp delay={0.1}>
             <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight leading-[1.1] mb-6 max-w-3xl">
               {tHero('title_line1')}<br />
-              <HeroTypewriter locale={locale} />
+              <HeroTypewriter />
             </h1>
           </FadeUp>
           <FadeUp delay={0.2}>
@@ -325,7 +325,10 @@ export default async function HomePage() {
               </div>
               <h3 className="text-lg font-bold mb-2">{tValue('title')}</h3>
               <p className="text-sm text-muted-foreground leading-relaxed mb-5">
-                {zhEn('开发者用一段 Prompt 就能把 MCP 结构化数据变成教学级诊断报告。驰声提供可复用的 Prompt Skill 模板。', 'A single prompt turns MCP structured data into teaching-grade diagnostics. Chivox provides reusable prompt skills.')}
+                {zhEn(
+                  '用一段 Prompt，把 MCP 返回的结构化评测（维度分、音素、dp_type 等）整理成课堂可用的诊断与练习建议；可套用驰声提供的 Prompt Skill 模板快速落地。',
+                  'One clear prompt turns Chivox MCP JSON—scores, phonemes, dp_type—into classroom-ready diagnosis and drills. Start from reusable prompt-skill templates.'
+                )}
               </p>
 
               {/* Prompt → Output mini flow */}
@@ -333,11 +336,16 @@ export default async function HomePage() {
                 <div className="rounded-md border border-border/50 bg-zinc-950 text-zinc-300 overflow-hidden">
                   <div className="px-3 py-1.5 border-b border-white/[0.06] flex items-center gap-1.5">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-                    <span className="text-[10px] text-zinc-500 font-mono">System Prompt · Skill</span>
+                    <span className="text-[10px] text-zinc-500 font-mono">
+                      {zhEn('系统提示词 · Prompt Skill', 'System prompt · prompt skill')}
+                    </span>
                   </div>
-                  <pre className="text-[11px] font-mono p-3 leading-relaxed whitespace-pre-wrap">{`按 dp_type 分组错误，聚焦
-score < 70 的音素，给
-口型纠正 + 学习优先级。`}</pre>
+                  <pre className="text-[11px] font-mono p-3 leading-relaxed whitespace-pre-wrap">
+                    {zhEn(
+                      `按 dp_type 归类（错读 / 漏读 / 多读等）；对 score < 70 的音素展开说明，给出口型与舌位提示，并排序练习优先级。`,
+                      `Group issues by dp_type (e.g. mispron, omit, insert). For phonemes below score 70, spell out articulation cues (lip, jaw, tongue) and rank what to practice first.`
+                    )}
+                  </pre>
                 </div>
 
                 <div className="flex justify-center">
@@ -345,16 +353,23 @@ score < 70 的音素，给
                 </div>
 
                 <div className="rounded-md border border-emerald-500/30 bg-emerald-500/[0.04] p-3">
-                  <div className="text-[10px] font-mono text-emerald-600 mb-1.5">LLM Response</div>
+                  <div className="text-[10px] font-mono text-emerald-600 mb-1.5">
+                    {zhEn('模型输出', 'LLM output')}
+                  </div>
                   <p className="text-xs text-foreground leading-relaxed">
-                    /ð/ 被发成 /z/ → 舌尖轻抵上齿；/ɒ/ 开口度不足 → 张大下颌。优先练 /ð/，英语高频。
+                    {zhEn(
+                      '将 /ð/ 读成 /z/：舌尖轻触上齿背，别用齿龈塞擦；/ɒ/ 口腔偏小：下颌略张大、舌位略靠后。建议优先巩固 /ð/（英语中出现频率高）。',
+                      '/ð/ realized as /z/: light tongue tip on the back of the upper teeth—not an alveolar fricative. /ɒ/ too tight: lower the jaw a little and relax the tongue root. Prioritize /ð/; it is extremely common in English.'
+                    )}
                   </p>
                 </div>
               </div>
 
               {/* 可用模型 */}
               <div className="mb-4">
-                <div className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/70 mb-1.5">{zhEn('兼容主流 LLM', 'Compatible with Mainstream LLMs')}</div>
+                <div className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/70 mb-1.5">
+                  {zhEn('兼容常见大模型', 'Works with common frontier models')}
+                </div>
                 <div className="flex flex-wrap gap-1.5">
                   {['GPT-4', 'Claude 3.5', 'Gemini', 'Qwen', 'DeepSeek', 'GLM-4'].map((m) => (
                     <span key={m} className="px-2 py-0.5 rounded border border-border/60 bg-muted/40 text-[10px] font-mono text-muted-foreground">
@@ -365,7 +380,11 @@ score < 70 的音素，给
               </div>
 
               <ul className="mt-auto space-y-1.5">
-                {[zhEn('音素弱项精准定位 → 纠音建议', 'Pinpoint weak phonemes → correction advice'), zhEn('考试档位估计 + 下一档需要补什么', 'Estimate proficiency + what to improve next'), zhEn('按学生画像生成个性化练习', 'Generate personalized practice by learner profile')].map((p, j) => (
+                {[
+                  zhEn('弱音素聚类 → 可执行的纠音步骤', 'Cluster weak phonemes → actionable correction steps'),
+                  zhEn('水平档位推断 + 进阶要补的能力点', 'Level estimate + concrete gaps to reach the next band'),
+                  zhEn('结合画像生成个性化练习', 'Personalized drills aligned with the learner profile'),
+                ].map((p, j) => (
                   <li key={j} className="flex items-start gap-1.5 text-xs text-muted-foreground leading-relaxed">
                     <Check className="h-3 w-3 text-foreground shrink-0 mt-0.5" />
                     <span>{p}</span>
@@ -625,7 +644,7 @@ score < 70 的音素，给
             <div className="lg:col-span-3 space-y-2.5 md:space-y-3 min-w-0">
               <div className="rounded-lg border border-white/[0.08] bg-white/[0.03] p-4 md:p-5">
                 <div className="flex items-center justify-between mb-3">
-                  <div className="text-xs text-zinc-500 font-mono">① MCP Assessment Output</div>
+                  <div className="text-xs text-zinc-500 font-mono">{tValue('demo_card_1_title')}</div>
                   <div className="text-[10px] text-zinc-600 font-mono">structured_json</div>
                 </div>
                 <pre className="text-[10.5px] sm:text-xs font-mono text-zinc-300 leading-relaxed whitespace-pre-wrap break-words overflow-x-auto max-w-full">
@@ -651,7 +670,7 @@ score < 70 的音素，给
 
               <div className="rounded-lg border border-emerald-500/20 bg-emerald-500/[0.04] p-4 md:p-5">
                 <div className="flex items-center justify-between mb-3">
-                  <div className="text-xs text-emerald-400 font-mono">② LLM Teaching Response</div>
+                  <div className="text-xs text-emerald-400 font-mono">{tValue('demo_card_2_title')}</div>
                   <div className="text-[10px] text-emerald-500/60 font-mono">natural_language</div>
                 </div>
                 <p className="text-sm text-zinc-200 leading-relaxed">
@@ -665,16 +684,18 @@ score < 70 的音素，给
 
               <div className="rounded-lg border border-violet-400/20 bg-violet-400/[0.04] p-4 md:p-5">
                 <div className="flex items-center justify-between mb-3">
-                  <div className="text-xs text-violet-300 font-mono">③ Auto-Generated Exercise</div>
+                  <div className="text-xs text-violet-300 font-mono">{tValue('demo_card_3_title')}</div>
                   <div className="text-[10px] text-violet-300/60 font-mono">practice_loop</div>
                 </div>
                 <div className="text-sm text-zinc-200 font-medium mb-2 leading-relaxed">
-                  &quot;Thirty-three thieves thought they thrilled the throne throughout Thursday.&quot;
+                  {tValue('demo_exercise_body')}
                 </div>
                 <div className="flex flex-wrap items-center gap-2 text-[11px]">
                   <span className="inline-flex items-center gap-1 bg-white/[0.04] border border-white/10 rounded px-2 py-0.5 text-zinc-400">🎯 /θ/ × 6</span>
                   <span className="inline-flex items-center gap-1 bg-white/[0.04] border border-white/10 rounded px-2 py-0.5 text-zinc-400">🎯 /r/ × 3</span>
-                  <span className="inline-flex items-center gap-1 bg-white/[0.04] border border-white/10 rounded px-2 py-0.5 text-zinc-400">⏱ 预计 1.5 min</span>
+                  <span className="inline-flex items-center gap-1 bg-white/[0.04] border border-white/10 rounded px-2 py-0.5 text-zinc-400">
+                    ⏱ {tValue('demo_exercise_est')}
+                  </span>
                 </div>
               </div>
             </div>

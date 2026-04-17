@@ -48,7 +48,7 @@ export default async function LocaleLayout({
       <body className="min-h-full flex flex-col relative">
         <ThemeProvider>
           <AuthProvider>
-            <NextIntlClientProvider messages={messages}>
+            <NextIntlClientProvider locale={locale} messages={messages}>
               <RouteProgress />
               <ConditionalShell>
                 {children}
