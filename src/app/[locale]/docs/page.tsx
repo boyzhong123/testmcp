@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { Link } from '@/i18n/routing';
-import { ArrowLeft, BookOpen, Code2, Zap, FileText, Copy, Check, Terminal, Globe, Mic, MessageSquare, BarChart3, AlertTriangle, Lightbulb, Radio, FolderOpen, Settings, Workflow, Sparkles } from 'lucide-react';
+import { ArrowLeft, BookOpen, Code2, Zap, FileText, Copy, Check, Terminal, Globe, Mic, MessageSquare, BarChart3, AlertTriangle, Lightbulb, Radio, FolderOpen, Settings, Workflow, Sparkles, Plug, Bot, Building2 } from 'lucide-react';
 
 /* ─── Reusable Components ─── */
 
@@ -145,13 +145,22 @@ const NAV = [
     { id: 'install', label: '安装方式' },
     { id: 'env-vars', label: '环境变量' },
   ]},
-  { id: 'config', icon: Settings, label: '接入配置', children: [
+  { id: 'config', icon: Plug, label: '接入 · 直接用（零代码）', children: [
     { id: 'config-cursor', label: 'Cursor' },
     { id: 'config-claude-desktop', label: 'Claude Desktop' },
     { id: 'config-claude-code', label: 'Claude Code' },
+    { id: 'config-ai-ide', label: 'Windsurf / Zed / Continue' },
     { id: 'config-coze', label: '扣子（Coze）' },
-    { id: 'config-coze-workflow', label: 'Coze 工作流接入' },
-    { id: 'config-other', label: '豆包 / 钉钉 / 其他' },
+    { id: 'config-coze-workflow', label: 'Coze 工作流' },
+    { id: 'config-ai-workspace', label: 'AI 工作台 · 豆包 / 飞书 / WorkBuddy / 钉钉' },
+    { id: 'config-workflow-platforms', label: 'Dify / n8n / Flowise' },
+    { id: 'config-other', label: '其他 MCP 客户端' },
+  ]},
+  { id: 'config-code', icon: Code2, label: '接入 · 编程用（SDK / 代码）', children: [
+    { id: 'code-mcp-sdk', label: '官方 MCP 客户端库' },
+    { id: 'code-agent-frameworks', label: 'LangChain / Mastra / Agents SDK' },
+    { id: 'code-function-calling', label: '直调 chat.completions · tools' },
+    { id: 'code-selfhosted-agent', label: '自研后端 Agent' },
   ]},
   { id: 'eval-modes', icon: Radio, label: '评测模式', children: [
     { id: 'stream-eval', label: '实时录音评测' },
@@ -692,8 +701,18 @@ bash scripts/build.sh`}</CodeBlock>
               </SubDoc>
             </DocSection>
 
-            {/* ══════ 接入配置 ══════ */}
-            <DocSection id="config" icon={Settings} title="接入配置">
+            {/* ══════ 接入 · 直接用（零代码） ══════ */}
+            <DocSection id="config" icon={Plug} title="接入 · 直接用 MCP（零代码）">
+
+              <div className="rounded-lg border border-border/60 bg-muted/30 p-4 mb-5 text-sm">
+                <p className="font-semibold mb-1.5 flex items-center gap-2"><Sparkles className="h-4 w-4" /> 这一类接入的共同特征</p>
+                <ul className="list-disc list-inside space-y-1 text-muted-foreground">
+                  <li>不用写代码、不用装 SDK，只在客户端的<strong className="text-foreground">「MCP 配置」</strong>或<strong className="text-foreground">「扩展」</strong>里填一段 JSON / URL</li>
+                  <li>保存后 LLM 自动发现 16 个评测工具，并在对话 / Agent 中自主调用</li>
+                  <li>覆盖 <strong className="text-foreground">IDE 编程助手</strong>、<strong className="text-foreground">桌面 AI 客户端</strong>、<strong className="text-foreground">企业 AI 工作台</strong>、<strong className="text-foreground">可视化 Bot / 工作流平台</strong>四大生态</li>
+                </ul>
+              </div>
+
 
               <SubDoc id="config-cursor" title="Cursor 配置">
                 <ol className="list-decimal list-inside space-y-2 ml-1">
@@ -744,6 +763,35 @@ claude mcp add chivox -- env MCP_REMOTE_URL=http://your-server:8080 chivox-local
 
 # 源码构建后
 claude mcp add chivox -- env MCP_REMOTE_URL=http://your-server:8080 node /path/to/cvx_local_mcp/dist/index.js`}</CodeBlock>
+              </SubDoc>
+
+              <SubDoc id="config-ai-ide" title="Windsurf / Zed / Continue 等 IDE 编程助手">
+                <p>除了 Cursor 和 Claude Code，主流的 AI 编程 IDE 都原生支持 MCP。以下客户端使用<strong>完全一致</strong>的 Streamable HTTP 配置，区别只在配置入口：</p>
+                <div className="overflow-x-auto rounded-lg border border-border/60 my-3">
+                  <table className="w-full text-sm">
+                    <thead><tr className="border-b border-border/40 bg-muted/30">
+                      <th className="text-left py-2 px-3 font-medium">客户端</th>
+                      <th className="text-left py-2 px-3 font-medium">配置入口</th>
+                      <th className="text-left py-2 px-3 font-medium">备注</th>
+                    </tr></thead>
+                    <tbody className="divide-y divide-border/30">
+                      <tr><td className="py-2 px-3 font-medium">Windsurf (Codeium)</td><td className="py-2 px-3 text-xs">Settings → Cascade → MCP Servers</td><td className="py-2 px-3 text-xs text-muted-foreground">直接贴下方 JSON</td></tr>
+                      <tr><td className="py-2 px-3 font-medium">Zed</td><td className="py-2 px-3 text-xs"><code className="bg-muted px-1 rounded text-xs font-mono">~/.config/zed/settings.json</code> 的 <code className="bg-muted px-1 rounded text-xs font-mono">context_servers</code></td><td className="py-2 px-3 text-xs text-muted-foreground">Assistant Panel 自动发现</td></tr>
+                      <tr><td className="py-2 px-3 font-medium">Continue (VS Code / JetBrains)</td><td className="py-2 px-3 text-xs"><code className="bg-muted px-1 rounded text-xs font-mono">config.yaml</code> 的 <code className="bg-muted px-1 rounded text-xs font-mono">mcpServers</code></td><td className="py-2 px-3 text-xs text-muted-foreground">v0.9+ 支持</td></tr>
+                      <tr><td className="py-2 px-3 font-medium">通义灵码 / CodeGeeX / 文心快码</td><td className="py-2 px-3 text-xs">插件设置 → MCP 服务</td><td className="py-2 px-3 text-xs text-muted-foreground">2026 Q1 起陆续支持</td></tr>
+                      <tr><td className="py-2 px-3 font-medium">Cline (原 Claude Dev)</td><td className="py-2 px-3 text-xs">MCP Servers 面板 → 编辑配置</td><td className="py-2 px-3 text-xs text-muted-foreground">VS Code 扩展</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+                <CodeBlock filename="通用 MCP 配置（复制即用）" lang="json">{`{
+  "mcpServers": {
+    "chivox-speech-eval": {
+      "type": "streamable-http",
+      "url": "https://speech-eval.site/mcp"
+    }
+  }
+}`}</CodeBlock>
+                <Callout type="tip">所有 IDE 类客户端都走远程 Streamable HTTP，零本地依赖。需要实时录音才需切到 Claude Desktop 的本地代理模式。</Callout>
               </SubDoc>
 
               <SubDoc id="config-coze" title="扣子（Coze）配置">
@@ -845,8 +893,90 @@ claude mcp add chivox -- env MCP_REMOTE_URL=http://your-server:8080 node /path/t
                 </div>
               </SubDoc>
 
-              <SubDoc id="config-other" title="豆包 / 钉钉 / 其他 MCP 客户端">
-                <p>支持 MCP 的客户端均可接入，统一使用以下配置：</p>
+              <SubDoc id="config-ai-workspace" title="AI 工作台 · 豆包 / 飞书智能伙伴 / WorkBuddy / 钉钉 AI">
+                <p>这一类是<strong>面向「上班族」的企业 / 日常 AI 助手</strong>，产品形态是个聊天框 + 插件市场 / 扩展面板。接入后，员工在 App 里打字「帮我评一下这段录音」就能自动触发驰声评测，不用写任何代码。</p>
+
+                <div className="grid gap-3 md:grid-cols-2 mt-4">
+                  <div className="rounded-lg border border-border/60 p-4">
+                    <p className="font-semibold text-sm mb-1 flex items-center gap-2"><Bot className="h-4 w-4 text-amber-500" /> 豆包（Doubao）App / 桌面版</p>
+                    <p className="text-xs text-muted-foreground mb-2">字节跳动官方 AI 助手，2026 年起桌面版支持 MCP 扩展。</p>
+                    <ol className="list-decimal list-inside space-y-1 text-xs">
+                      <li>桌面版设置 → <strong>「智能体扩展」</strong> → 添加 MCP 服务</li>
+                      <li>类型选 <code className="bg-muted px-1 rounded text-[10px] font-mono">streamable-http</code>，URL 填 <code className="bg-muted px-1 rounded text-[10px] font-mono">https://speech-eval.site/mcp</code></li>
+                      <li>对话中直接说「帮我评测」即可自动调用</li>
+                    </ol>
+                  </div>
+
+                  <div className="rounded-lg border border-border/60 p-4">
+                    <p className="font-semibold text-sm mb-1 flex items-center gap-2"><Building2 className="h-4 w-4 text-blue-500" /> 飞书智能伙伴（My AI）</p>
+                    <p className="text-xs text-muted-foreground mb-2">飞书企业 AI，支持以 MCP / Function Calling 挂载外部工具给团队 Bot。</p>
+                    <ol className="list-decimal list-inside space-y-1 text-xs">
+                      <li>飞书开发者后台 → 创建应用 → <strong>「AI 能力 / 智能伙伴」</strong></li>
+                      <li>在「工具」中选 <strong>外部 MCP 服务</strong>，填入上方 URL</li>
+                      <li>把智能伙伴拉进群聊，@ 它提交音频即可评测</li>
+                    </ol>
+                  </div>
+
+                  <div className="rounded-lg border border-border/60 p-4">
+                    <p className="font-semibold text-sm mb-1 flex items-center gap-2"><Sparkles className="h-4 w-4 text-rose-500" /> WorkBuddy / 企业智能助手</p>
+                    <p className="text-xs text-muted-foreground mb-2">字节 WorkBuddy、腾讯会议 AI、企业微信智能助手等企业 AI 工作台场景。</p>
+                    <ol className="list-decimal list-inside space-y-1 text-xs">
+                      <li>在工作台的<strong>「技能 / 扩展」</strong>后台新增一个 MCP 连接器</li>
+                      <li>传输协议选 Streamable HTTP，地址填 <code className="bg-muted px-1 rounded text-[10px] font-mono">https://speech-eval.site/mcp</code></li>
+                      <li>把技能发布到指定部门 / 群组，HR、培训、销售口语陪练场景即可直接用</li>
+                    </ol>
+                  </div>
+
+                  <div className="rounded-lg border border-border/60 p-4">
+                    <p className="font-semibold text-sm mb-1 flex items-center gap-2"><Workflow className="h-4 w-4 text-cyan-500" /> 钉钉 AI 助理 / 通义千问 App</p>
+                    <p className="text-xs text-muted-foreground mb-2">阿里生态：钉钉 AI 助理支持自定义插件，通义 App 可通过「AI 工具箱」挂载 MCP。</p>
+                    <ol className="list-decimal list-inside space-y-1 text-xs">
+                      <li>钉钉开发者后台 → AI 助理 → <strong>「插件开发 / MCP 接入」</strong></li>
+                      <li>选 HTTP Streamable，填入驰声 MCP URL 并开启鉴权（可选）</li>
+                      <li>在钉钉群 @AI 助理上传音频，自动返回评测卡片</li>
+                    </ol>
+                  </div>
+                </div>
+
+                <Callout type="tip"><strong>典型场景 · 小龙虾们的共同剧本</strong>：销售口语陪练 → 外语培训 → 主持 / 播音岗位考核 → K12 英语作业批改 → 客服话术复盘。这些「上班族 AI 工作台」接入驰声 MCP 后，员工 / 学员只要对着话筒说话，AI 就能自动打分并给出个性化改进建议，运营 / 培训 / 教研团队零开发即可上线。</Callout>
+              </SubDoc>
+
+              <SubDoc id="config-workflow-platforms" title="Dify / n8n / Flowise 等可视化编排">
+                <p>如果你需要把语音评测编排进<strong>多步业务流</strong>（例如：学员录音 → 评测 → 生成错题集 → 推送到 CRM），可视化工作流平台比聊天 Bot 更合适。</p>
+
+                <div className="grid gap-3 md:grid-cols-3 mt-4">
+                  <div className="rounded-lg border border-border/60 p-4">
+                    <p className="font-semibold text-sm mb-2">Dify</p>
+                    <p className="text-xs text-muted-foreground mb-2">开源 LLMOps，v0.15+ 原生 MCP 工具。</p>
+                    <ul className="list-disc list-inside space-y-0.5 text-xs">
+                      <li>「工具」→「自定义 MCP」→ 填 URL</li>
+                      <li>在 Chatflow / Workflow 节点里直接拖用</li>
+                    </ul>
+                  </div>
+                  <div className="rounded-lg border border-border/60 p-4">
+                    <p className="font-semibold text-sm mb-2">n8n</p>
+                    <p className="text-xs text-muted-foreground mb-2">工作流自动化，用 <code className="bg-muted px-1 rounded text-[10px] font-mono">MCP Client</code> 节点。</p>
+                    <ul className="list-disc list-inside space-y-0.5 text-xs">
+                      <li>添加 <strong>MCP Client</strong> 节点</li>
+                      <li>Transport 选 HTTP Stream，URL 贴驰声地址</li>
+                      <li>Tool 下拉自动列出 16 个评测能力</li>
+                    </ul>
+                  </div>
+                  <div className="rounded-lg border border-border/60 p-4">
+                    <p className="font-semibold text-sm mb-2">Flowise / LangFlow</p>
+                    <p className="text-xs text-muted-foreground mb-2">可视化 LangChain Agent 编排。</p>
+                    <ul className="list-disc list-inside space-y-0.5 text-xs">
+                      <li>拖出 <strong>MCP Tool</strong> 节点</li>
+                      <li>连到 AgentExecutor 即可</li>
+                    </ul>
+                  </div>
+                </div>
+
+                <Callout type="info">可视化平台的好处是<strong>流程可追溯、可回放</strong>，适合教育机构 / 培训部门做批量评测 + 报表导出；缺点是单步延迟略高于直接 MCP 调用，对延迟敏感的交互场景建议用 Cursor / Claude Desktop 直连。</Callout>
+              </SubDoc>
+
+              <SubDoc id="config-other" title="其他 MCP 客户端（通用配置）">
+                <p>任何遵循 MCP 协议的客户端都可以接入，统一使用以下配置：</p>
                 <div className="overflow-x-auto rounded-lg border border-border/60">
                   <table className="w-full text-sm">
                     <thead><tr className="border-b border-border/40 bg-muted/30">
@@ -856,10 +986,273 @@ claude mcp add chivox -- env MCP_REMOTE_URL=http://your-server:8080 node /path/t
                     <tbody className="divide-y divide-border/30">
                       <tr><td className="py-2 px-3 font-medium">传输类型</td><td className="py-2 px-3 font-mono text-xs">streamable-http</td></tr>
                       <tr><td className="py-2 px-3 font-medium">URL</td><td className="py-2 px-3 font-mono text-xs">https://speech-eval.site/mcp</td></tr>
+                      <tr><td className="py-2 px-3 font-medium">鉴权（可选）</td><td className="py-2 px-3 font-mono text-xs">Header：<code>Authorization: Bearer &lt;MCP_API_KEY&gt;</code></td></tr>
                     </tbody>
                   </table>
                 </div>
+                <p className="text-xs text-muted-foreground mt-3">还没找到你用的客户端？任何支持 <a href="https://modelcontextprotocol.io/" target="_blank" rel="noopener noreferrer" className="text-blue-600 dark:text-blue-400 hover:underline">Model Context Protocol</a> 的终端都通用。找不到入口？下一小节「编程用 MCP」里用 SDK 直接接即可。</p>
               </SubDoc>
+            </DocSection>
+
+            {/* ══════ 接入 · 编程用 MCP ══════ */}
+            <DocSection id="config-code" icon={Code2} title="接入 · 编程用 MCP（SDK / 代码集成）">
+
+              <div className="rounded-lg border border-border/60 bg-muted/30 p-4 mb-5 text-sm">
+                <p className="font-semibold mb-1.5 flex items-center gap-2"><Terminal className="h-4 w-4" /> 这一类接入的共同特征</p>
+                <ul className="list-disc list-inside space-y-1 text-muted-foreground">
+                  <li>你在写一段<strong className="text-foreground">真正的后端服务</strong>：一个 Agent Worker、一个 API、一个自动化脚本</li>
+                  <li>业务里的「语音评测」是其中一个步骤，需要由代码 <strong className="text-foreground">决定何时调用</strong>、<strong className="text-foreground">如何解析结果</strong></li>
+                  <li>三种主流写法：① 官方 MCP 客户端库 → ② Agent 框架自动桥接 → ③ 退化到 chat.completions + tools 参数</li>
+                </ul>
+                <p className="mt-2 text-xs text-muted-foreground">💡 强烈推荐①或②：驰声有 16 个评测工具，<strong className="text-foreground">让 MCP 自动注入 tool schema</strong>，每新增一个题型不用改一行业务代码。</p>
+              </div>
+
+              <SubDoc id="code-mcp-sdk" title="① 官方 MCP 客户端库（Python / TypeScript）">
+                <p>最底层、也最推荐的方式。由 <a href="https://modelcontextprotocol.io/" target="_blank" rel="noopener noreferrer" className="text-blue-600 dark:text-blue-400 hover:underline">Anthropic 官方维护</a>，一次连接自动拿到全部工具的 JSON Schema，然后交给任意 LLM。</p>
+
+                <p className="font-semibold mt-4">Python：<code className="bg-muted px-1 rounded text-xs font-mono">mcp</code></p>
+                <CodeBlock filename="chivox_client.py" lang="python">{`# pip install mcp openai
+import asyncio, os
+from openai import OpenAI
+from mcp.client.streamable_http import streamablehttp_client
+from mcp import ClientSession
+
+MCP_URL = "https://speech-eval.site/mcp"
+llm = OpenAI(api_key=os.getenv("DOUBAO_KEY"),
+             base_url="https://ark.cn-beijing.volces.com/api/v3")  # 豆包 / DeepSeek / OpenAI 同构
+
+async def main(audio_id: str, ref: str):
+    async with streamablehttp_client(MCP_URL) as (reader, writer, _):
+        async with ClientSession(reader, writer) as sess:
+            await sess.initialize()
+
+            tools = await sess.list_tools()
+            openai_tools = [{
+                "type": "function",
+                "function": {"name": t.name, "description": t.description,
+                             "parameters": t.inputSchema},
+            } for t in tools.tools]
+
+            resp = llm.chat.completions.create(
+                model="doubao-1-5-pro-32k",
+                messages=[{"role": "user",
+                           "content": f"帮我评测 audioId={audio_id}，参考文本：{ref}"}],
+                tools=openai_tools,
+            )
+
+            for call in resp.choices[0].message.tool_calls or []:
+                result = await sess.call_tool(call.function.name,
+                                              arguments=eval(call.function.arguments))
+                print(call.function.name, "→", result.content[0].text[:200])
+
+asyncio.run(main("abc123", "I think therefore I am"))`}</CodeBlock>
+
+                <p className="font-semibold mt-4">TypeScript / Node.js：<code className="bg-muted px-1 rounded text-xs font-mono">@modelcontextprotocol/sdk</code></p>
+                <CodeBlock filename="chivox-client.ts" lang="typescript">{`// npm i @modelcontextprotocol/sdk openai
+import { Client } from "@modelcontextprotocol/sdk/client/index.js";
+import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
+import OpenAI from "openai";
+
+const mcp = new Client({ name: "chivox-biz", version: "1.0.0" });
+await mcp.connect(new StreamableHTTPClientTransport(new URL("https://speech-eval.site/mcp")));
+
+const { tools } = await mcp.listTools();
+const openai = new OpenAI({ apiKey: process.env.DEEPSEEK_KEY, baseURL: "https://api.deepseek.com" });
+
+const resp = await openai.chat.completions.create({
+  model: "deepseek-chat",
+  messages: [{ role: "user", content: "评测 audioId=abc123, 参考 I think therefore I am" }],
+  tools: tools.map(t => ({ type: "function", function: {
+    name: t.name, description: t.description, parameters: t.inputSchema
+  }})),
+});
+
+for (const call of resp.choices[0].message.tool_calls ?? []) {
+  const r = await mcp.callTool({ name: call.function.name,
+                                 arguments: JSON.parse(call.function.arguments) });
+  console.log(call.function.name, r.content);
+}`}</CodeBlock>
+                <Callout type="tip">这种写法 <strong>LLM 供应商可换</strong>（豆包 / DeepSeek / GPT / Qwen / Moonshot），<strong>工具自动更新</strong>（驰声新增题型无需改业务代码），适合生产后端。</Callout>
+              </SubDoc>
+
+              <SubDoc id="code-agent-frameworks" title="② 用 Agent 框架自动桥接（LangChain / Mastra / Agents SDK）">
+                <p>如果项目已经在用 Agent 框架，几行 adapter 就能把驰声 MCP 塞进去，框架本身会接管 tool-calling 循环、重试、日志。</p>
+
+                <div className="grid gap-3 md:grid-cols-2 mt-4">
+                  <div className="rounded-lg border border-border/60 p-4">
+                    <p className="font-semibold text-sm mb-2">LangChain / LangGraph（Python）</p>
+                    <CodeBlock filename="agent.py" lang="python">{`# pip install langchain-mcp-adapters langgraph
+from langchain_mcp_adapters.client import MultiServerMCPClient
+from langgraph.prebuilt import create_react_agent
+
+client = MultiServerMCPClient({
+    "chivox": {
+        "transport": "streamable_http",
+        "url": "https://speech-eval.site/mcp",
+    }
+})
+tools = await client.get_tools()
+
+agent = create_react_agent("openai:gpt-4o-mini", tools)
+result = await agent.ainvoke({"messages":
+    [("user", "评测 audioId=abc123 参考 think")]})
+print(result["messages"][-1].content)`}</CodeBlock>
+                  </div>
+
+                  <div className="rounded-lg border border-border/60 p-4">
+                    <p className="font-semibold text-sm mb-2">Mastra（TypeScript）</p>
+                    <CodeBlock filename="mastra-agent.ts" lang="typescript">{`// npm i @mastra/core @mastra/mcp
+import { MCPClient } from "@mastra/mcp";
+import { Agent } from "@mastra/core/agent";
+import { openai } from "@ai-sdk/openai";
+
+const mcp = new MCPClient({ servers: {
+  chivox: { url: new URL("https://speech-eval.site/mcp") }
+}});
+
+export const speechCoach = new Agent({
+  name: "speech-coach",
+  instructions: "你是口语教练，用 chivox 工具评测并给改进建议。",
+  model: openai("gpt-4o-mini"),
+  tools: await mcp.getTools(),
+});`}</CodeBlock>
+                  </div>
+
+                  <div className="rounded-lg border border-border/60 p-4">
+                    <p className="font-semibold text-sm mb-2">OpenAI Agents SDK（Python）</p>
+                    <CodeBlock filename="agents_sdk.py" lang="python">{`# pip install openai-agents
+from agents import Agent, Runner
+from agents.mcp import MCPServerStreamableHttp
+
+chivox = MCPServerStreamableHttp(
+    params={"url": "https://speech-eval.site/mcp"},
+    name="chivox-speech-eval",
+)
+
+async with chivox:
+    agent = Agent(name="coach",
+                  instructions="专业口语教练",
+                  mcp_servers=[chivox])
+    r = await Runner.run(agent, "评测 audioId=abc123")
+    print(r.final_output)`}</CodeBlock>
+                  </div>
+
+                  <div className="rounded-lg border border-border/60 p-4">
+                    <p className="font-semibold text-sm mb-2">LlamaIndex / AutoGen / CrewAI</p>
+                    <p className="text-xs text-muted-foreground mb-2">这些框架都有官方或社区 MCP adapter，用法与上述类似：</p>
+                    <ul className="list-disc list-inside space-y-1 text-xs">
+                      <li><strong>LlamaIndex</strong>：<code className="bg-muted px-1 rounded text-[10px] font-mono">llama-index-tools-mcp</code></li>
+                      <li><strong>AutoGen</strong>：<code className="bg-muted px-1 rounded text-[10px] font-mono">autogen-ext[mcp]</code></li>
+                      <li><strong>CrewAI</strong>：<code className="bg-muted px-1 rounded text-[10px] font-mono">crewai-tools</code> 的 MCPServerAdapter</li>
+                      <li><strong>Spring AI</strong>（Java）：<code className="bg-muted px-1 rounded text-[10px] font-mono">spring-ai-mcp-client</code></li>
+                    </ul>
+                  </div>
+                </div>
+              </SubDoc>
+
+              <SubDoc id="code-function-calling" title="③ 直调 chat.completions · tools 参数（豆包 / DeepSeek / 火山方舟）">
+                <p>当你用的 LLM SDK <strong>还没有原生 MCP 支持</strong>（比如老版本的火山方舟 / 百度千帆 / 通义 DashScope），退化方案是：用 MCP 客户端<strong>一次性拉到 tool schema</strong>，然后按 OpenAI Function Calling 格式喂给 LLM。</p>
+                <CodeBlock filename="doubao_tools.py" lang="python">{`# 适用：豆包（火山方舟）/ DeepSeek / Qwen / Moonshot / GLM 等 OpenAI 兼容 API
+# 核心思路：MCP 列工具 → 转 OpenAI tools → LLM 决策 → MCP 执行 → 回填
+
+async with streamablehttp_client("https://speech-eval.site/mcp") as (r, w, _):
+    async with ClientSession(r, w) as mcp:
+        await mcp.initialize()
+        tools = (await mcp.list_tools()).tools
+
+        # ① 用 MCP 拉到的 schema 自动转 OpenAI 格式
+        oa_tools = [{"type": "function", "function": {
+            "name": t.name,
+            "description": t.description,
+            "parameters": t.inputSchema,
+        }} for t in tools]
+
+        # ② 喂给豆包
+        messages = [{"role": "user", "content": "评测一下 audioId=abc123"}]
+        resp = doubao.chat.completions.create(
+            model="doubao-1-5-pro-32k", messages=messages, tools=oa_tools,
+        )
+
+        # ③ LLM 回 tool_calls → 折返跑到 MCP 执行
+        msg = resp.choices[0].message
+        if msg.tool_calls:
+            messages.append(msg)
+            for c in msg.tool_calls:
+                result = await mcp.call_tool(
+                    c.function.name, arguments=json.loads(c.function.arguments))
+                messages.append({"role": "tool", "tool_call_id": c.id,
+                                 "content": result.content[0].text})
+            # ④ 再喂一轮，让豆包根据评测结果产出自然语言诊断
+            final = doubao.chat.completions.create(
+                model="doubao-1-5-pro-32k", messages=messages)
+            print(final.choices[0].message.content)`}</CodeBlock>
+                <Callout type="warning"><strong>千万别手写 tool schema！</strong>驰声 16 个评测工具每个都有几十个字段，手写既容易错也难维护。一定用 MCP <code className="bg-black/5 dark:bg-white/10 px-1 rounded text-xs font-mono">list_tools()</code> 动态拿。</Callout>
+              </SubDoc>
+
+              <SubDoc id="code-selfhosted-agent" title="④ 自研后端 Agent（FastAPI / NestJS / Spring）">
+                <p>大部分落地场景其实是：<strong>你已有一个业务后端</strong>（教育 SaaS / 培训系统 / 客服平台），只需要新增一个「语音评测」能力。推荐架构：</p>
+
+                <div className="rounded-lg bg-muted/30 p-5 my-4">
+                  <div className="flex flex-wrap items-center gap-2 text-xs">
+                    <span className="px-3 py-1.5 rounded-md bg-background border border-border/60 font-medium">前端录音 / 上传</span>
+                    <span className="text-muted-foreground">→</span>
+                    <span className="px-3 py-1.5 rounded-md bg-background border border-border/60 font-medium">业务后端</span>
+                    <span className="text-muted-foreground">→</span>
+                    <span className="px-3 py-1.5 rounded-md bg-primary/10 border border-primary/30 font-medium">MCP Client（常驻连接）</span>
+                    <span className="text-muted-foreground">→</span>
+                    <span className="px-3 py-1.5 rounded-md bg-background border border-border/60 font-medium">驰声 MCP</span>
+                    <span className="text-muted-foreground">↘</span>
+                    <span className="px-3 py-1.5 rounded-md bg-background border border-border/60 font-medium">LLM（诊断 / 出题）</span>
+                  </div>
+                </div>
+
+                <p className="font-semibold mt-2">FastAPI 示例（生产最小骨架）</p>
+                <CodeBlock filename="app.py" lang="python">{`from fastapi import FastAPI
+from mcp.client.streamable_http import streamablehttp_client
+from mcp import ClientSession
+from contextlib import asynccontextmanager
+
+mcp_session: ClientSession | None = None
+
+@asynccontextmanager
+async def lifespan(app):
+    global mcp_session
+    async with streamablehttp_client("https://speech-eval.site/mcp") as (r, w, _):
+        async with ClientSession(r, w) as s:
+            await s.initialize()
+            mcp_session = s
+            yield
+    mcp_session = None
+
+app = FastAPI(lifespan=lifespan)
+
+@app.post("/api/evaluate")
+async def evaluate(audio_id: str, ref_text: str):
+    # 直接选一个最合适的工具执行（不经 LLM，延迟最低）
+    r = await mcp_session.call_tool("evaluate_english_sentence",
+                                    {"audioId": audio_id, "sentence": ref_text})
+    return {"result": r.content[0].text}`}</CodeBlock>
+
+                <Callout type="tip"><strong>关键优化</strong>：① MCP 连接在 lifespan 里做成长连接，不要每次请求都重连；② 对延迟敏感的场景可以「跳过 LLM 直接调 tool」，把 LLM 放到「生成诊断报告」那一步。</Callout>
+              </SubDoc>
+
+              <div className="rounded-lg border border-border/60 bg-muted/30 p-4 mt-6 text-sm">
+                <p className="font-semibold mb-2">方案选型速查</p>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-xs">
+                    <thead><tr className="border-b border-border/40">
+                      <th className="text-left py-2 font-medium">场景</th>
+                      <th className="text-left py-2 font-medium">推荐方案</th>
+                    </tr></thead>
+                    <tbody className="divide-y divide-border/30">
+                      <tr><td className="py-2">AI 对话 / Copilot 类产品，LLM 供应商可能会换</td><td className="py-2">① 官方 MCP 客户端库</td></tr>
+                      <tr><td className="py-2">已有 LangChain / Mastra / Agents SDK 技术栈</td><td className="py-2">② Agent 框架 + adapter</td></tr>
+                      <tr><td className="py-2">火山方舟 / 千帆控制台直连，最小侵入</td><td className="py-2">③ chat.completions + tools</td></tr>
+                      <tr><td className="py-2">教育 SaaS / 培训 / 客服等业务后端集成</td><td className="py-2">④ 自研后端 Agent</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
             </DocSection>
 
             {/* ══════ 评测模式 ══════ */}

@@ -5,11 +5,11 @@ import { useState, useEffect, useCallback } from 'react';
 const SECTIONS = [
   { id: 'hero', label: '首页' },
   { id: 'demo', label: '在线体验' },
+  { id: 'workflow', label: '工作流程' },
   { id: 'features', label: '核心价值' },
   { id: 'dual-mode', label: '双模式评测' },
   { id: 'params', label: '评测参数' },
   { id: 'how-it-works', label: 'LLM 分析' },
-  { id: 'workflow', label: '工作流程' },
   { id: 'use-cases', label: 'AI 原生场景' },
   { id: 'use-cases-b', label: '载体嵌入场景' },
   { id: 'pricing', label: '收费细则' },

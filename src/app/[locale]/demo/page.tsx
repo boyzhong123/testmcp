@@ -14,12 +14,16 @@ import {
   AlignLeft,
   FileText,
   MessagesSquare,
+  Mic,
+  Square,
 } from 'lucide-react';
 import { useState, useEffect, useMemo, useRef } from 'react';
+import { useSearchParams } from 'next/navigation';
 
 // ─── types ───────────────────────────────────────────────────────────────
-type Phase = 'idle' | 'assessing' | 'scores' | 'analyzing' | 'analysis' | 'generating' | 'practice';
+type Phase = 'idle' | 'recording' | 'assessing' | 'scores' | 'analyzing' | 'analysis' | 'generating' | 'practice';
 type QType = 'word' | 'sentence' | 'paragraph' | 'semiopen';
+type Lang = 'en' | 'cn';
 type DpType = 'normal' | 'omit' | 'insert' | 'mispron';
 
 type Phoneme = { char: string; score: number; dp_type: DpType };
@@ -283,7 +287,7 @@ const SAMPLES: Record<QType, Sample> = {
     kind: 'pron',
     label: '段落',
     desc: 'Paragraph · 段落级 + 节奏',
-    apiTag: 'en.pred.score',
+    apiTag: 'en.sent.exam',
     refText:
       'Every morning, I wake up at seven and make myself a quick breakfast. After that, I walk along the river to the office, watching the boats pass by. The fresh air really helps me focus and think through the day ahead. Sometimes I stop at a small coffee shop to grab a flat white before I arrive. By then, I feel energized and ready to tackle whatever comes my way.',
     overall: 74,
@@ -545,8 +549,8 @@ const SAMPLES: Record<QType, Sample> = {
   semiopen: {
     kind: 'semi',
     label: '半开放题',
-    desc: 'Semi-open · 语法 / 内容 / 流利 / 发音',
-    apiTag: 'en.pqan.score',
+    desc: 'Semi-open · 情景对话 · 仅英文',
+    apiTag: 'en.scne.exam',
     refText: 'Topic: Describe your daily morning routine.',
     transcript:
       'Usually I wake up at seven, and then I eat breakfast quickly. After that I walk to work. I like the fresh air in the morning.',
@@ -644,6 +648,303 @@ const SAMPLES: Record<QType, Sample> = {
       },
     ],
   },
+};
+
+// ─────────────────────────────────────────────────────────────────────────
+// CN_SAMPLES · 中文评测内核样本集
+// 驰声中文内核目前支持：cn.word.raw / cn.sent.raw / cn.pred.raw（封闭题型）
+// 半开放与开放题型暂仅英文支持
+// 中文特色字段：tone（声调）· erhua（儿化）· 轻声 · 变调
+// ─────────────────────────────────────────────────────────────────────────
+const CN_SAMPLES: Partial<Record<QType, Sample>> = {
+  word: {
+    kind: 'pron',
+    label: '字词',
+    desc: '字词 · 拼音 + 声调评测',
+    apiTag: 'cn.word.raw',
+    refText: '独特',
+    overall: 72,
+    scores: { accuracy: 82, integrity: 100, fluency: 100, rhythm: 58 },
+    details: [
+      {
+        char: '独',
+        score: 60,
+        dp_type: 'mispron',
+        phonemes: [
+          { char: 'd', score: 92, dp_type: 'normal' },
+          { char: 'ú(2声)', score: 45, dp_type: 'mispron' },
+        ],
+      },
+      {
+        char: '特',
+        score: 78,
+        dp_type: 'normal',
+        phonemes: [
+          { char: 't', score: 88, dp_type: 'normal' },
+          { char: 'è(4声)', score: 72, dp_type: 'normal' },
+        ],
+      },
+    ],
+    analysisPrompt: `你是一位专业的普通话口语教练。以下是驰声 MCP 返回的中文字词级评测数据（cn.word.raw）。
+
+## 中文评测的关键
+- 声调（tone）错误在中文里权重最高 —— 声调错了意思就变了
+- dp_type=mispron 多半来自声调误读、前后鼻音混淆、平翘舌混淆
+- 拼音准确但声调错，听起来是"外国口音"
+
+## 诊断规则
+- 按音节逐一看：拼音是否准、声调曲线是否对
+- 若连字，考虑"三声变调"、"不/一 变调"
+- 给出口型 + 舌位 + 声调手势示意
+
+## MCP 返回
+\`\`\`json
+{mcp_response}
+\`\`\``,
+    analysisOutput: `"独特" 的主要问题在**「独」的二声**：
+
+① 「独 dú」得分 60 —— 声调 ú(2声) 仅 45 分
+你把它发成了近似三声（降升调），听起来像 "dǔ"。二声是"由中平起，向高上扬"，
+类似问别人"啊？"的升调，不要先降再升。
+
+② 「特 tè」得分 78 —— 声调 è(4声) 72 分
+四声是"由高快速降到低"，你的下降速度不够干脆，听起来偏平。
+动作要像握拳砸下来一样短促。
+
+🎯 学习优先级：二声「独」> 四声「特」`,
+    practicePrompt: `基于诊断生成针对性中文字词练习，返回 JSON。
+
+## 规则
+- 声调训练优先：给该音节的 4 个声调对比（mā má mǎ mà）
+- 给含该字的常用词组各 2 个
+- 结合普通话的易混字对比`,
+    practice: [
+      {
+        category: '声调专项',
+        icon: '🎵',
+        items: [
+          { label: '二声「dú」对照四声', content: 'dū / dú / dǔ / dù —— 反复读，感受由中平起向高上扬' },
+          { label: '四声「tè」对照二声', content: 'tē / té / tě / tè —— 重点体会四声从高到低的干脆下降' },
+        ],
+      },
+      {
+        category: '词组巩固',
+        icon: '📝',
+        items: [
+          { label: '"独" 的常用词', content: '独立 · 独特 · 独自 · 孤独（都是二声，练到稳）' },
+          { label: '"特" 的常用词', content: '特别 · 特殊 · 特意 · 模特（四声稳定）' },
+        ],
+      },
+    ],
+  } as PronSample,
+
+  sentence: {
+    kind: 'pron',
+    label: '句子',
+    desc: '句子 · 拼音 + 声调 + 流利度',
+    apiTag: 'cn.sent.raw',
+    refText: '妈妈骑着马儿过小桥，小桥轻轻摇啊摇。',
+    overall: 74,
+    scores: { accuracy: 78, integrity: 98, fluency: 82, rhythm: 62 },
+    speed: 4,
+    details: [
+      { char: '妈妈', score: 82, dp_type: 'normal',
+        phonemes: [
+          { char: 'mā(1声)', score: 88, dp_type: 'normal' },
+          { char: 'ma(轻声)', score: 70, dp_type: 'mispron' },
+        ],
+      },
+      { char: '骑', score: 85, dp_type: 'normal' },
+      { char: '着', score: 75, dp_type: 'normal' },
+      { char: '马儿', score: 62, dp_type: 'mispron',
+        phonemes: [
+          { char: 'mǎ(3声)', score: 72, dp_type: 'normal' },
+          { char: 'r(儿化)', score: 42, dp_type: 'mispron' },
+        ],
+      },
+      { char: '过', score: 88, dp_type: 'normal' },
+      { char: '小桥', score: 80, dp_type: 'normal' },
+      { char: '小桥', score: 80, dp_type: 'normal' },
+      { char: '轻轻', score: 75, dp_type: 'normal' },
+      { char: '摇啊摇', score: 70, dp_type: 'normal' },
+    ],
+    analysisPrompt: `你是一位普通话口语教练。以下是驰声 MCP 句子评测（cn.sent.raw）返回数据。
+
+## 中文句子评测重点
+- 儿化（/r/）是否出现
+- 轻声（中、第二个"妈"、"子"、"头"等）是否短促
+- 变调：三声连读、"不+四声"、"一+一声/二声/三声/四声"
+- 意群停顿：逗号 ≤0.3s
+
+## MCP 返回
+\`\`\`json
+{mcp_response}
+\`\`\``,
+    analysisOutput: `整体 overall 74，主要问题在**儿化**和**轻声**处理：
+
+【儿化 · 最紧急】
+⚠ 「马儿」里的 r(儿化) 得分仅 42。你把它读成了「马（mǎ）+ 儿（ér）」两个音节。
+儿化是把「马」的尾音卷舌接近 r，一气呵成，只有一个音节（mǎr）。
+
+【轻声】
+⚠ 「妈妈」的第二个「ma」是轻声，你读成了和第一个一样的阴平。
+轻声要短、轻、不带声调，像"蜻蜓点水"。
+
+【节奏 · rhythm 62 偏低】
+- 全句语速 ≈4 字/秒，正常
+- 但"过 / 小桥" 处停顿过长；"摇啊摇" 连读偏生硬
+
+【学习优先级】
+1. 儿化「马儿」→ 最影响普通话地道度
+2. 「妈妈」的轻声
+3. "摇啊摇" 的连读韵律`,
+    practicePrompt: '基于诊断生成中文句子练习，重点练儿化、轻声、意群连读。返回 JSON。',
+    practice: [
+      {
+        category: '儿化韵',
+        icon: '🌀',
+        items: [
+          { label: '儿化字集', content: '马儿 (mǎr) · 花儿 (huār) · 鸟儿 (niǎor) · 小孩儿 (xiǎoháir) · 今儿 (jīnr)' },
+          { label: '口型要点', content: '发完主要元音后，舌尖迅速上卷接近 r 位置，不要停顿、不要换气' },
+        ],
+      },
+      {
+        category: '轻声',
+        icon: '🪶',
+        items: [
+          { label: '叠字轻声', content: '妈妈 · 爸爸 · 哥哥 · 姐姐 · 弟弟（第二个字都是轻声）' },
+          { label: '语气词轻声', content: '走吧 · 说呢 · 是吗 · 好啊（句末语气词一律轻读）' },
+        ],
+      },
+      {
+        category: '意群跟读',
+        icon: '🎵',
+        items: [
+          { label: '标注版', content: '[妈妈骑着马儿] / [过小桥] // [小桥轻轻] / [摇啊摇]（/ = 短停 0.2s，// = 句间停顿 0.4s）' },
+        ],
+      },
+    ],
+  } as PronSample,
+
+  paragraph: {
+    kind: 'pron',
+    label: '段落',
+    desc: '段落 · 综合拼音 / 声调 / 韵律',
+    apiTag: 'cn.pred.raw',
+    refText:
+      '春天来了，公园里的花儿都开了。小朋友们在草地上奔跑，脸上挂着灿烂的笑容。不远处有几只鸟儿在枝头唱歌，空气里弥漫着花香，让人心情舒畅。',
+    overall: 76,
+    scores: { accuracy: 80, integrity: 92, fluency: 78, rhythm: 66 },
+    speed: 5,
+    details: [
+      { char: '春天', score: 85, dp_type: 'normal' },
+      { char: '来了', score: 80, dp_type: 'normal' },
+      { char: '公园', score: 82, dp_type: 'normal' },
+      { char: '里的', score: 75, dp_type: 'normal' },
+      { char: '花儿', score: 60, dp_type: 'mispron',
+        phonemes: [
+          { char: 'huā(1声)', score: 85, dp_type: 'normal' },
+          { char: 'r(儿化)', score: 38, dp_type: 'mispron' },
+        ],
+      },
+      { char: '都', score: 85, dp_type: 'normal' },
+      { char: '开了', score: 80, dp_type: 'normal' },
+      { char: '小朋友们', score: 78, dp_type: 'normal' },
+      { char: '在', score: 82, dp_type: 'normal' },
+      { char: '草地上', score: 80, dp_type: 'normal' },
+      { char: '奔跑', score: 78, dp_type: 'normal' },
+      { char: '脸上', score: 82, dp_type: 'normal' },
+      { char: '挂着', score: 75, dp_type: 'normal' },
+      { char: '灿烂', score: 70, dp_type: 'normal',
+        phonemes: [
+          { char: 'càn(4声)', score: 65, dp_type: 'normal' },
+          { char: 'làn(4声)', score: 75, dp_type: 'normal' },
+        ],
+      },
+      { char: '的', score: 75, dp_type: 'normal' },
+      { char: '笑容', score: 82, dp_type: 'normal' },
+      { char: '不远处', score: 70, dp_type: 'normal',
+        phonemes: [
+          { char: 'bù(4声+4声 → 2声+4声)', score: 55, dp_type: 'mispron' },
+        ],
+      },
+      { char: '有', score: 85, dp_type: 'normal' },
+      { char: '几只', score: 80, dp_type: 'normal' },
+      { char: '鸟儿', score: 58, dp_type: 'mispron',
+        phonemes: [
+          { char: 'niǎo(3声)', score: 78, dp_type: 'normal' },
+          { char: 'r(儿化)', score: 35, dp_type: 'mispron' },
+        ],
+      },
+      { char: '在', score: 85, dp_type: 'normal' },
+      { char: '枝头', score: 78, dp_type: 'normal' },
+      { char: '唱歌', score: 82, dp_type: 'normal' },
+      { char: '空气', score: 80, dp_type: 'normal' },
+      { char: '里', score: 78, dp_type: 'normal' },
+      { char: '弥漫着', score: 72, dp_type: 'normal' },
+      { char: '花香', score: 80, dp_type: 'normal' },
+      { char: '让人', score: 82, dp_type: 'normal' },
+      { char: '心情', score: 80, dp_type: 'normal' },
+      { char: '舒畅', score: 78, dp_type: 'normal' },
+    ],
+    analysisPrompt: `你是一位普通话口语教练。以下是驰声 MCP 段落评测（cn.pred.raw）返回数据。
+
+## 段落级关注点
+- 儿化（/r/）分布：「花儿」「鸟儿」等常见儿化词
+- 「不」「一」变调：不+4声→2声、一+4声→2声、一+1/2/3声→4声
+- 意群停顿：中文意群偏短，2-4 字一组
+- 整体语速 ≈ 4-5 字/秒
+
+## MCP 返回
+\`\`\`json
+{mcp_response}
+\`\`\``,
+    analysisOutput: `整体 overall 76，主要矛盾在**儿化韵**（2 处 38/35 分）和**「不」变调**（55 分）：
+
+【儿化 · 系统性问题】
+⚠ 「花儿 huār」(38) 和 「鸟儿 niǎor」(35) 都把儿化读成了独立音节。
+儿化不是加一个「儿」字，而是主元音尾部卷舌，整个音节只有一个拍子。
+
+【变调】
+⚠ 「不远处」的「不」读作 bù（四声）。
+"不 + 第四声" 时，"不" 必须变为第二声（bú）。
+所以这里应读 bú yuǎn chù，不是 bù yuǎn chù。
+
+【韵律 · rhythm 66 偏低】
+- 意群切分不够自然，"在草地上奔跑" 应作为一个意群
+- "挂着灿烂的笑容" 中间停顿过长
+
+【学习优先级】
+1. 儿化（最影响地道度）
+2. 「不」「一」变调规则
+3. 意群连读`,
+    practicePrompt: '基于诊断生成中文段落综合练习，返回 JSON。',
+    practice: [
+      {
+        category: '儿化韵',
+        icon: '🌀',
+        items: [
+          { label: '儿化对照练', content: '花 / 花儿 · 鸟 / 鸟儿 · 孩 / 孩儿 · 今天 / 今儿 · 老头 / 老头儿（对比感受区别）' },
+          { label: '整段儿化版', content: '整段中所有可儿化的词都儿化：公园里的花儿都开了... 几只鸟儿在枝头... （体会地道北京腔）' },
+        ],
+      },
+      {
+        category: '变调规则',
+        icon: '📐',
+        items: [
+          { label: '"不" 变调', content: '不好 (bù hǎo) · 不去 (bú qù) · 不对 (bú duì) · 不错 (bú cuò) —— 后接 4 声才变 2 声' },
+          { label: '"一" 变调', content: '一个 (yí gè) · 一次 (yí cì) · 一天 (yì tiān) · 一年 (yì nián) · 一只 (yì zhī)' },
+        ],
+      },
+      {
+        category: '意群分段',
+        icon: '🎵',
+        items: [
+          { label: '标注版', content: '[春天来了] // [公园里的花儿都开了] // [小朋友们] / [在草地上奔跑] / [脸上挂着灿烂的笑容]' },
+        ],
+      },
+    ],
+  } as PronSample,
 };
 
 // ─── util: build MCP JSON string for prompt injection ────────────────────
@@ -887,27 +1188,68 @@ const TAB_ICONS: Record<QType, typeof Type> = {
   semiopen: MessagesSquare,
 };
 
+// 中文内核支持的题型（半开放仅英文支持）
+const CN_AVAILABLE: QType[] = ['word', 'sentence', 'paragraph'];
+const EN_AVAILABLE: QType[] = ['word', 'sentence', 'paragraph', 'semiopen'];
+
 // ─── page ─────────────────────────────────────────────────────────────────
 export default function DemoPage() {
-  const [qtype, setQtype] = useState<QType>('sentence');
+  const searchParams = useSearchParams();
+  const initialLang: Lang = searchParams.get('lang') === 'cn' ? 'cn' : 'en';
+  const rawType = searchParams.get('type');
+  const typeMap: Record<string, QType> = {
+    word: 'word',
+    sent: 'sentence',
+    sentence: 'sentence',
+    para: 'paragraph',
+    paragraph: 'paragraph',
+    semi: 'semiopen',
+    semiopen: 'semiopen',
+  };
+  const mapped = rawType ? typeMap[rawType] : undefined;
+  const allowed = initialLang === 'cn' ? CN_AVAILABLE : EN_AVAILABLE;
+  const initialQType: QType = mapped && allowed.includes(mapped) ? mapped : 'sentence';
+
+  const [lang, setLang] = useState<Lang>(initialLang);
+  const [qtype, setQtype] = useState<QType>(initialQType);
   const [phase, setPhase] = useState<Phase>('idle');
   const [showRawJson, setShowRawJson] = useState(false);
 
-  const sample = SAMPLES[qtype];
+  const samplesForLang: Partial<Record<QType, Sample>> = lang === 'cn' ? CN_SAMPLES : SAMPLES;
+  const availableTypes: QType[] = lang === 'cn' ? CN_AVAILABLE : EN_AVAILABLE;
+
+  // 如当前题型在该语言下不可用，取第一个可用题型
+  const effectiveQType: QType = availableTypes.includes(qtype) ? qtype : availableTypes[0];
+  const sample = (samplesForLang[effectiveQType] ?? SAMPLES[effectiveQType]) as Sample;
   const mcpJson = useMemo(() => buildMcpJson(sample), [sample]);
 
   const analysisPromptResolved = sample.analysisPrompt.replace('{mcp_response}', mcpJson);
 
   function switchType(t: QType) {
-    if (t === qtype) return;
+    if (t === effectiveQType) return;
     setQtype(t);
     setPhase('idle');
     setShowRawJson(false);
   }
 
+  function switchLang(l: Lang) {
+    if (l === lang) return;
+    setLang(l);
+    const next = l === 'cn' ? CN_AVAILABLE : EN_AVAILABLE;
+    if (!next.includes(qtype)) {
+      setQtype(next[0]);
+    }
+    setPhase('idle');
+    setShowRawJson(false);
+  }
+
   function runAssess() {
-    setPhase('assessing');
-    setTimeout(() => setPhase('scores'), 1400);
+    setPhase('recording');
+    // 2.4s 模拟录音 → 1.2s 评测 → 结果
+    setTimeout(() => {
+      setPhase('assessing');
+      setTimeout(() => setPhase('scores'), 1200);
+    }, 2400);
   }
   function runAnalysis() {
     setPhase('analyzing');
@@ -937,14 +1279,48 @@ export default function DemoPage() {
           完整还原驰声 MCP 真实 API 输出 + LLM 二次 / 三次分析的 Prompt Skill。每一步的提示词都可复制，直接拿走做你自己 Agent 的模板。
         </p>
 
+        {/* Language switcher · 语言切换 */}
+        <div className="mb-8">
+          <div className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground mb-3">语言 · Language</div>
+          <div className="inline-flex items-center gap-1 p-1 rounded-full border border-border/60 bg-muted/30">
+            {([
+              { k: 'en' as Lang, label: 'English', sub: '英文内核' },
+              { k: 'cn' as Lang, label: '中文', sub: '中文内核' },
+            ]).map((it) => {
+              const active = lang === it.k;
+              return (
+                <button
+                  key={it.k}
+                  onClick={() => switchLang(it.k)}
+                  className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
+                    active
+                      ? 'bg-foreground text-background shadow-sm'
+                      : 'text-muted-foreground hover:text-foreground'
+                  }`}
+                >
+                  <span>{it.label}</span>
+                  <span className={`ml-2 text-[10px] ${active ? 'text-background/70' : 'text-muted-foreground/70'}`}>
+                    · {it.sub}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+          {lang === 'cn' && (
+            <p className="mt-2 text-[11px] text-muted-foreground">
+              中文内核目前支持字词 / 句子 / 段落三类（cn.word.raw · cn.sent.raw · cn.pred.raw）；半开放与开放题型当前仅英文内核支持。
+            </p>
+          )}
+        </div>
+
         {/* Question type tabs */}
         <div className="mb-10">
           <div className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground mb-3">选择题型 · Question Type</div>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-            {(Object.keys(SAMPLES) as QType[]).map((t) => {
-              const s = SAMPLES[t];
+          <div className={`grid gap-2 ${availableTypes.length === 4 ? 'grid-cols-2 sm:grid-cols-4' : 'grid-cols-1 sm:grid-cols-3'}`}>
+            {availableTypes.map((t) => {
+              const s = (samplesForLang[t] ?? SAMPLES[t]) as Sample;
               const Icon = TAB_ICONS[t];
-              const active = t === qtype;
+              const active = t === effectiveQType;
               return (
                 <button
                   key={t}
@@ -1022,6 +1398,61 @@ export default function DemoPage() {
             <Play className="h-4 w-4" /> 模拟评测
           </button>
         )}
+
+        {/* ═══ Recording simulation · 模拟录音动画 ═══ */}
+        {phase === 'recording' && (
+          <div className="mb-8 rounded-lg border border-rose-500/40 bg-rose-500/5 px-6 py-5 animate-in fade-in slide-in-from-bottom-2 duration-300">
+            <div className="flex items-center gap-4">
+              {/* 脉动麦克风 */}
+              <div className="relative h-12 w-12 shrink-0">
+                <span className="absolute inset-0 rounded-full bg-rose-500/30 animate-ping" />
+                <span className="absolute inset-1 rounded-full bg-rose-500/40 animate-ping [animation-delay:0.3s]" />
+                <span className="absolute inset-0 rounded-full bg-rose-500 flex items-center justify-center">
+                  <Mic className="h-5 w-5 text-white" />
+                </span>
+              </div>
+
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="inline-flex items-center gap-1 text-xs font-semibold text-rose-600">
+                    <span className="h-1.5 w-1.5 rounded-full bg-rose-500 animate-pulse" />
+                    正在录音 · RECORDING
+                  </span>
+                  <span className="text-[10px] text-muted-foreground font-mono">
+                    mic 16kHz / mono · WebSocket streaming
+                  </span>
+                </div>
+                {/* 实时波形 */}
+                <div className="flex items-center gap-[3px] h-10">
+                  {Array.from({ length: 48 }).map((_, i) => (
+                    <div
+                      key={i}
+                      className="flex-1 rounded-full bg-rose-500/70"
+                      style={{
+                        height: `${25 + Math.abs(Math.sin((i + Date.now() / 500) / 2)) * 70}%`,
+                        animation: `wave-bar 0.9s ease-in-out ${i * 0.04}s infinite`,
+                      }}
+                    />
+                  ))}
+                </div>
+              </div>
+
+              <button
+                disabled
+                className="inline-flex items-center justify-center gap-2 h-10 px-5 text-sm font-medium rounded-lg border border-rose-500/40 text-rose-600 bg-background cursor-wait shrink-0"
+              >
+                <Square className="h-3.5 w-3.5 fill-current" /> 录音中...
+              </button>
+            </div>
+            <style>{`
+              @keyframes wave-bar {
+                0%, 100% { transform: scaleY(0.35); }
+                50%      { transform: scaleY(1); }
+              }
+            `}</style>
+          </div>
+        )}
+
         {phase === 'assessing' && (
           <button
             disabled

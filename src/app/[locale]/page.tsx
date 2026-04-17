@@ -11,6 +11,7 @@ import { FullPageScroll } from '@/components/fullpage-scroll';
 import { ParamsShowcase } from '@/components/params-showcase';
 import { DemoPreview } from '@/components/demo-preview';
 import { cn } from '@/lib/utils';
+import { SALES_CHAT_URL } from '@/lib/links';
 
 export default async function HomePage() {
   const locale = await getLocale();
@@ -221,16 +222,19 @@ export default async function HomePage() {
           <FadeUp className="text-center mb-10">
             <span className="inline-block text-[11px] tracking-[0.2em] uppercase text-muted-foreground mb-3">Interactive Demo · 零门槛试用</span>
             <h2 className="text-2xl md:text-3xl font-bold tracking-tight mb-3">
-              一眼看懂驰声能做什么 <span className="text-muted-foreground font-normal">· 评测 → 诊断 → 练习</span>
+              30 秒看懂 Chivox MCP <span className="text-muted-foreground font-normal">· 评测 → 诊断 → 练习</span>
             </h2>
-            <p className="text-muted-foreground max-w-xl mx-auto leading-relaxed">
-              无需注册、无需付费。4 种题型、8 个评分字段、LLM 二次 / 三次分析，全部走真实 API 响应。
+            <p className="text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+              无需注册、无需付费 —— 中英双语 7 种题型、音素级 / 词级 / 多维度评分字段，配合 LLM 二次与三次分析，完整还原"一段录音 → 结构化诊断 → 个性化练习"的生产级真实链路。
             </p>
           </FadeUp>
 
           <DemoPreview />
         </div>
       </section>
+
+      {/* ━━━ 工作流程: 动态步骤 ━━━ */}
+      <WorkflowSteps />
 
       {/* ━━━ 三大核心价值 ━━━ */}
       <section id="features" data-fp-section className="min-h-screen flex flex-col justify-center py-14 md:py-20 border-t border-border/40">
@@ -670,9 +674,6 @@ score < 70 的音素，给
         </div>
       </section>
 
-      {/* ━━━ 工作流程: 动态步骤 ━━━ */}
-      <WorkflowSteps />
-
       {/* ━━━ 场景 A · AI 原生场景 ━━━ */}
       <section id="use-cases" data-fp-section className="min-h-screen flex flex-col justify-center py-14 md:py-20 border-t border-border/40 bg-muted/20">
         <div className="container mx-auto px-6">
@@ -940,12 +941,14 @@ score < 70 的音素，给
                   告诉我们你的业务场景、预估调用量和并发需求，销售会在 1 个工作日内提供精准阶梯报价与 PoC 支持。
                 </p>
 
-                <Link
-                  href="/contact"
+                <a
+                  href={SALES_CHAT_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="inline-flex items-center justify-center gap-1.5 h-10 px-4 text-sm font-medium rounded-lg bg-foreground text-background hover:bg-foreground/90 transition-colors w-full"
                 >
                   在线咨询销售 <ArrowUpRight className="h-4 w-4" />
-                </Link>
+                </a>
 
                 <a
                   href="mailto:sales@chivox.com"
@@ -960,21 +963,21 @@ score < 70 的音素，给
                   <div className="flex-1 h-px bg-border/60" />
                 </div>
 
-                <div className="flex items-center gap-4">
+                <div className="flex flex-col items-center text-center gap-3">
                   <div className="relative shrink-0 rounded-lg border border-border/60 overflow-hidden bg-white p-1.5">
                     <Image
                       src="/wechat-qr.png"
                       alt="驰声微信小程序"
-                      width={104}
-                      height={104}
+                      width={128}
+                      height={128}
                       unoptimized
-                      className="h-[104px] w-[104px] object-contain"
+                      className="h-[128px] w-[128px] object-contain"
                     />
                   </div>
-                  <div className="min-w-0">
+                  <div>
                     <div className="text-sm font-medium mb-1">微信扫码</div>
                     <div className="text-xs text-muted-foreground leading-relaxed">
-                      了解更多驰声技术，<br />体验小程序评测 Demo。
+                      了解更多驰声技术，体验小程序评测 Demo。
                     </div>
                   </div>
                 </div>
@@ -1064,12 +1067,14 @@ score < 70 的音素，给
 
             {/* CTA + 外链 */}
             <FadeUp delay={0.3} className="flex flex-col sm:flex-row items-center justify-center gap-3">
-              <Link
-                href="/contact"
+              <a
+                href={SALES_CHAT_URL}
+                target="_blank"
+                rel="noopener noreferrer"
                 className="inline-flex items-center justify-center gap-2 h-10 px-6 text-sm font-medium rounded-full bg-foreground text-background hover:bg-foreground/90 transition-all"
               >
                 开始接入 <ArrowRight className="h-3.5 w-3.5" />
-              </Link>
+              </a>
               <a
                 href="https://www.chivox.com/"
                 target="_blank"

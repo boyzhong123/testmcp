@@ -5,6 +5,7 @@ import { useAuth } from '@/lib/auth-context';
 import { Link } from '@/i18n/routing';
 import { Check, ArrowUpRight, Crown, Sparkles } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { SALES_CHAT_URL } from '@/lib/links';
 
 // ── 阶梯档位示意（不展示具体调用量 / 价格，仅相对单价示意） ──
 const TIERS = [
@@ -155,12 +156,14 @@ export default function PlansPage() {
               告诉我们你的业务场景、预估调用量和并发需求，销售会在 1 个工作日内提供精准阶梯报价与 PoC 支持。
             </p>
 
-            <Link
-              href="/contact"
+            <a
+              href={SALES_CHAT_URL}
+              target="_blank"
+              rel="noopener noreferrer"
               className="inline-flex items-center justify-center gap-1.5 h-10 px-4 text-sm font-medium rounded-lg bg-foreground text-background hover:bg-foreground/90 transition-colors w-full"
             >
               在线咨询销售 <ArrowUpRight className="h-4 w-4" />
-            </Link>
+            </a>
 
             <a
               href="mailto:sales@chivox.com"
@@ -175,21 +178,21 @@ export default function PlansPage() {
               <div className="flex-1 h-px bg-border/60" />
             </div>
 
-            <div className="flex items-center gap-4">
+            <div className="flex flex-col items-center text-center gap-3">
               <div className="relative shrink-0 rounded-lg border border-border/60 overflow-hidden bg-white p-1.5">
                 <Image
                   src="/wechat-qr.png"
                   alt="驰声微信小程序"
-                  width={96}
-                  height={96}
+                  width={128}
+                  height={128}
                   unoptimized
-                  className="h-[96px] w-[96px] object-contain"
+                  className="h-[128px] w-[128px] object-contain"
                 />
               </div>
-              <div className="min-w-0">
+              <div>
                 <div className="text-sm font-medium mb-1">微信扫码</div>
                 <div className="text-xs text-muted-foreground leading-relaxed">
-                  了解更多驰声技术，<br />体验小程序评测 Demo。
+                  了解更多驰声技术，体验小程序评测 Demo。
                 </div>
               </div>
             </div>

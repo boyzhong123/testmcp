@@ -2,15 +2,18 @@
 
 import { useState } from 'react';
 import { Link } from '@/i18n/routing';
-import { Mic, Sparkles, Zap, ArrowRight, Check } from 'lucide-react';
+import { Mic, Sparkles, Zap, ArrowRight, Check, Languages, BookOpen } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
+type Lang = 'en' | 'cn';
 type QKey = 'word' | 'sent' | 'para' | 'semi';
 
 interface ScoreCell { label: string; value: number; tone: 'amber' | 'emerald' }
 interface ChipCell { ok: boolean; text: string }
 
 interface PreviewData {
+  /** 评测内核名称（对应驰声评测 API coreType） */
+  coreType: string;
   urlHash: string;
   kicker: string;
   text: React.ReactNode;
@@ -23,26 +26,38 @@ interface PreviewData {
   audioProgress: number;
 }
 
-const TABS: { k: QKey; label: string; sub: string }[] = [
-  { k: 'word', label: '单词题',    sub: 'en.word.score' },
-  { k: 'sent', label: '句子题',    sub: 'en.sent.score' },
-  { k: 'para', label: '段落题',    sub: 'en.pred.score' },
-  { k: 'semi', label: '半开放题',  sub: 'en.semi' },
+const EN_TABS: { k: QKey; label: string }[] = [
+  { k: 'word', label: '单词题' },
+  { k: 'sent', label: '句子题' },
+  { k: 'para', label: '段落题' },
+  { k: 'semi', label: '半开放题' },
 ];
 
-const DATA: Record<QKey, PreviewData> = {
+// 中文内核仅支持封闭题型（字/词/句/段），半开放与开放目前仅英文支持
+const CN_TABS: { k: QKey; label: string }[] = [
+  { k: 'word', label: '字词题' },
+  { k: 'sent', label: '句子题' },
+  { k: 'para', label: '段落题' },
+];
+
+// ─────────────────────────────────────────
+// 英文内核 · en.word.score / en.sent.score / en.pred.score / en.semi
+// ─────────────────────────────────────────
+const EN_DATA: Record<QKey, PreviewData> = {
   word: {
-    urlHash: 'word',
-    kicker: 'Reference Word · 单词题',
+    coreType: 'en.word.score',
+    urlHash: 'en-word',
+    kicker: 'Reference Word · 单词题 · en.word.score',
     text: (
       <>
         <span className="bg-rose-500/15 text-rose-700 dark:text-rose-300 px-0.5 rounded border-b border-rose-500/40">unique</span>
         <span className="ml-2 font-mono text-xs text-muted-foreground">/juːˈniːk/</span>
       </>
     ),
+    // 单词题字段：overall / pron / integrity / phoneme-level
     scores: [
       { label: '总分',    value: 82,  tone: 'amber'   },
-      { label: '准确度',  value: 78,  tone: 'amber'   },
+      { label: '发音',    value: 78,  tone: 'amber'   },
       { label: '音素',    value: 85,  tone: 'emerald' },
       { label: '完整度',  value: 100, tone: 'emerald' },
     ],
@@ -59,13 +74,15 @@ const DATA: Record<QKey, PreviewData> = {
     audioProgress: 0.82,
   },
   sent: {
-    urlHash: 'sentence',
-    kicker: 'Reference Sentence · 句子题',
+    coreType: 'en.sent.score',
+    urlHash: 'en-sent',
+    kicker: 'Reference Sentence · 句子题 · en.sent.score',
     text: (
       <>
         She sells <span className="bg-rose-500/15 text-rose-700 dark:text-rose-300 px-0.5 rounded border-b border-rose-500/40">seashells</span> by the <span className="bg-amber-500/15 text-amber-700 dark:text-amber-300 px-0.5 rounded border-b border-amber-500/40">seashore</span>.
       </>
     ),
+    // 句子题字段：overall / accuracy / fluency / integrity + 语速
     scores: [
       { label: '总分',    value: 74, tone: 'amber'   },
       { label: '准确度',  value: 70, tone: 'amber'   },
@@ -85,8 +102,9 @@ const DATA: Record<QKey, PreviewData> = {
     audioProgress: 0.65,
   },
   para: {
-    urlHash: 'paragraph',
-    kicker: 'Reference Text · 段落题',
+    coreType: 'en.sent.exam',
+    urlHash: 'en-para',
+    kicker: 'Reference Text · 段落题 · en.sent.exam',
     text: (
       <>
         The boy who had <span className="bg-rose-500/15 text-rose-700 dark:text-rose-300 px-0.5 rounded border-b border-rose-500/40">thought</span> about the <span className="bg-amber-500/15 text-amber-700 dark:text-amber-300 px-0.5 rounded border-b border-amber-500/40">unique</span> opportunity stood still, watching the sunset paint the sky in shades of gold.
@@ -104,15 +122,16 @@ const DATA: Record<QKey, PreviewData> = {
       { ok: true,  text: '✓ 连读流畅' },
       { ok: true,  text: '✓ 语速合宜' },
     ],
-    practiceLabel: 'LLM 生成 · 练习建议',
+    practiceLabel: 'LLM 生成 · 段落纠音',
     practice: '"针对 /θ/ 咬舌音，试试绕口令：The thirty-three thieves thought they thrilled the throne throughout Thursday..."',
     audioCur: '0:08',
     audioTotal: '0:12',
     audioProgress: 0.7,
   },
   semi: {
-    urlHash: 'semi-open',
-    kicker: 'Prompt · 半开放题',
+    coreType: 'en.scne.exam',
+    urlHash: 'en-semi',
+    kicker: 'Prompt · 半开放题 · en.scne.exam',
     text: (
       <>
         <span className="text-muted-foreground">&ldquo;Tell me about your favorite </span>
@@ -120,6 +139,7 @@ const DATA: Record<QKey, PreviewData> = {
         <span className="text-muted-foreground">&rdquo;</span>
       </>
     ),
+    // 半开放题 5 维：内容/词汇/语法/发音/结构
     scores: [
       { label: '内容',    value: 68, tone: 'amber'   },
       { label: '词汇',    value: 72, tone: 'amber'   },
@@ -140,9 +160,152 @@ const DATA: Record<QKey, PreviewData> = {
   },
 };
 
+// ─────────────────────────────────────────
+// 中文内核 · cn.word.score / cn.sent.score / cn.pred.score / cn.semi
+// 中文特有字段：tone（声调）、pinyin、erhua（儿化）、biandiao（变调）
+// ─────────────────────────────────────────
+const CN_DATA: Record<QKey, PreviewData> = {
+  word: {
+    coreType: 'cn.word.raw',
+    urlHash: 'cn-word',
+    kicker: '参考字词 · 字词题 · cn.word.raw',
+    text: (
+      <>
+        <span className="bg-rose-500/15 text-rose-700 dark:text-rose-300 px-0.5 rounded border-b border-rose-500/40">独特</span>
+        <span className="ml-2 font-mono text-xs text-muted-foreground">dú tè</span>
+      </>
+    ),
+    // 中文单词字段：总分 / 发音 / 声调 / 完整度 —— 声调是中文独有
+    scores: [
+      { label: '总分',    value: 76, tone: 'amber'   },
+      { label: '发音',    value: 82, tone: 'emerald' },
+      { label: '声调',    value: 65, tone: 'amber'   },
+      { label: '完整度',  value: 100, tone: 'emerald' },
+    ],
+    chips: [
+      { ok: false, text: '⚠ "独" 二声发成了三声' },
+      { ok: false, text: '⚠ "特" 声调偏平' },
+      { ok: true,  text: '✓ 拼音 dú/tè 清晰' },
+      { ok: true,  text: '✓ 送气音 t 自然' },
+    ],
+    practiceLabel: 'LLM 生成 · 单词纠音（中文）',
+    practice: '"跟读 3 遍：「独（dú）」二声由中平起，向高扬升；「特（tè）」四声由高快速降到低。音调起伏要干脆..."',
+    audioCur: '0:02',
+    audioTotal: '0:03',
+    audioProgress: 0.75,
+  },
+  sent: {
+    coreType: 'cn.sent.raw',
+    urlHash: 'cn-sent',
+    kicker: '参考句子 · 句子题 · cn.sent.raw',
+    text: (
+      <>
+        妈妈骑着<span className="bg-rose-500/15 text-rose-700 dark:text-rose-300 px-0.5 rounded border-b border-rose-500/40">马儿</span>过<span className="bg-amber-500/15 text-amber-700 dark:text-amber-300 px-0.5 rounded border-b border-amber-500/40">小桥</span>。
+      </>
+    ),
+    // 句子题字段：总分 / 发音 / 声调 / 流利度
+    scores: [
+      { label: '总分',    value: 72, tone: 'amber'   },
+      { label: '发音',    value: 75, tone: 'amber'   },
+      { label: '声调',    value: 68, tone: 'amber'   },
+      { label: '流利度',  value: 88, tone: 'emerald' },
+    ],
+    chips: [
+      { ok: false, text: '⚠ "马儿" 儿化不明显' },
+      { ok: false, text: '⚠ "妈妈" 轻声过重' },
+      { ok: true,  text: '✓ 语流连贯' },
+      { ok: true,  text: '✓ 无明显漏读' },
+    ],
+    practiceLabel: 'LLM 生成 · 句子纠音（中文）',
+    practice: '"重点练「马儿」的儿化 —— 把「马」(mǎ) 尾音卷舌接近 r 即可，不要单独发「儿」。另外「妈妈」第二个字是轻声，声短促..."',
+    audioCur: '0:04',
+    audioTotal: '0:05',
+    audioProgress: 0.72,
+  },
+  para: {
+    coreType: 'cn.pred.raw',
+    urlHash: 'cn-para',
+    kicker: '参考短文 · 段落题 · cn.pred.raw',
+    text: (
+      <>
+        春天的<span className="bg-rose-500/15 text-rose-700 dark:text-rose-300 px-0.5 rounded border-b border-rose-500/40">花儿</span>开了，小鸟在枝头<span className="bg-amber-500/15 text-amber-700 dark:text-amber-300 px-0.5 rounded border-b border-amber-500/40">歌唱</span>，风轻轻拂过，带来阵阵花香。
+      </>
+    ),
+    scores: [
+      { label: '总分',    value: 80, tone: 'emerald' },
+      { label: '发音',    value: 78, tone: 'amber'   },
+      { label: '声调',    value: 74, tone: 'amber'   },
+      { label: '流利度',  value: 90, tone: 'emerald' },
+    ],
+    chips: [
+      { ok: false, text: '⚠ "花儿" 儿化缺失' },
+      { ok: false, text: '⚠ "不 + 四声" 变调未处理' },
+      { ok: true,  text: '✓ 停顿自然' },
+      { ok: true,  text: '✓ 语速合宜（≈4 字/秒）' },
+    ],
+    practiceLabel: 'LLM 生成 · 段落纠音（中文）',
+    practice: '"先练儿化韵：花儿 (huār)、鸟儿 (niǎor)，把末尾元音卷舌即可。再注意三声变调：当「你好」连读，第一个「你」由三声变成二声..."',
+    audioCur: '0:08',
+    audioTotal: '0:12',
+    audioProgress: 0.68,
+  },
+  // 占位：中文内核目前不支持半开放，此项不会在 UI 中展示
+  semi: {
+    coreType: 'cn.semi.unavailable',
+    urlHash: 'cn-semi',
+    kicker: '题目 · 半开放题（中文暂不支持）',
+    text: (
+      <>
+        <span className="text-muted-foreground">&ldquo;请介绍一下你最喜欢的 </span>
+        <span className="bg-amber-500/15 text-amber-700 dark:text-amber-300 px-0.5 rounded">周末活动</span>
+        <span className="text-muted-foreground">&rdquo;</span>
+      </>
+    ),
+    scores: [
+      { label: '内容',    value: 72, tone: 'amber'   },
+      { label: '语言',    value: 76, tone: 'amber'   },
+      { label: '发音',    value: 82, tone: 'emerald' },
+      { label: '声调',    value: 70, tone: 'amber'   },
+    ],
+    chips: [
+      { ok: false, text: '⚠ 内容展开较短（2 句）' },
+      { ok: false, text: '⚠ "的" 字重复过多' },
+      { ok: true,  text: '✓ 普通话语音清晰' },
+      { ok: true,  text: '✓ 没有口头禅' },
+    ],
+    practiceLabel: 'LLM 生成 · 内容拓展（中文）',
+    practice: '"扩展为 3 句：① 我最喜欢 ___；② 因为 ___；③ 举个例子 ___。可以使用「首先 / 因为 / 比如」让逻辑更清晰..."',
+    audioCur: '0:14',
+    audioTotal: '0:22',
+    audioProgress: 0.6,
+  },
+};
+
+const DATA: Record<Lang, Record<QKey, PreviewData>> = {
+  en: EN_DATA,
+  cn: CN_DATA,
+};
+
 export function DemoPreview() {
-  const [active, setActive] = useState<QKey>('para');
-  const data = DATA[active];
+  const [lang, setLang] = useState<Lang>('en');
+  const [active, setActive] = useState<QKey>('word');
+
+  // 当前语言可用的题型
+  const availableTabs = lang === 'en' ? EN_TABS : CN_TABS;
+  // 如切到中文时仍停在 "semi"，自动退回第一个可用题型
+  const effectiveActive: QKey = availableTabs.some((t) => t.k === active)
+    ? active
+    : availableTabs[0].k;
+
+  const data = DATA[lang][effectiveActive];
+
+  const switchLang = (next: Lang) => {
+    setLang(next);
+    const nextTabs = next === 'en' ? EN_TABS : CN_TABS;
+    if (!nextTabs.some((t) => t.k === active)) {
+      setActive(nextTabs[0].k);
+    }
+  };
 
   const BAR_COUNT = 44;
   const playedUpTo = Math.floor(BAR_COUNT * data.audioProgress);
@@ -151,14 +314,63 @@ export function DemoPreview() {
     <>
       {/* 主体 · 左叙事 / 右浏览器 Mock */}
       <div className="grid lg:grid-cols-12 gap-6 max-w-6xl mx-auto">
-        {/* ── 左：题型切换 + 亮点 + CTA ── */}
+        {/* ── 左：语言切换 + 题型切换 + 亮点 + CTA ── */}
         <div className="lg:col-span-5 flex flex-col">
-          {/* 4 题型 tab 按钮（真·可点击） */}
+          {/* 语言切换：中文 / English */}
+          <div className="mb-5">
+            <div className="text-[11px] tracking-[0.2em] uppercase text-muted-foreground mb-2 flex items-center gap-1.5">
+              <Languages className="h-3 w-3" />
+              Language · 语种切换
+            </div>
+            <div className="inline-flex items-center gap-1 p-1 rounded-full bg-muted/40 border border-border/60">
+              {(
+                [
+                  { k: 'en' as Lang, label: 'English', hint: '英文内核' },
+                  { k: 'cn' as Lang, label: '中文',    hint: '中文内核' },
+                ]
+              ).map((it) => {
+                const isActive = lang === it.k;
+                return (
+                  <button
+                    key={it.k}
+                    type="button"
+                    onClick={() => switchLang(it.k)}
+                    className={cn(
+                      'flex items-center gap-1.5 px-3.5 py-1 rounded-full text-xs transition-all cursor-pointer',
+                      isActive
+                        ? 'bg-foreground text-background shadow-sm'
+                        : 'text-muted-foreground hover:text-foreground'
+                    )}
+                  >
+                    <span className="font-medium">{it.label}</span>
+                    <span
+                      className={cn(
+                        'text-[10px]',
+                        isActive ? 'text-background/60' : 'text-muted-foreground/60'
+                      )}
+                    >
+                      · {it.hint}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* 题型 tab 按钮（按语言动态展示） */}
           <div className="mb-6">
-            <div className="text-[11px] tracking-[0.2em] uppercase text-muted-foreground mb-3">Question Types · 点击切换预览</div>
+            <div className="text-[11px] tracking-[0.2em] uppercase text-muted-foreground mb-3 flex items-center gap-2">
+              <span>Question Types · 点击切换预览</span>
+              {lang === 'cn' && (
+                <span className="text-[10px] font-normal normal-case tracking-normal text-muted-foreground/70">
+                  · 中文内核当前支持字词 / 句子 / 段落三类
+                </span>
+              )}
+            </div>
             <div className="flex flex-wrap gap-2" role="tablist">
-              {TABS.map((t) => {
-                const isActive = active === t.k;
+              {availableTabs.map((t) => {
+                const isActive = effectiveActive === t.k;
+                const coreSub = DATA[lang][t.k].coreType;
                 return (
                   <button
                     key={t.k}
@@ -174,7 +386,7 @@ export function DemoPreview() {
                     )}
                   >
                     <span className="font-medium">{t.label}</span>
-                    <span className="opacity-70 font-mono text-[10px]">{t.sub}</span>
+                    <span className="opacity-70 font-mono text-[10px]">{coreSub}</span>
                   </button>
                 );
               })}
@@ -203,21 +415,22 @@ export function DemoPreview() {
           {/* CTA */}
           <div className="flex flex-col sm:flex-row gap-3">
             <Link
-              href={`/demo?type=${active}`}
+              href={`/demo?lang=${lang}&type=${effectiveActive}`}
               className="group inline-flex items-center justify-center h-11 px-6 text-sm font-semibold rounded-full bg-foreground text-background hover:bg-foreground/90 transition-all gap-2 shadow-lg shadow-foreground/10 hover:-translate-y-0.5"
             >
               立即体验 Demo <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
             </Link>
-            <a
-              href="#features"
-              className="inline-flex items-center justify-center h-11 px-6 text-sm font-medium rounded-full border border-border hover:bg-muted/50 transition-colors gap-2"
+            <Link
+              href="/docs"
+              className="group inline-flex items-center justify-center h-11 px-6 text-sm font-medium rounded-full border border-border hover:bg-muted/50 transition-colors gap-2"
             >
-              看看我们的三大价值 <ArrowRight className="h-3.5 w-3.5 rotate-90" />
-            </a>
+              <BookOpen className="h-3.5 w-3.5 opacity-70 group-hover:opacity-100 transition-opacity" />
+              查看文档 <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
+            </Link>
           </div>
         </div>
 
-        {/* ── 右：浏览器 Mock · 按 active 动态切换 ── */}
+        {/* ── 右：浏览器 Mock · 按 lang + active 动态切换 ── */}
         <div className="lg:col-span-7">
           <div className="rounded-xl border border-border/60 bg-background shadow-xl shadow-black/5 overflow-hidden">
             {/* 浏览器顶栏 */}
@@ -228,7 +441,7 @@ export function DemoPreview() {
                 <div className="h-2.5 w-2.5 rounded-full bg-emerald-400/70" />
               </div>
               <div className="flex-1 flex justify-center">
-                <div className="h-5 max-w-[260px] w-full rounded-full bg-background border border-border/60 px-3 flex items-center justify-center text-[10px] text-muted-foreground font-mono truncate">
+                <div className="h-5 max-w-[280px] w-full rounded-full bg-background border border-border/60 px-3 flex items-center justify-center text-[10px] text-muted-foreground font-mono truncate">
                   speech-eval.site/demo · {data.urlHash}
                 </div>
               </div>
@@ -238,11 +451,17 @@ export function DemoPreview() {
               </div>
             </div>
 
-            {/* 内容（随 active 变） · 带淡入动画 */}
-            <div key={active} className="p-5 space-y-4 animate-in fade-in-0 slide-in-from-right-2 duration-300">
+            {/* 内容（随 lang + active 变） · 带淡入动画 */}
+            <div key={`${lang}-${effectiveActive}`} className="p-5 space-y-4 animate-in fade-in-0 slide-in-from-right-2 duration-300">
               {/* 1. 参考文本 */}
               <div>
-                <div className="text-[10px] tracking-[0.18em] uppercase text-muted-foreground mb-1.5">{data.kicker}</div>
+                <div className="text-[10px] tracking-[0.18em] uppercase text-muted-foreground mb-1.5 flex items-center gap-2">
+                  <span>{data.kicker}</span>
+                  <span className="h-0.5 w-0.5 rounded-full bg-muted-foreground/40" />
+                  <span className="font-mono text-muted-foreground/70 normal-case tracking-normal">
+                    coreType: <span className="text-foreground">{data.coreType}</span>
+                  </span>
+                </div>
                 <div className="text-sm leading-relaxed">{data.text}</div>
               </div>
 
@@ -323,7 +542,7 @@ export function DemoPreview() {
       <div className="max-w-6xl mx-auto mt-8">
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-2 rounded-xl border border-border/60 bg-background/60 backdrop-blur-sm p-3">
           {[
-            '无需注册 · 无需连麦',
+            '中 / 英双语评测',
             '4 种真实题型覆盖',
             'LLM Prompt 可复制',
             '30 秒看完全流程',

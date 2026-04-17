@@ -3,7 +3,7 @@
 import { Link } from '@/i18n/routing';
 import { useAuth } from '@/lib/auth-context';
 import { useRouter } from '@/i18n/routing';
-import { Mail, Lock, Eye, EyeOff, ArrowRight, AudioWaveform } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, ArrowRight, AudioWaveform, Check } from 'lucide-react';
 import { useState } from 'react';
 
 export default function LoginPage() {
@@ -44,7 +44,8 @@ export default function LoginPage() {
         {/* Grid lines */}
         <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'linear-gradient(rgba(255,255,255,1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,1) 1px, transparent 1px)', backgroundSize: '64px 64px' }} />
 
-        <div className="relative z-10 flex flex-col justify-between p-10 xl:p-12 w-full">
+        <div className="relative z-10 flex flex-col p-10 xl:p-12 w-full">
+          {/* Top · logo */}
           <Link href="/" className="flex items-center gap-2.5 group">
             <div className="h-8 w-8 rounded-lg bg-white flex items-center justify-center shadow-lg shadow-white/10">
               <AudioWaveform className="h-4 w-4 text-zinc-950" />
@@ -52,20 +53,66 @@ export default function LoginPage() {
             <span className="font-semibold tracking-tight text-white/90 group-hover:text-white transition-colors">Chivox MCP</span>
           </Link>
 
-          <div className="max-w-xs">
-            <h1 className="text-[28px] font-bold tracking-tight leading-[1.2] mb-3">
-              让语音评测<br />接入大模型
+          {/* Main · 主内容块，纵向居中，信息密度饱满 */}
+          <div className="flex-1 flex flex-col justify-center py-10 max-w-sm">
+            <span className="inline-flex items-center gap-2 text-[10px] tracking-[0.25em] uppercase text-white/40 mb-5">
+              <span className="w-3 h-px bg-white/30" />
+              Developer Console
+            </span>
+            <h1 className="text-[30px] xl:text-[34px] font-bold tracking-tight leading-[1.15] mb-4">
+              让语音评测{' '}
+              <span className="bg-gradient-to-r from-white via-white/85 to-white/40 bg-clip-text text-transparent">
+                接入大模型
+              </span>
             </h1>
-            <p className="text-[13px] text-white/50 leading-relaxed">
-              驰声 MCP 将语音评测的高颗粒度元数据以标准协议输出，使 LLM 能够理解、分析并生成个性化的口语教学反馈。
+            <p className="text-[13px] text-white/50 leading-relaxed mb-7">
+              驰声 MCP 把考试级评测引擎以标准协议直接交给 LLM ——
+              <span className="text-white/70"> 一份配置，在 Cursor / Claude Desktop / Dify / Coze / 自研 Agent 里通用</span>，
+              不再为接入口语评测写一行 SDK。
             </p>
+
+            {/* 价值清单 · 4 条 */}
+            <ul className="space-y-3 mb-7">
+              {[
+                { t: '16 个评测工具自动注册', d: '中英双语 · 单词 / 句子 / 段落 / 半开放 / 情景对话' },
+                { t: '音素级 dp_type + 多维评分', d: 'mispron / omit / insert 直接喂给 LLM 做诊断' },
+                { t: '标准 MCP 协议，零接入成本', d: 'stdio / Streamable HTTP 双通道，LLM 自动发现工具' },
+              ].map(f => (
+                <li key={f.t} className="flex items-start gap-3">
+                  <div className="mt-0.5 h-5 w-5 rounded-md border border-white/10 bg-white/[0.04] flex items-center justify-center shrink-0">
+                    <Check className="h-3 w-3 text-white/70" strokeWidth={2.5} />
+                  </div>
+                  <div>
+                    <div className="text-[13px] font-medium text-white/85 leading-tight">{f.t}</div>
+                    <div className="text-[11px] text-white/40 mt-1 leading-relaxed">{f.d}</div>
+                  </div>
+                </li>
+              ))}
+            </ul>
+
+            {/* 迷你 · MCP 响应预览卡，让视觉更有呼吸感 */}
+            <div className="rounded-lg border border-white/[0.08] bg-white/[0.02] overflow-hidden backdrop-blur-sm">
+              <div className="flex items-center gap-1.5 px-3 py-2 border-b border-white/[0.06]">
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-400/80" />
+                <span className="text-[10px] text-white/40 font-mono">live · mcp-response.json</span>
+                <span className="ml-auto text-[9px] text-emerald-400/70 font-mono tracking-wider">200 OK</span>
+              </div>
+              <pre className="text-[10.5px] font-mono p-3 leading-relaxed text-white/80 whitespace-pre">
+<span className="text-white/30">{'{'}</span>{'\n'}
+{'  '}<span className="text-emerald-300/80">&quot;overall&quot;</span>: <span className="text-amber-300/90">85</span>,{'\n'}
+{'  '}<span className="text-emerald-300/80">&quot;pron&quot;</span>: <span className="text-white/30">{'{ accuracy: '}</span><span className="text-amber-300/90">82</span><span className="text-white/30">{', fluency: '}</span><span className="text-amber-300/90">88</span><span className="text-white/30">{' }'}</span>,{'\n'}
+{'  '}<span className="text-emerald-300/80">&quot;details&quot;</span>: <span className="text-white/30">[{'{ '}</span><span className="text-emerald-300/80">&quot;char&quot;</span>:<span className="text-amber-300/90">&nbsp;&quot;think&quot;</span>, <span className="text-emerald-300/80">&quot;dp_type&quot;</span>:<span className="text-rose-300/90">&nbsp;&quot;mispron&quot;</span> <span className="text-white/30">{'}]'}</span>{'\n'}
+<span className="text-white/30">{'}'}</span>
+              </pre>
+            </div>
           </div>
 
-          <div className="flex gap-8">
+          {/* Bottom · stats */}
+          <div className="flex gap-8 pt-6 border-t border-white/[0.06]">
             {[
               { value: '16', label: '种评测工具' },
-              { value: '20+', label: '评测维度' },
-              { value: '99%', label: '服务可用率' },
+              { value: '中英', label: '双语内核' },
+              { value: '99.9%', label: '服务可用率' },
             ].map(s => (
               <div key={s.label}>
                 <div className="text-xl font-bold tabular-nums text-white/90">{s.value}</div>

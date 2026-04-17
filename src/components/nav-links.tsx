@@ -38,17 +38,17 @@ export function NavLinks() {
   const isDocs = pathname.includes('/docs');
   const isDemo = pathname.includes('/demo');
 
-  // ── 分组：把首页 section 归类，避免一个一个穷举 ──
+  // ── 分组：菜单顺序与页面实际滚动顺序保持一致 ──
   const groups: MenuGroup[] = [
     {
       key: 'product',
       label: '产品',
       children: [
+        { label: '工作流程', desc: '从调用到产出的完整链路', hash: '#workflow', sectionId: 'workflow' },
         { label: '三大核心价值', desc: '多维数据 · 深度分析 · 全场景', hash: '#features', sectionId: 'features' },
         { label: '双模式评测', desc: '朗读式 + 半开放口语', hash: '#dual-mode', sectionId: 'dual-mode' },
         { label: '全部评测参数', desc: 'overall / accuracy / rhythm…', hash: '#params', sectionId: 'params' },
         { label: 'LLM 深度分析', desc: '评分 → 诊断 → 练习', hash: '#how-it-works', sectionId: 'how-it-works' },
-        { label: '工作流程', desc: '从调用到产出的完整链路', hash: '#workflow', sectionId: 'workflow' },
       ],
     },
     {
@@ -62,6 +62,8 @@ export function NavLinks() {
     },
   ];
 
+  const homeItem: DirectItem = { key: 'home', label: t('home'), hash: '#hero', sectionId: 'hero' };
+
   const direct: DirectItem[] = [
     { key: 'pricing', label: t('pricing'), hash: '#pricing', sectionId: 'pricing' },
     { key: 'docs', label: t('docs'), href: '/docs' },
@@ -73,9 +75,10 @@ export function NavLinks() {
   useEffect(() => {
     if (!isHome) return;
     const allIds = [
+      homeItem.sectionId,
       ...groups.flatMap((g) => g.children.map((c) => c.sectionId).filter(Boolean)),
       ...direct.map((d) => d.sectionId).filter(Boolean),
-    ] as string[];
+    ].filter(Boolean) as string[];
     const els = allIds
       .map((id) => document.getElementById(id))
       .filter((el): el is HTMLElement => Boolean(el));
@@ -101,8 +104,38 @@ export function NavLinks() {
     };
   }, [isHome, pathname]);
 
+  // 首页按钮：在首页就滚回顶部，不在首页就路由回 /
+  const renderHomeItem = () => {
+    const active = isHome && homeItem.sectionId === activeSection;
+    const cls = cn(
+      'px-3 py-1.5 text-sm font-medium tracking-tight rounded-md transition-colors duration-150',
+      active ? 'text-foreground' : 'text-muted-foreground hover:text-foreground'
+    );
+    if (isHome) {
+      return (
+        <a
+          key={homeItem.key}
+          href={homeItem.hash}
+          className={cls}
+          onClick={(e) => {
+            e.preventDefault();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }}
+        >
+          {homeItem.label}
+        </a>
+      );
+    }
+    return (
+      <Link key={homeItem.key} href="/" className={cls}>
+        {homeItem.label}
+      </Link>
+    );
+  };
+
   return (
     <nav className="hidden lg:flex items-center gap-1 ml-8">
+      {renderHomeItem()}
       {groups.map((g) => {
         const childActive =
           isHome && g.children.some((c) => c.sectionId && c.sectionId === activeSection);

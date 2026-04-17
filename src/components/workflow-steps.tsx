@@ -22,14 +22,14 @@ const DEV_STEPS: Step[] = [
   {
     num: '01',
     title: '填一次 MCP 配置',
-    desc: '在你的 AI 后端（Dify / Coze / 自研框架）里，填入驰声 MCP 地址和 API Key。大模型启动时会自动发现这些工具。',
+    desc: '不管宿主是代码框架（LangChain / Mastra / 自研 Agent）、可视化平台（Dify / Coze / n8n）还是 IDE 原生 Agent（Cursor / Claude Desktop / Windsurf）—— 填一次驰声 MCP 的地址和 API Key，宿主启动时会按 MCP 协议自动发现 16 个评测工具，不需要写一行 SDK 调用代码。',
     icon: Settings,
     role: { label: '开发者', tone: 'text-sky-400' },
     panel: {
       filename: 'mcp.json',
       content: (
         <>
-          <span className="text-zinc-500">{'// 3 行配置，一次填好，永久生效'}</span>{'\n'}
+          <span className="text-zinc-500">{'// 同一份配置，代码框架 / 可视化平台 / IDE Agent 通用'}</span>{'\n'}
           {'{'}{'\n'}
           {'  '}<span className="text-emerald-400">&quot;mcpServers&quot;</span>: {'{'}{'\n'}
           {'    '}<span className="text-emerald-400">&quot;chivox_voice_eval&quot;</span>: {'{'}{'\n'}
@@ -40,7 +40,8 @@ const DEV_STEPS: Step[] = [
           {'  '}{'}'}{'\n'}
           {'}'}
           {'\n\n'}
-          <span className="text-zinc-500">{'// ✓ 16 个评测工具自动注册到 LLM'}</span>
+          <span className="text-zinc-500">{'// ✓ LangChain / Mastra / Dify / Coze / Cursor / Claude Desktop ...'}</span>{'\n'}
+          <span className="text-zinc-500">{'// ✓ 16 个评测工具自动注册到 LLM，无需二次封装'}</span>
         </>
       ),
     },
@@ -48,50 +49,55 @@ const DEV_STEPS: Step[] = [
   {
     num: '02',
     title: '写一段 System Prompt',
-    desc: '告诉大模型这些工具什么时候用、返回的数据怎么解读、最后怎么跟用户说话。这是唯一需要"动脑"的地方。',
+    desc: '告诉大模型三件事：①什么场景下该调用评测工具（识别到音频 + 参考文本时）；②结构化分数如何解读（音素级 dp_type、维度评分、speed 等字段的含义）；③以什么人设和语气把诊断讲给用户。这是整个接入里唯一需要动脑的环节，也是你的 Agent 产品差异化所在。',
     icon: FileText,
     role: { label: '开发者', tone: 'text-sky-400' },
     panel: {
       filename: 'system-prompt.md',
       content: (
         <>
-          <span className="text-zinc-500">{'// 指引大模型何时调用 + 怎样沟通'}</span>{'\n'}
+          <span className="text-zinc-500">{'// 告诉 LLM：何时调用 · 如何解读 · 以什么口吻输出'}</span>{'\n'}
           {'\n'}
           <span className="text-emerald-400">你是一位英语口语教练。</span>{'\n'}
           {'\n'}
           当用户上传录音时：{'\n'}
-          {'  '}<span className="text-violet-400">1.</span> 调用 <span className="text-amber-300">chivox_voice_eval</span> 评分{'\n'}
-          {'  '}<span className="text-violet-400">2.</span> 聚焦 <span className="text-rose-400">&lt; 70 分</span> 的音素家族{'\n'}
-          {'  '}<span className="text-violet-400">3.</span> 给出 <span className="text-emerald-400">高情商</span> 的练习建议{'\n'}
+          {'  '}<span className="text-violet-400">1.</span> 调用 <span className="text-amber-300">chivox_voice_eval</span> 系列工具评分{'\n'}
+          {'  '}<span className="text-violet-400">2.</span> 聚焦 <span className="text-rose-400">score &lt; 70</span> 的词与 <span className="text-rose-400">dp_type</span> 异常{'\n'}
+          {'  '}<span className="text-violet-400">3.</span> 将音素家族误读聚类为 <span className="text-emerald-400">可执行的纠音动作</span>{'\n'}
+          {'  '}<span className="text-violet-400">4.</span> 产出 <span className="text-emerald-400">鼓励式诊断 + 个性化练习</span>{'\n'}
           {'\n'}
-          <span className="text-zinc-500">{'// 风格：鼓励为主、诊断准确、步步渐进'}</span>
+          <span className="text-zinc-500">{'// 风格：先肯定、再诊断、最后一步可执行练习'}</span>
         </>
       ),
     },
   },
   {
     num: '03',
-    title: '部署 · 收工',
-    desc: '保存配置、重启服务。Coze 用户点"测试"；代码框架开发者跑一次调试请求。从此不用再动。',
+    title: '部署 · 验证 · 收工',
+    desc: '按宿主方式触发一次加载：代码框架重启进程、Dify / Coze / n8n 点"保存 / 发布"、Cursor / Claude Desktop 重启会话。发一条带音频的测试消息，看到工具被自动调用、返回结构化分数就算完成 —— 之后大模型会按上下文自主决定何时调用，接入方不再维护任何评测逻辑。',
     icon: Rocket,
     role: { label: '开发者', tone: 'text-sky-400' },
     panel: {
-      filename: 'terminal',
+      filename: 'mcp-bootstrap.log',
       content: (
         <>
-          <span className="text-zinc-500">{'// 一次性验证：工具已就绪'}</span>{'\n'}
+          <span className="text-zinc-500">{'// 宿主重启 / 发布后，MCP 客户端自动连接并拉取工具清单'}</span>{'\n'}
           {'\n'}
-          <span className="text-emerald-400">$</span> dify restart{'\n'}
-          <span className="text-zinc-400">[boot]</span> loading mcp servers...{'\n'}
-          <span className="text-zinc-400">[mcp ]</span> <span className="text-emerald-400">✓</span> chivox_voice_eval connected{'\n'}
-          <span className="text-zinc-400">[mcp ]</span> <span className="text-emerald-400">✓</span> discovered <span className="text-amber-300">16</span> tools{'\n'}
-          <span className="text-zinc-400">[mcp ]</span>   · en_word_eval{'\n'}
-          <span className="text-zinc-400">[mcp ]</span>   · en_sentence_eval{'\n'}
-          <span className="text-zinc-400">[mcp ]</span>   · en_paragraph_eval{'\n'}
-          <span className="text-zinc-400">[mcp ]</span>   · cn_aitalk_eval{'\n'}
-          <span className="text-zinc-400">[mcp ]</span>   · ...and 12 more{'\n'}
+          <span className="text-zinc-400">[mcp ]</span> connecting <span className="text-amber-300">https://speech-eval.site/mcp</span>...{'\n'}
+          <span className="text-zinc-400">[mcp ]</span> <span className="text-emerald-400">✓</span> handshake ok · protocol <span className="text-amber-300">streamable-http</span>{'\n'}
+          <span className="text-zinc-400">[mcp ]</span> <span className="text-emerald-400">✓</span> listTools → <span className="text-amber-300">16</span> tools registered{'\n'}
+          <span className="text-zinc-400">[mcp ]</span>   · <span className="text-sky-300">en.word.score</span>  · <span className="text-sky-300">en.sent.score</span>  · <span className="text-sky-300">en.sent.exam</span>{'\n'}
+          <span className="text-zinc-400">[mcp ]</span>   · <span className="text-sky-300">en.scne.exam</span>  · <span className="text-sky-300">en.prtl.exam</span>  · <span className="text-sky-300">en.word.pron</span>{'\n'}
+          <span className="text-zinc-400">[mcp ]</span>   · <span className="text-sky-300">cn.word.raw</span>   · <span className="text-sky-300">cn.sent.raw</span>    · <span className="text-sky-300">cn.pred.raw</span>{'\n'}
+          <span className="text-zinc-400">[mcp ]</span>   · ...and <span className="text-amber-300">7</span> more{'\n'}
           {'\n'}
-          <span className="text-emerald-400">Ready.</span> 开发者部分到此结束。
+          <span className="text-zinc-500">{'// 发一条测试消息验证（任意宿主都一样）'}</span>{'\n'}
+          <span className="text-emerald-400">user</span>  : 帮我打分：hello.mp3 · &quot;Hello world&quot;{'\n'}
+          <span className="text-violet-400">llm</span>   : <span className="text-zinc-400">→ tools/call</span> <span className="text-amber-300">en.sent.score</span>{'\n'}
+          <span className="text-rose-300">chivox</span>: <span className="text-zinc-400">←</span> {'{ overall: 85, ... }'}{'\n'}
+          <span className="text-violet-400">llm</span>   : &quot;整体 85 分 🎉 /θ/ 需要多练...&quot;{'\n'}
+          {'\n'}
+          <span className="text-emerald-400">Ready.</span> 开发者工作到此结束。
         </>
       ),
     },
@@ -103,21 +109,29 @@ const USER_STEPS: Step[] = [
   {
     num: '01',
     title: '用户发来一段录音',
-    desc: '小程序用户朗读完一段自我介绍，发送音频 + 文字请求："帮我听听，发音哪里有问题？"',
+    desc: '用户朗读完一段自我介绍后发送请求。驰声 MCP 支持两种接入方式：已录好的音频 URL / base64 · 或 浏览器 / 小程序 / App 的实时流式录音（PCM 分片），前端二选一即可。',
     icon: MessageSquare,
     role: { label: '终端用户', tone: 'text-emerald-400' },
     panel: {
       filename: 'user-request.txt',
       content: (
         <>
-          <span className="text-zinc-500">{'// 前端 → 大模型的完整上下文'}</span>{'\n'}
+          <span className="text-zinc-500">{'// 前端 → 大模型的完整上下文 · 音频接入支持两种模式'}</span>{'\n'}
           {'\n'}
           <span className="text-violet-400">user</span>:{'\n'}
           {'  '}帮我听听这段自我介绍，{'\n'}
           {'  '}发音哪里有问题？{'\n'}
           {'\n'}
+          <span className="text-zinc-500">{'// 方式 A · 离线音频（已录好的 mp3 / wav · URL 或 base64）'}</span>{'\n'}
           <span className="text-emerald-400">audio</span>:{'\n'}
           {'  '}<span className="text-amber-300">https://cdn.app.com/u123/intro.mp3</span>{'\n'}
+          {'\n'}
+          <span className="text-zinc-500">{'// ─── 或 ─────────────────────────────────────────'}</span>{'\n'}
+          <span className="text-zinc-500">{'// 方式 B · 实时流式录音（浏览器 MediaRecorder · 小程序 · App）'}</span>{'\n'}
+          <span className="text-emerald-400">stream</span>:{'\n'}
+          {'  '}<span className="text-amber-300">audio/pcm</span> · <span className="text-amber-300">16k</span> · <span className="text-amber-300">16bit</span> · <span className="text-amber-300">mono</span>{'\n'}
+          {'  '}<span className="text-zinc-400">→ 200ms 分片上传，评测结果流式回吐</span>{'\n'}
+          {'\n'}
           <span className="text-emerald-400">refText</span>:{'\n'}
           {'  '}<span className="text-amber-300">&quot;Hello, my name is Lucy...&quot;</span>
         </>
@@ -293,17 +307,18 @@ export function WorkflowSteps() {
               })}
             </div>
 
-            {/* ── Steps ── */}
-            <div className="space-y-1.5">
+            {/* ── Steps · 未激活仅显示标题一行，激活才展开 desc；容器固定高度防抖 ── */}
+            <div className="space-y-1.5 min-h-[400px]">
               {steps.map((step, i) => {
                 const Icon = step.icon;
                 const isActive = active === i;
                 return (
                   <button
                     key={`${tab}-${i}`}
-                    onMouseEnter={() => switchTo(i)}
                     onClick={() => switchTo(i)}
-                    className={`w-full flex items-start gap-3 text-left rounded-lg px-3 py-3 transition-all duration-200 ${
+                    onMouseEnter={() => switchTo(i)}
+                    aria-expanded={isActive}
+                    className={`w-full flex items-start gap-3 text-left rounded-lg px-3 py-2.5 transition-all duration-200 ${
                       isActive
                         ? 'bg-background shadow-sm border border-border/60'
                         : 'hover:bg-background/60 border border-transparent'
@@ -317,7 +332,7 @@ export function WorkflowSteps() {
                       <Icon className="h-4 w-4" />
                     </div>
                     <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-2 flex-wrap">
+                      <div className="flex items-center gap-2 flex-wrap min-h-[32px]">
                         <span className="text-xs font-mono text-muted-foreground">{step.num}</span>
                         <h4
                           className={`text-sm font-semibold transition-colors ${
@@ -327,13 +342,16 @@ export function WorkflowSteps() {
                           {step.title}
                         </h4>
                       </div>
-                      <p
-                        className={`text-xs leading-relaxed mt-1 transition-colors ${
-                          isActive ? 'text-muted-foreground' : 'text-muted-foreground/60'
+                      {/* desc 只在激活时展开，消除高度抖动 */}
+                      <div
+                        className={`grid transition-all duration-300 ease-out ${
+                          isActive ? 'grid-rows-[1fr] opacity-100 mt-1' : 'grid-rows-[0fr] opacity-0'
                         }`}
                       >
-                        {step.desc}
-                      </p>
+                        <p className="overflow-hidden text-xs leading-relaxed text-muted-foreground">
+                          {step.desc}
+                        </p>
+                      </div>
                     </div>
                   </button>
                 );
@@ -359,9 +377,9 @@ export function WorkflowSteps() {
             </div>
           </div>
 
-          {/* Right: dynamic code panel */}
-          <div className="lg:col-span-3 rounded-lg border border-border/60 bg-zinc-950 text-zinc-100 overflow-hidden shadow-2xl shadow-black/10 lg:sticky lg:top-24">
-            <div className="flex items-center gap-1.5 px-4 py-3 border-b border-white/[0.06]">
+          {/* Right: dynamic code panel · 固定高度，避免切换时抖动 */}
+          <div className="lg:col-span-3 rounded-lg border border-border/60 bg-zinc-950 text-zinc-100 overflow-hidden shadow-2xl shadow-black/10 lg:sticky lg:top-24 h-[520px] flex flex-col">
+            <div className="flex items-center gap-1.5 px-4 py-3 border-b border-white/[0.06] shrink-0">
               <div className="w-3 h-3 rounded-full bg-white/10" />
               <div className="w-3 h-3 rounded-full bg-white/10" />
               <div className="w-3 h-3 rounded-full bg-white/10" />
@@ -376,7 +394,7 @@ export function WorkflowSteps() {
                 {currentStep.role.label}
               </span>
             </div>
-            <div className="p-5 min-h-[360px]">
+            <div className="flex-1 p-5 overflow-auto">
               <pre
                 className={`text-sm font-mono leading-relaxed whitespace-pre-wrap transition-all duration-200 ${
                   visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2'

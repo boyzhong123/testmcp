@@ -4,6 +4,7 @@ import { Link } from '@/i18n/routing';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { ChevronDown, HelpCircle, MessageSquare, BookOpen, ArrowUpRight } from 'lucide-react';
+import { SALES_CHAT_URL } from '@/lib/links';
 
 export function FAQ() {
   const t = useTranslations('FAQ');
@@ -34,8 +35,10 @@ export function FAQ() {
             </p>
 
             <div className="space-y-2.5">
-              <Link
-                href="/contact"
+              <a
+                href={SALES_CHAT_URL}
+                target="_blank"
+                rel="noopener noreferrer"
                 className="group flex items-center justify-between rounded-lg border border-border/60 bg-background hover:bg-muted/40 px-4 py-3 transition-colors"
               >
                 <div className="flex items-center gap-3">
@@ -48,7 +51,7 @@ export function FAQ() {
                   </div>
                 </div>
                 <ArrowUpRight className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors" />
-              </Link>
+              </a>
 
               <Link
                 href="/docs"
