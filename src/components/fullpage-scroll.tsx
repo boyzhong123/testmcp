@@ -10,6 +10,9 @@ import { useEffect } from 'react';
  */
 export function FullPageScroll() {
   useEffect(() => {
+    // 仅桌面端启用翻页滚动；移动端/平板端保持原生连续滚动
+    if (!window.matchMedia('(min-width: 1024px)').matches) return;
+
     const root = document.documentElement;
     root.classList.add('fullpage-on');
 

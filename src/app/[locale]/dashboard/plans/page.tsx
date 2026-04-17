@@ -248,12 +248,14 @@ export default function PlansPage() {
         <div className="text-sm text-muted-foreground">
           没有看到合适的档位？<span className="text-foreground font-medium">阶梯方案可以自由组合</span>，调用量包 + 并发包 + 定制工具按需搭配。
         </div>
-        <Link
-          href="/contact"
+        <a
+          href={SALES_CHAT_URL}
+          target="_blank"
+          rel="noopener noreferrer"
           className="inline-flex items-center gap-1 text-sm font-medium text-foreground hover:opacity-70 transition-opacity"
         >
           联系销售定制 <ArrowUpRight className="h-3.5 w-3.5" />
-        </Link>
+        </a>
       </div>
     </div>
   );

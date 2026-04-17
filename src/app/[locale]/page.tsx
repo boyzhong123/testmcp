@@ -34,7 +34,7 @@ export default async function HomePage() {
   ];
 
   return (
-    <main className="flex-1 flex flex-col">
+    <main className="flex-1 flex flex-col overflow-x-hidden">
       <ScrollIndicator />
       <FullPageScroll />
 
@@ -150,11 +150,11 @@ export default async function HomePage() {
             </p>
           </FadeUp>
           <FadeUp delay={0.3}>
-            <div className="flex items-center gap-3">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto max-w-sm sm:max-w-none mx-auto">
               {/* 主按钮：磨砂黑底 + 微光边框 + 内发光 */}
               <Link
                 href="/demo"
-                className="group relative inline-flex items-center justify-center h-11 px-7 text-sm font-semibold rounded-lg overflow-hidden gap-2
+                className="group relative inline-flex items-center justify-center h-11 px-7 text-sm font-semibold rounded-lg overflow-hidden gap-2 w-full sm:w-auto
                   bg-foreground text-background
                   shadow-[0_1px_0_0_rgba(255,255,255,0.12)_inset,0_-1px_0_0_rgba(0,0,0,0.3)_inset,0_4px_16px_rgba(0,0,0,0.22)]
                   hover:shadow-[0_1px_0_0_rgba(255,255,255,0.18)_inset,0_-1px_0_0_rgba(0,0,0,0.3)_inset,0_8px_24px_rgba(0,0,0,0.3)]
@@ -172,7 +172,7 @@ export default async function HomePage() {
               {/* 次按钮：玻璃质感 + 细边框 */}
               <Link
                 href="/docs"
-                className="group inline-flex items-center justify-center gap-2 h-11 px-7 text-sm font-medium rounded-lg
+                className="group inline-flex items-center justify-center gap-2 h-11 px-7 text-sm font-medium rounded-lg w-full sm:w-auto
                   border border-border/70 bg-background/60 backdrop-blur-md
                   hover:border-foreground/25 hover:bg-background/90
                   shadow-[0_1px_3px_rgba(0,0,0,0.06),0_1px_0_0_rgba(255,255,255,0.6)_inset]
@@ -266,7 +266,7 @@ export default async function HomePage() {
                   <span className="text-[10px] text-zinc-500 font-mono">MCP Response (partial)</span>
                   <span className="text-[9px] text-emerald-400/80 font-mono">live</span>
                 </div>
-                <pre className="text-[11px] font-mono p-3 leading-relaxed">{`{
+                <pre className="text-[11px] font-mono p-3 leading-relaxed overflow-x-auto max-w-full">{`{
   "overall": `}<span className="text-amber-300">72</span>{`,
   "pron": {
     "accuracy":  `}<span className="text-amber-300">65</span>{`,
@@ -390,7 +390,7 @@ score < 70 的音素，给
                   <span className="text-[10px] text-zinc-500 font-mono">~/.cursor/mcp.json</span>
                   <span className="text-[9px] text-zinc-500 font-mono">1-line</span>
                 </div>
-                <pre className="text-[11px] font-mono p-3 leading-relaxed">{`{
+                <pre className="text-[11px] font-mono p-3 leading-relaxed overflow-x-auto max-w-full">{`{
   "mcpServers": {
     "chivox": {
       "command": `}<span className="text-emerald-300">{'"npx"'}</span>{`,
@@ -589,14 +589,14 @@ score < 70 的音素，给
       </section>
 
       {/* ━━━ LLM 深度分析演示 ━━━ */}
-      <section id="how-it-works" data-fp-section className="min-h-screen flex flex-col justify-center py-14 md:py-20 border-t border-border/40 bg-zinc-950 text-zinc-50">
+      <section id="how-it-works" data-fp-section className="min-h-screen flex flex-col justify-center py-10 md:py-20 border-t border-border/40 bg-zinc-950 text-zinc-50">
         <div className="container mx-auto px-6">
-          <div className="grid lg:grid-cols-5 gap-12 items-start max-w-6xl mx-auto">
-            <div className="lg:col-span-2">
+          <div className="grid lg:grid-cols-5 gap-8 md:gap-12 items-start max-w-6xl mx-auto">
+            <div className="lg:col-span-2 min-w-0">
               <span className="inline-block text-[11px] tracking-[0.2em] uppercase text-zinc-500 mb-3">Deep Analysis</span>
-              <h2 className="text-2xl md:text-3xl font-bold tracking-tight mb-4">{tValue('demo_title')}</h2>
+              <h2 className="text-xl sm:text-2xl md:text-3xl font-bold tracking-tight mb-4">{tValue('demo_title')}</h2>
               <p className="text-zinc-400 leading-relaxed mb-8">{tValue('demo_desc')}</p>
-              <ul className="space-y-3 mb-8">
+              <ul className="space-y-2.5 mb-7 md:mb-8">
                 {[tValue('demo_point1'), tValue('demo_point2'), tValue('demo_point3')].map((p, i) => (
                   <li key={i} className="flex items-start gap-3">
                     <Check className="h-4 w-4 text-emerald-400 mt-0.5 shrink-0" />
@@ -605,7 +605,7 @@ score < 70 的音素，给
                 ))}
               </ul>
 
-              <div className="flex items-center gap-3 py-3 px-4 rounded-lg border border-white/[0.08] bg-white/[0.03] mb-8">
+              <div className="flex flex-wrap items-center gap-3 py-3 px-4 rounded-lg border border-white/[0.08] bg-white/[0.03] mb-8">
                 <div className="flex -space-x-2">
                   {['bg-emerald-400', 'bg-violet-400', 'bg-amber-400', 'bg-rose-400'].map((c, i) => (
                     <div key={i} className={`h-6 w-6 rounded-full ${c} border-2 border-zinc-950`} />
@@ -619,16 +619,21 @@ score < 70 的音素，给
               </Link>
             </div>
 
-            <div className="lg:col-span-3 space-y-3">
-              <div className="rounded-lg border border-white/[0.08] bg-white/[0.03] p-5">
+            <div className="lg:col-span-3 space-y-2.5 md:space-y-3 min-w-0">
+              <div className="rounded-lg border border-white/[0.08] bg-white/[0.03] p-4 md:p-5">
                 <div className="flex items-center justify-between mb-3">
                   <div className="text-xs text-zinc-500 font-mono">① MCP Assessment Output</div>
                   <div className="text-[10px] text-zinc-600 font-mono">structured_json</div>
                 </div>
-                <pre className="text-xs font-mono text-zinc-300 leading-relaxed">
+                <pre className="text-[10.5px] sm:text-xs font-mono text-zinc-300 leading-relaxed whitespace-pre-wrap break-words overflow-x-auto max-w-full">
 {`{
   "overall": 72,
-  "pron": { "accuracy": 65, "integrity": 95, "fluency": 85, "rhythm": 70 },
+  "pron": {
+    "accuracy": 65,
+    "integrity": 95,
+    "fluency": 85,
+    "rhythm": 70
+  },
   "details": [
     { "char": "record", "score": 58, "dp_type": "mispron",
       "phonemes": [{ "char": "r", "score": 45, "dp_type": "mispron" }] }
@@ -641,7 +646,7 @@ score < 70 的音素，给
                 <div className="h-3 w-px bg-white/10" />
               </div>
 
-              <div className="rounded-lg border border-emerald-500/20 bg-emerald-500/[0.04] p-5">
+              <div className="rounded-lg border border-emerald-500/20 bg-emerald-500/[0.04] p-4 md:p-5">
                 <div className="flex items-center justify-between mb-3">
                   <div className="text-xs text-emerald-400 font-mono">② LLM Teaching Response</div>
                   <div className="text-[10px] text-emerald-500/60 font-mono">natural_language</div>
@@ -655,7 +660,7 @@ score < 70 的音素，给
                 <div className="h-3 w-px bg-white/10" />
               </div>
 
-              <div className="rounded-lg border border-violet-400/20 bg-violet-400/[0.04] p-5">
+              <div className="rounded-lg border border-violet-400/20 bg-violet-400/[0.04] p-4 md:p-5">
                 <div className="flex items-center justify-between mb-3">
                   <div className="text-xs text-violet-300 font-mono">③ Auto-Generated Exercise</div>
                   <div className="text-[10px] text-violet-300/60 font-mono">practice_loop</div>
@@ -746,7 +751,7 @@ score < 70 的音素，给
             ))}
           </StaggerContainer>
 
-          <FadeUp delay={0.2} className="mt-10 flex items-center justify-center gap-6 text-xs text-muted-foreground">
+          <FadeUp delay={0.2} className="mt-10 flex flex-wrap items-center justify-center gap-4 sm:gap-6 text-xs text-muted-foreground">
             <div className="flex items-center gap-2">
               <span className="h-1.5 w-1.5 rounded-full bg-foreground/70" />
               95%+ 与专家一致性

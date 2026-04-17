@@ -78,7 +78,7 @@ export default function KeysPage() {
       {/* Table */}
       <div className="rounded-xl border border-border bg-background overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-sm">
+          <table className="w-full min-w-[920px] text-sm">
             <thead>
               <tr className="border-b border-border bg-muted/30">
                 <th className="text-left py-3 px-4 font-medium text-muted-foreground">名称</th>
@@ -146,8 +146,13 @@ export default function KeysPage() {
                     <td className="py-3.5 px-4">
                       <div className="flex flex-wrap gap-1.5 max-w-xs">
                         {k.evalTypes.map(t => (
-                          <span key={t} className="inline-block text-[11px] px-2 py-0.5 rounded-md bg-muted text-muted-foreground border border-border/60">
-                            {evalTypeMap[t] || t}
+                          <span
+                            key={t}
+                            title={evalTypeMap[t] || t}
+                            className="inline-block whitespace-nowrap text-[11px] px-2 py-0.5 rounded-md bg-muted text-muted-foreground border border-border/60"
+                          >
+                            <span className="sm:hidden">{(evalTypeMap[t] || t).slice(0, 3)}</span>
+                            <span className="hidden sm:inline">{evalTypeMap[t] || t}</span>
                           </span>
                         ))}
                       </div>
@@ -312,7 +317,10 @@ function CreateKeyModal({
                   onChange={() => { toggleType(t.id); setError(''); }}
                   className="h-4 w-4 rounded border-border accent-foreground"
                 />
-                <span className="text-xs">{t.name}</span>
+                <span className="whitespace-nowrap text-[11px] sm:text-xs" title={t.name}>
+                  <span className="sm:hidden">{t.name.slice(0, 3)}</span>
+                  <span className="hidden sm:inline">{t.name}</span>
+                </span>
               </label>
             ))}
           </div>

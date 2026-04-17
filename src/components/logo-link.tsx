@@ -22,7 +22,7 @@ export function LogoLink() {
         <div className="h-7 w-7 rounded-md bg-foreground flex items-center justify-center">
           <AudioWaveform className="h-4 w-4 text-background" strokeWidth={2.25} />
         </div>
-        <span className="font-semibold tracking-tight hidden sm:block">Chivox MCP</span>
+        <span className="font-semibold tracking-tight text-sm sm:text-base">Chivox MCP</span>
       </a>
     );
   }
@@ -32,7 +32,7 @@ export function LogoLink() {
       <div className="h-7 w-7 rounded-md bg-foreground flex items-center justify-center">
         <AudioWaveform className="h-4 w-4 text-background" strokeWidth={2.25} />
       </div>
-      <span className="font-semibold tracking-tight hidden sm:block">Chivox MCP</span>
+      <span className="font-semibold tracking-tight text-sm sm:text-base">Chivox MCP</span>
     </Link>
   );
 }

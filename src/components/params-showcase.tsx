@@ -50,7 +50,7 @@ export function ParamsShowcase() {
     <div className="grid lg:grid-cols-5 gap-6 max-w-6xl mx-auto">
       {/* ── Left: 8 param cards ── */}
       <StaggerContainer
-        className="lg:col-span-3 grid sm:grid-cols-2 gap-px bg-border/40 border border-border/40 rounded-lg overflow-hidden"
+        className="lg:col-span-3 min-w-0 grid sm:grid-cols-2 gap-px bg-border/40 border border-border/40 rounded-lg overflow-hidden"
         staggerDelay={0.06}
       >
         {FEATURES.map((f) => {
@@ -90,7 +90,7 @@ export function ParamsShowcase() {
       </StaggerContainer>
 
       {/* ── Right: JSON with sync highlight ── */}
-      <FadeUp delay={0.2} className="lg:col-span-2">
+      <FadeUp delay={0.2} className="lg:col-span-2 min-w-0">
         <div className="rounded-lg border border-border/60 bg-zinc-950 text-zinc-100 overflow-hidden h-full flex flex-col">
           <div className="flex items-center gap-1.5 px-4 py-3 border-b border-white/[0.06]">
             <div className="w-2.5 h-2.5 rounded-full bg-white/10" />
@@ -104,7 +104,7 @@ export function ParamsShowcase() {
               </span>
             )}
           </div>
-          <pre className="text-xs font-mono leading-relaxed p-5 flex-1 overflow-auto">
+          <pre className="text-xs font-mono leading-relaxed p-5 flex-1 max-w-full overflow-auto">
 {`{
   `}<span className="text-zinc-500">{'// 四大主维度'}</span>{`
   `}<Hi keys={['overall']}>{`"overall": `}<span className="text-amber-300">72</span></Hi>{`,
@@ -130,7 +130,7 @@ export function ParamsShowcase() {
   ]
 }`}
           </pre>
-          <div className="px-4 py-2.5 border-t border-white/[0.06] text-[11px] text-zinc-400 flex items-center justify-between">
+          <div className="px-4 py-2.5 border-t border-white/[0.06] text-[11px] text-zinc-400 flex flex-wrap items-center justify-between gap-2">
             <Hi keys={['diagnostics']}>
               <span>dp_type: normal / omit / insert / mispron</span>
             </Hi>
