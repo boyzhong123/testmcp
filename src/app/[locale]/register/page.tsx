@@ -93,7 +93,7 @@ export default function RegisterPage() {
               <AudioWaveform className="h-4 w-4 text-zinc-950" />
               <span className="absolute -bottom-0.5 -right-0.5 h-1.5 w-1.5 rounded-full bg-emerald-400 ring-2 ring-zinc-900" />
             </div>
-            <span className="font-semibold tracking-[-0.02em] text-white/90 group-hover:text-white transition-colors flex items-baseline gap-1">
+            <span className="font-bold text-lg tracking-[-0.02em] text-white/90 group-hover:text-white transition-colors flex items-baseline gap-1">
               <span>Chivox</span>
               <span className="bg-gradient-to-r from-indigo-300 via-sky-300 to-emerald-300 bg-clip-text text-transparent">MCP</span>
             </span>
@@ -129,12 +129,12 @@ export default function RegisterPage() {
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-muted/50 via-background to-background" />
 
         <div className="w-full max-w-[340px] relative z-10">
-          <Link href="/" className="lg:hidden flex items-center gap-2 mb-8">
-            <div className="relative h-7 w-7 rounded-md bg-foreground flex items-center justify-center">
-              <AudioWaveform className="h-3.5 w-3.5 text-background" />
+          <Link href="/" className="lg:hidden flex items-center gap-2.5 mb-8">
+            <div className="relative h-8 w-8 rounded-lg bg-gradient-to-br from-foreground to-foreground/80 flex items-center justify-center shadow-sm ring-1 ring-foreground/10">
+              <AudioWaveform className="h-4 w-4 text-background" strokeWidth={2.3} />
               <span className="absolute -bottom-0.5 -right-0.5 h-1.5 w-1.5 rounded-full bg-emerald-500 ring-2 ring-background" />
             </div>
-            <span className="font-semibold tracking-[-0.02em] flex items-baseline gap-1">
+            <span className="font-bold text-lg tracking-[-0.02em] leading-none flex items-baseline gap-1">
               <span>Chivox</span>
               <span className="bg-gradient-to-r from-indigo-500 via-sky-500 to-emerald-500 bg-clip-text text-transparent">MCP</span>
             </span>
@@ -221,7 +221,7 @@ export default function RegisterPage() {
           </form>
 
           <p className="text-[11px] text-muted-foreground/50 text-center mt-3 leading-relaxed">
-            {t.termsPrefix}<Link href="/" className="text-muted-foreground/70 hover:text-foreground underline underline-offset-2">{t.terms}</Link>{isZh ? '和' : ' and '}<Link href="/" className="text-muted-foreground/70 hover:text-foreground underline underline-offset-2">{t.privacy}</Link>
+            {t.termsPrefix}<Link href="/terms" className="text-muted-foreground/70 hover:text-foreground underline underline-offset-2">{t.terms}</Link>{isZh ? '和' : ' and '}<Link href="/privacy" className="text-muted-foreground/70 hover:text-foreground underline underline-offset-2">{t.privacy}</Link>
           </p>
 
           <div className="relative my-5">

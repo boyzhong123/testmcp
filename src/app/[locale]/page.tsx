@@ -371,7 +371,7 @@ export default async function HomePage() {
                   {zhEn('兼容常见大模型', 'Works with common frontier models')}
                 </div>
                 <div className="flex flex-wrap gap-1.5">
-                  {['GPT-4', 'Claude 3.5', 'Gemini', 'Qwen', 'DeepSeek', 'GLM-4'].map((m) => (
+                  {['GPT-5', 'Claude Sonnet 4.6', 'Gemini 2.5', 'Qwen', 'DeepSeek', 'GLM-4.6'].map((m) => (
                     <span key={m} className="px-2 py-0.5 rounded border border-border/60 bg-muted/40 text-[10px] font-mono text-muted-foreground">
                       {m}
                     </span>
@@ -423,14 +423,26 @@ export default async function HomePage() {
               </div>
 
               {/* 客户端 grid */}
-              <div className="mb-4">
-                <div className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/70 mb-1.5">{zhEn('支持客户端 · 已验证', 'Supported Clients · Verified')}</div>
-                <div className="grid grid-cols-3 gap-1.5">
-                  {['Cursor', '扣子 Coze', 'Dify', 'Claude Desktop', '豆包', '飞书', '钉钉', '企业微信', 'LangChain'].map((c) => (
-                    <div key={c} className="px-1.5 py-1 rounded border border-border/60 bg-muted/30 text-[10px] text-center truncate">
-                      {c}
-                    </div>
-                  ))}
+              <div className="mb-4 space-y-2">
+                <div>
+                  <div className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/70 mb-1.5">{zhEn('MCP 原生客户端', 'MCP-native Clients')}</div>
+                  <div className="grid grid-cols-3 gap-1.5">
+                    {['Cursor', 'Claude Desktop', '扣子 Coze', 'Dify', '豆包', 'LangChain'].map((c) => (
+                      <div key={c} className="px-1.5 py-1 rounded border border-border/60 bg-muted/30 text-[10px] text-center truncate">
+                        {c}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <div className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground/70 mb-1.5">{zhEn('场景集成 · IM 机器人', 'Scenario Integrations · IM Bots')}</div>
+                  <div className="grid grid-cols-3 gap-1.5">
+                    {[zhEn('飞书', 'Feishu'), zhEn('钉钉', 'DingTalk'), zhEn('企业微信', 'WeCom')].map((c) => (
+                      <div key={c} className="px-1.5 py-1 rounded border border-border/60 bg-muted/30 text-[10px] text-center truncate">
+                        {c}
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
 
@@ -991,7 +1003,7 @@ export default async function HomePage() {
                 <div className="text-[11px] tracking-[0.2em] uppercase text-muted-foreground mb-1">Contact Sales</div>
                 <h3 className="text-lg font-semibold mb-2">{zhEn('获取专属报价', 'Get a Tailored Quote')}</h3>
                 <p className="text-sm text-muted-foreground leading-relaxed mb-5">
-                  {zhEn('告诉我们你的业务场景、预估调用量和并发需求，销售会在 1 个工作日内提供精准阶梯报价与 PoC 支持。', 'Share your scenario, expected usage and concurrency. Sales will provide a precise tiered quote and PoC support within 1 business day.')}
+                  {zhEn('告诉我们你的业务场景、预估调用量和并发需求，销售通常在 1 个工作日内回复，提供精准阶梯报价与 PoC 支持。', 'Share your scenario, expected usage and concurrency. Sales typically responds within 1 business day with a tiered quote and PoC support.')}
                 </p>
 
                 <a
@@ -1083,13 +1095,13 @@ export default async function HomePage() {
               </StaggerItem>
               <StaggerItem className="bg-background/80 backdrop-blur-sm px-4 py-6 text-center">
                 <div className="text-3xl md:text-4xl font-bold tracking-tight">
-                  <CountUp value={20} suffix="+" />
+                  <CountUp value={1} suffix={isZh ? '亿+' : '00M+'} />
                 </div>
                 <div className="text-xs text-muted-foreground mt-1.5">{tAbout('stat2_label')}</div>
               </StaggerItem>
               <StaggerItem className="bg-background/80 backdrop-blur-sm px-4 py-6 text-center">
                 <div className="text-3xl md:text-4xl font-bold tracking-tight">
-                  <CountUp value={99} suffix="%" />
+                  <CountUp value={100} suffix="+" />
                 </div>
                 <div className="text-xs text-muted-foreground mt-1.5">{tAbout('stat3_label')}</div>
               </StaggerItem>
@@ -1100,13 +1112,14 @@ export default async function HomePage() {
               <div className="text-[11px] tracking-[0.2em] uppercase text-muted-foreground mb-5 text-center">Milestones</div>
               <div className="relative">
                 <div className="absolute left-0 right-0 top-3 h-px bg-border/60 hidden md:block" />
-                <div className="grid grid-cols-2 md:grid-cols-5 gap-6">
+                <div className="grid grid-cols-2 md:grid-cols-6 gap-6">
                   {[
                     { year: '2011', label: zhEn('驰声创立，专注语音评测', 'Chivox founded, focused on speech evaluation') },
                     { year: '2015', label: zhEn('入选教育部考试中心白名单', 'Listed by national education testing center') },
                     { year: '2019', label: zhEn('全球学习者突破 1 亿', '100M+ global learners served') },
                     { year: '2023', label: zhEn('接入 GPT，启动 LLM 语义分析', 'Integrated GPT for LLM semantic analysis') },
                     { year: '2025', label: zhEn('开源 Chivox MCP Server', 'Open-sourced Chivox MCP Server') },
+                    { year: '2026', label: zhEn('MCP v2 · 16 工具全量开放', 'MCP v2 · 16 tools fully open') },
                   ].map((m) => (
                     <div key={m.year} className="flex flex-col items-center text-center">
                       <div className="h-1.5 w-1.5 rounded-full bg-foreground relative z-10 mb-4 ring-4 ring-muted/30" />
@@ -1126,7 +1139,7 @@ export default async function HomePage() {
                 rel="noopener noreferrer"
                 className="inline-flex items-center justify-center gap-2 h-10 px-6 text-sm font-medium rounded-full bg-foreground text-background hover:bg-foreground/90 transition-all"
               >
-                {zhEn('开始接入', 'Start Integrating')} <ArrowRight className="h-3.5 w-3.5" />
+                {zhEn('联系销售 · 获取报价', 'Contact Sales · Get a Quote')} <ArrowRight className="h-3.5 w-3.5" />
               </a>
               <a
                 href="https://www.chivox.com/"

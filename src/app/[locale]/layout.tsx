@@ -5,6 +5,7 @@ import { routing } from '@/i18n/routing';
 import { Geist, Geist_Mono } from "next/font/google";
 import { ThemeProvider } from "@/components/theme-provider";
 import { AuthProvider } from "@/lib/auth-context";
+import { TooltipProvider } from "@/components/ui/tooltip";
 import { ConditionalShell } from "@/components/conditional-shell";
 import { RouteProgress } from "@/components/route-progress";
 import "../globals.css";
@@ -47,6 +48,7 @@ export default async function LocaleLayout({
     <html lang={locale} suppressHydrationWarning className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col relative">
         <ThemeProvider>
+          <TooltipProvider delay={300}>
           <AuthProvider>
             <NextIntlClientProvider locale={locale} messages={messages}>
               <RouteProgress />
@@ -55,6 +57,7 @@ export default async function LocaleLayout({
               </ConditionalShell>
             </NextIntlClientProvider>
           </AuthProvider>
+          </TooltipProvider>
         </ThemeProvider>
       </body>
     </html>

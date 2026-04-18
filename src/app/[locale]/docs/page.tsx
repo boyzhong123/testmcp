@@ -1,6 +1,7 @@
 'use client';
 
 import { useLocale } from 'next-intl';
+import { Link } from '@/i18n/routing';
 import { DocsShell, type NavGroup } from './docs-shell';
 import {
   CodeBlock,
@@ -31,6 +32,12 @@ import {
   Bot,
   Building2,
   Check,
+  Sparkle,
+  Languages,
+  GraduationCap,
+  Notebook,
+  Gauge,
+  ListChecks,
 } from 'lucide-react';
 
 /* ─── Navigation Structure ─── */
@@ -41,6 +48,10 @@ const NAV = [
     { id: 'scenario-walkthrough', label: '场景走查 · 6 步' },
     { id: 'dev-responsibility', label: '开发者只做两件事' },
     { id: 'integration-paths', label: '三种接入姿势' },
+  ]},
+  { id: 'architecture', icon: Terminal, label: '架构说明', children: [
+    { id: 'arch-diagram', label: '架构图' },
+    { id: 'transport', label: '传输协议' },
   ]},
   { id: 'quick-start', icon: Zap, label: '快速开始', children: [
     { id: 'overview', label: '概述' },
@@ -62,7 +73,11 @@ const NAV = [
   { id: 'config-code', icon: Code2, label: '接入 · 编程用（SDK / 代码）', children: [
     { id: 'code-mcp-sdk', label: '官方 MCP 客户端库' },
     { id: 'code-agent-frameworks', label: 'LangChain / Mastra / Agents SDK' },
-    { id: 'code-function-calling', label: '直调 chat.completions · tools' },
+    { id: 'code-function-calling', label: '直调 chat.completions · 上传与动态 tools' },
+    { id: 'llm-deepseek', label: 'DeepSeek' },
+    { id: 'llm-glm', label: 'GLM（智谱）' },
+    { id: 'llm-kimi', label: 'KIMI（Moonshot）' },
+    { id: 'llm-comparison', label: '模型对比速查' },
     { id: 'code-selfhosted-agent', label: '自研后端 Agent' },
   ]},
   { id: 'eval-modes', icon: Radio, label: '评测模式', children: [
@@ -75,14 +90,6 @@ const NAV = [
     { id: 'tools-cn', label: '中文评测工具' },
     { id: 'result-fields', label: '评测结果字段' },
     { id: 'error-codes', label: '错误码' },
-  ]},
-  { id: 'architecture', icon: Terminal, label: '架构说明', children: [
-    { id: 'arch-diagram', label: '架构图' },
-    { id: 'transport', label: '传输协议' },
-  ]},
-  { id: 'integration', icon: Code2, label: '示例代码', children: [
-    { id: 'code-python', label: 'Python' },
-    { id: 'code-javascript', label: 'JavaScript' },
   ]},
   { id: 'best-practices', icon: FileText, label: '最佳实践', children: [
     { id: 'prompt-templates', label: 'Prompt 模板' },
@@ -102,6 +109,10 @@ const NAV_EN: NavGroup[] = [
     { id: 'scenario-walkthrough', label: 'Scenario · 6 steps' },
     { id: 'dev-responsibility', label: 'Two developer tasks' },
     { id: 'integration-paths', label: 'Three integration styles' },
+  ]},
+  { id: 'architecture', icon: Terminal, label: 'Architecture', children: [
+    { id: 'arch-diagram', label: 'Diagram' },
+    { id: 'transport', label: 'Transports' },
   ]},
   { id: 'quick-start', icon: Zap, label: 'Quick start', children: [
     { id: 'overview', label: 'Overview' },
@@ -123,7 +134,11 @@ const NAV_EN: NavGroup[] = [
   { id: 'config-code', icon: Code2, label: 'SDK / code integration', children: [
     { id: 'code-mcp-sdk', label: 'Official MCP SDK' },
     { id: 'code-agent-frameworks', label: 'Agent frameworks' },
-    { id: 'code-function-calling', label: 'chat.completions + tools' },
+    { id: 'code-function-calling', label: 'chat.completions · upload & tools' },
+    { id: 'llm-deepseek', label: 'DeepSeek' },
+    { id: 'llm-glm', label: 'GLM (Zhipu)' },
+    { id: 'llm-kimi', label: 'KIMI (Moonshot)' },
+    { id: 'llm-comparison', label: 'Model comparison' },
     { id: 'code-selfhosted-agent', label: 'Custom backend' },
   ]},
   { id: 'eval-modes', icon: Radio, label: 'Evaluation modes', children: [
@@ -136,14 +151,6 @@ const NAV_EN: NavGroup[] = [
     { id: 'tools-cn', label: 'Chinese tools' },
     { id: 'result-fields', label: 'Result fields' },
     { id: 'error-codes', label: 'Errors' },
-  ]},
-  { id: 'architecture', icon: Terminal, label: 'Architecture', children: [
-    { id: 'arch-diagram', label: 'Diagram' },
-    { id: 'transport', label: 'Transports' },
-  ]},
-  { id: 'integration', icon: Code2, label: 'Sample code', children: [
-    { id: 'code-python', label: 'Python' },
-    { id: 'code-javascript', label: 'JavaScript' },
   ]},
   { id: 'best-practices', icon: FileText, label: 'Best practices', children: [
     { id: 'prompt-templates', label: 'Prompt templates' },
@@ -501,6 +508,52 @@ asyncio.run(main())`}</CodeBlock>
                 </Callout>
               </SubDoc>
 
+            </DocSection>
+
+            {/* ══════ 架构说明 ══════ */}
+            <DocSection id="architecture" icon={Terminal} title="架构说明">
+
+              <SubDoc id="arch-diagram" title="系统架构">
+                <div className="flex flex-wrap items-center justify-center gap-4 my-6">
+                  <div className="rounded-xl border-2 border-foreground/30 px-6 py-4 text-center min-w-[140px]">
+                    <p className="text-xs font-semibold mb-1">AI 客户端</p>
+                    <p className="text-[11px] text-muted-foreground">Claude Desktop<br/>Claude Code<br/>Cursor</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-lg font-bold text-muted-foreground">⇄</p>
+                    <p className="text-[10px] text-muted-foreground">stdio</p>
+                  </div>
+                  <div className="rounded-xl border-2 border-emerald-500/50 bg-emerald-500/5 px-6 py-4 text-center min-w-[140px]">
+                    <p className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 mb-1">chivox-local-mcp</p>
+                    <p className="text-[11px] text-muted-foreground">本地代理<br/>SoX 录音</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-lg font-bold text-muted-foreground">⇄</p>
+                    <p className="text-[10px] text-muted-foreground">HTTP / WS</p>
+                  </div>
+                  <div className="rounded-xl border-2 border-foreground/30 px-6 py-4 text-center min-w-[140px]">
+                    <p className="text-xs font-semibold mb-1">Remote Chivox</p>
+                    <p className="text-[11px] text-muted-foreground">MCP Server<br/>评测引擎</p>
+                  </div>
+                </div>
+              </SubDoc>
+
+              <SubDoc id="transport" title="传输协议">
+                <ul className="space-y-3">
+                  <li className="flex items-start gap-2">
+                    <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-foreground shrink-0" />
+                    <span><strong>stdio</strong> — AI 客户端通过标准输入输出与本地代理通信，这是 MCP 的标准传输方式</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-foreground shrink-0" />
+                    <span><strong>HTTP</strong> — 音频文件评测工具通过 HTTP 代理到远程服务，适用于非流式场景</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-foreground shrink-0" />
+                    <span><strong>WebSocket</strong> — 实时录音音频通过 WebSocket 流式推送，支持断线自动重连</span>
+                  </li>
+                </ul>
+              </SubDoc>
             </DocSection>
 
             {/* ══════ 快速开始 ══════ */}
@@ -1020,7 +1073,55 @@ async with chivox:
                 </div>
               </SubDoc>
 
-              <SubDoc id="code-function-calling" title="③ 直调 chat.completions · tools 参数（豆包 / DeepSeek / 火山方舟）">
+              <SubDoc id="code-function-calling" title="③ 直调 chat.completions · 上传与动态 tools（豆包 / DeepSeek / 等）">
+                <p>
+                  DeepSeek、GLM（智谱）、KIMI（Moonshot）、豆包（火山方舟）、千帆、DashScope 等若提供 <strong>OpenAI 兼容的 HTTP API</strong>，接入驰声 MCP 的套路一致：用 MCP 客户端拉取工具列表 → 转为{' '}
+                  <code className="bg-muted px-1 rounded text-xs font-mono">tools</code> → 模型决策 <code className="bg-muted px-1 rounded text-xs font-mono">tool_calls</code> → MCP 执行并回填 → 再让模型生成诊断话术。
+                </p>
+                <div className="rounded-lg bg-muted/30 p-5 my-4">
+                  <div className="flex flex-wrap items-center gap-2 text-xs">
+                    <span className="px-3 py-1.5 rounded-md bg-background border border-border/60 font-medium">① MCP list_tools()</span>
+                    <span className="text-muted-foreground">→</span>
+                    <span className="px-3 py-1.5 rounded-md bg-background border border-border/60 font-medium">② 转 OpenAI tools 格式</span>
+                    <span className="text-muted-foreground">→</span>
+                    <span className="px-3 py-1.5 rounded-md bg-primary/10 border border-primary/30 font-medium">③ LLM 决策 tool_calls</span>
+                    <span className="text-muted-foreground">→</span>
+                    <span className="px-3 py-1.5 rounded-md bg-background border border-border/60 font-medium">④ MCP call_tool()</span>
+                    <span className="text-muted-foreground">→</span>
+                    <span className="px-3 py-1.5 rounded-md bg-background border border-border/60 font-medium">⑤ 评测结果回填 → LLM 诊断</span>
+                  </div>
+                </div>
+                <Callout type="tip">各厂商仅需替换 <code className="bg-black/5 dark:bg-white/10 px-1 rounded text-xs font-mono">base_url</code> 与 <code className="bg-black/5 dark:bg-white/10 px-1 rounded text-xs font-mono">api_key</code>，驰声 MCP 与 tools 桥接代码可原样复用。</Callout>
+
+                <p className="font-semibold mt-6">先上传音频，拿到 audioId</p>
+                <p className="text-sm text-muted-foreground mb-3">文件评测工具通常需要 <code className="bg-muted px-1 rounded text-xs font-mono">audioId</code>（或路径参数，视工具而定）。下面是用 HTTP 上传的最小示例：</p>
+                <CodeBlock filename="upload.py" lang="python">{`import requests
+
+with open('audio.mp3', 'rb') as f:
+    r = requests.post(
+        'https://speech-eval.site/upload',
+        data=f,
+        headers={'Content-Type': 'audio/mp3'}
+    )
+
+result = r.json()
+print(f"audioId: {result['audioId']}")
+print(f"size: {result['size']} bytes")
+print(f"expires: {result['expiresIn']}")`}</CodeBlock>
+                <CodeBlock filename="upload.js" lang="javascript">{`const fs = require('fs');
+
+const audioData = fs.readFileSync('audio.mp3');
+
+const res = await fetch('https://speech-eval.site/upload', {
+  method: 'POST',
+  headers: { 'Content-Type': 'audio/mp3' },
+  body: audioData,
+});
+
+const result = await res.json();
+console.log('audioId:', result.audioId);`}</CodeBlock>
+
+                <p className="font-semibold mt-6">再以豆包为例：MCP 动态 tools + chat.completions 折返跑</p>
                 <p>当你用的 LLM SDK <strong>还没有原生 MCP 支持</strong>（比如老版本的火山方舟 / 百度千帆 / 通义 DashScope），退化方案是：用 MCP 客户端<strong>一次性拉到 tool schema</strong>，然后按 OpenAI Function Calling 格式喂给 LLM。</p>
                 <CodeBlock filename="doubao_tools.py" lang="python">{`# 适用：豆包（火山方舟）/ DeepSeek / Qwen / Moonshot / GLM 等 OpenAI 兼容 API
 # 核心思路：MCP 列工具 → 转 OpenAI tools → LLM 决策 → MCP 执行 → 回填
@@ -1056,7 +1157,269 @@ async with streamablehttp_client("https://speech-eval.site/mcp") as (r, w, _):
             final = doubao.chat.completions.create(
                 model="doubao-1-5-pro-32k", messages=messages)
             print(final.choices[0].message.content)`}</CodeBlock>
-                <Callout type="warning"><strong>千万别手写 tool schema！</strong>驰声 16 个评测工具每个都有几十个字段，手写既容易错也难维护。一定用 MCP <code className="bg-black/5 dark:bg-white/10 px-1 rounded text-xs font-mono">list_tools()</code> 动态拿。</Callout>
+                <Callout type="warning"><strong>千万别手写 tool schema！</strong>驰声共 <strong>16 个评测工具</strong>（英文 10 + 中文 6），每个工具参数较多，手写既容易错也难维护。一定用 MCP <code className="bg-black/5 dark:bg-white/10 px-1 rounded text-xs font-mono">list_tools()</code> 动态拿。</Callout>
+              </SubDoc>
+
+              <SubDoc id="llm-deepseek" title="DeepSeek">
+                <p>DeepSeek 提供与 OpenAI 完全兼容的 API，推荐使用 <code className="bg-muted px-1 rounded text-xs font-mono">deepseek-chat</code>（V3）或 <code className="bg-muted px-1 rounded text-xs font-mono">deepseek-reasoner</code>（R1）。</p>
+
+                <p className="font-semibold mt-4 mb-2">环境准备</p>
+                <CodeBlock filename=".env" lang="bash">{`DEEPSEEK_API_KEY=sk-xxxxxxxxxxxxxxxx
+CHIVOX_APP_KEY=your_chivox_app_key
+CHIVOX_SECRET_KEY=your_chivox_secret_key`}</CodeBlock>
+
+                <p className="font-semibold mt-4 mb-2">完整示例（Python）</p>
+                <CodeBlock filename="deepseek_chivox.py" lang="python">{`import os, json, asyncio
+from openai import OpenAI
+from mcp.client.streamable_http import streamablehttp_client
+from mcp import ClientSession
+
+# DeepSeek 客户端（OpenAI 兼容）
+client = OpenAI(
+    api_key=os.environ["DEEPSEEK_API_KEY"],
+    base_url="https://api.deepseek.com",
+)
+
+async def evaluate_with_deepseek(audio_id: str, ref_text: str):
+    async with streamablehttp_client("https://speech-eval.site/mcp") as (r, w, _):
+        async with ClientSession(r, w) as mcp:
+            await mcp.initialize()
+
+            # ① 拉取驰声 MCP 工具列表
+            tools = (await mcp.list_tools()).tools
+            oa_tools = [{"type": "function", "function": {
+                "name": t.name,
+                "description": t.description,
+                "parameters": t.inputSchema,
+            }} for t in tools]
+
+            # ② 调用 DeepSeek，让它选择合适的评测工具
+            messages = [{"role": "user", "content":
+                f"请评测这段英文录音，audioId={audio_id}，参考文本：{ref_text}"}]
+
+            resp = client.chat.completions.create(
+                model="deepseek-chat",   # 或 deepseek-reasoner
+                messages=messages,
+                tools=oa_tools,
+            )
+
+            # ③ 执行 tool_calls
+            msg = resp.choices[0].message
+            if msg.tool_calls:
+                messages.append(msg)
+                for call in msg.tool_calls:
+                    result = await mcp.call_tool(
+                        call.function.name,
+                        arguments=json.loads(call.function.arguments),
+                    )
+                    messages.append({
+                        "role": "tool",
+                        "tool_call_id": call.id,
+                        "content": result.content[0].text,
+                    })
+
+                # ④ 让 DeepSeek 根据评测结果生成自然语言诊断
+                final = client.chat.completions.create(
+                    model="deepseek-chat",
+                    messages=messages,
+                )
+                return final.choices[0].message.content
+
+asyncio.run(evaluate_with_deepseek("audio_abc123", "Hello, nice to meet you."))`}</CodeBlock>
+                <Callout type="tip"><strong>推荐使用 deepseek-chat（V3）</strong>处理评测结果诊断，速度快、成本低；若需要深度分析或出题逻辑，可换用 deepseek-reasoner（R1），但注意 R1 不支持 Function Calling，需先用 V3 做工具调用再将结果交给 R1 分析。</Callout>
+              </SubDoc>
+
+              <SubDoc id="llm-glm" title="GLM（智谱 AI）">
+                <p>智谱 AI 提供 <code className="bg-muted px-1 rounded text-xs font-mono">glm-4</code>、<code className="bg-muted px-1 rounded text-xs font-mono">glm-4-flash</code>（免费）等模型，支持 OpenAI 兼容接口，同时也有官方 Python SDK。</p>
+
+                <p className="font-semibold mt-4 mb-2">环境准备</p>
+                <CodeBlock filename=".env" lang="bash">{`ZHIPU_API_KEY=xxxxxxxx.xxxxxxxxxxxxxxxx
+CHIVOX_APP_KEY=your_chivox_app_key
+CHIVOX_SECRET_KEY=your_chivox_secret_key`}</CodeBlock>
+
+                <p className="font-semibold mt-4 mb-2">方式一：OpenAI 兼容接口（推荐）</p>
+                <CodeBlock filename="glm_chivox.py" lang="python">{`import os, json, asyncio
+from openai import OpenAI
+from mcp.client.streamable_http import streamablehttp_client
+from mcp import ClientSession
+
+client = OpenAI(
+    api_key=os.environ["ZHIPU_API_KEY"],
+    base_url="https://open.bigmodel.cn/api/paas/v4/",
+)
+
+async def evaluate_with_glm(audio_id: str, ref_text: str):
+    async with streamablehttp_client("https://speech-eval.site/mcp") as (r, w, _):
+        async with ClientSession(r, w) as mcp:
+            await mcp.initialize()
+            tools = (await mcp.list_tools()).tools
+            oa_tools = [{"type": "function", "function": {
+                "name": t.name,
+                "description": t.description,
+                "parameters": t.inputSchema,
+            }} for t in tools]
+
+            messages = [{"role": "user", "content":
+                f"请评测这段录音，audioId={audio_id}，参考文本：{ref_text}"}]
+
+            resp = client.chat.completions.create(
+                model="glm-4-flash",   # 免费模型；生产可换 glm-4 或 glm-4-plus
+                messages=messages,
+                tools=oa_tools,
+            )
+
+            msg = resp.choices[0].message
+            if msg.tool_calls:
+                messages.append(msg)
+                for call in msg.tool_calls:
+                    result = await mcp.call_tool(
+                        call.function.name,
+                        arguments=json.loads(call.function.arguments),
+                    )
+                    messages.append({
+                        "role": "tool",
+                        "tool_call_id": call.id,
+                        "content": result.content[0].text,
+                    })
+                final = client.chat.completions.create(
+                    model="glm-4-flash", messages=messages)
+                return final.choices[0].message.content
+
+asyncio.run(evaluate_with_glm("audio_abc123", "How are you today?"))`}</CodeBlock>
+
+                <p className="font-semibold mt-4 mb-2">方式二：官方 zhipuai SDK</p>
+                <CodeBlock filename="glm_sdk.py" lang="python">{`from zhipuai import ZhipuAI
+
+client = ZhipuAI(api_key=os.environ["ZHIPU_API_KEY"])
+
+# 其余逻辑与方式一相同，仅替换 client 实例
+resp = client.chat.completions.create(
+    model="glm-4-flash",
+    messages=messages,
+    tools=oa_tools,
+)`}</CodeBlock>
+                <Callout type="tip"><strong>glm-4-flash 免费</strong>，适合开发测试；<strong>glm-4-plus</strong> 上下文更长、指令遵循更准，适合生产环境中的诊断报告生成。</Callout>
+              </SubDoc>
+
+              <SubDoc id="llm-kimi" title="KIMI（Moonshot AI）">
+                <p>Moonshot AI 的 KIMI 模型同样兼容 OpenAI API，支持超长上下文（最高 128k），特别适合需要分析多段录音历史或生成详细学习报告的场景。</p>
+
+                <p className="font-semibold mt-4 mb-2">环境准备</p>
+                <CodeBlock filename=".env" lang="bash">{`MOONSHOT_API_KEY=sk-xxxxxxxxxxxxxxxxxxxxxxxx
+CHIVOX_APP_KEY=your_chivox_app_key
+CHIVOX_SECRET_KEY=your_chivox_secret_key`}</CodeBlock>
+
+                <p className="font-semibold mt-4 mb-2">完整示例（Python）</p>
+                <CodeBlock filename="kimi_chivox.py" lang="python">{`import os, json, asyncio
+from openai import OpenAI
+from mcp.client.streamable_http import streamablehttp_client
+from mcp import ClientSession
+
+client = OpenAI(
+    api_key=os.environ["MOONSHOT_API_KEY"],
+    base_url="https://api.moonshot.cn/v1",
+)
+
+async def evaluate_with_kimi(audio_id: str, ref_text: str):
+    async with streamablehttp_client("https://speech-eval.site/mcp") as (r, w, _):
+        async with ClientSession(r, w) as mcp:
+            await mcp.initialize()
+            tools = (await mcp.list_tools()).tools
+            oa_tools = [{"type": "function", "function": {
+                "name": t.name,
+                "description": t.description,
+                "parameters": t.inputSchema,
+            }} for t in tools]
+
+            messages = [{"role": "user", "content":
+                f"请评测这段英文录音，audioId={audio_id}，参考文本：{ref_text}"}]
+
+            resp = client.chat.completions.create(
+                model="moonshot-v1-8k",   # 也可选 moonshot-v1-32k / moonshot-v1-128k
+                messages=messages,
+                tools=oa_tools,
+            )
+
+            msg = resp.choices[0].message
+            if msg.tool_calls:
+                messages.append(msg)
+                for call in msg.tool_calls:
+                    result = await mcp.call_tool(
+                        call.function.name,
+                        arguments=json.loads(call.function.arguments),
+                    )
+                    messages.append({
+                        "role": "tool",
+                        "tool_call_id": call.id,
+                        "content": result.content[0].text,
+                    })
+                final = client.chat.completions.create(
+                    model="moonshot-v1-8k", messages=messages)
+                return final.choices[0].message.content
+
+asyncio.run(evaluate_with_kimi("audio_abc123", "Nice to meet you."))`}</CodeBlock>
+                <Callout type="tip">KIMI 的长上下文特别适合「多轮口语练习 + 历史分析」场景：把用户过去 10 次的评测 JSON 全部塞进 messages，让 KIMI 生成横跨多次练习的进步报告，这是 8k 模型做不到的。</Callout>
+              </SubDoc>
+
+              <SubDoc id="llm-comparison" title="模型对比速查">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-xs">
+                    <thead>
+                      <tr className="border-b border-border/40">
+                        <th className="text-left py-2 pr-4 font-medium">模型</th>
+                        <th className="text-left py-2 pr-4 font-medium">推荐版本</th>
+                        <th className="text-left py-2 pr-4 font-medium">base_url</th>
+                        <th className="text-left py-2 pr-4 font-medium">Function Calling</th>
+                        <th className="text-left py-2 font-medium">适合场景</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-border/30">
+                      <tr>
+                        <td className="py-2 pr-4 font-medium">DeepSeek V3</td>
+                        <td className="py-2 pr-4"><code className="bg-muted px-1 rounded font-mono">deepseek-chat</code></td>
+                        <td className="py-2 pr-4"><code className="bg-muted px-1 rounded font-mono">api.deepseek.com</code></td>
+                        <td className="py-2 pr-4 text-emerald-600 dark:text-emerald-400">✓ 支持</td>
+                        <td className="py-2">评测调用 + 诊断，性价比最高</td>
+                      </tr>
+                      <tr>
+                        <td className="py-2 pr-4 font-medium">DeepSeek R1</td>
+                        <td className="py-2 pr-4"><code className="bg-muted px-1 rounded font-mono">deepseek-reasoner</code></td>
+                        <td className="py-2 pr-4"><code className="bg-muted px-1 rounded font-mono">api.deepseek.com</code></td>
+                        <td className="py-2 pr-4 text-rose-500">✗ 不支持</td>
+                        <td className="py-2">深度分析（需先用 V3 调工具）</td>
+                      </tr>
+                      <tr>
+                        <td className="py-2 pr-4 font-medium">GLM-4-Flash</td>
+                        <td className="py-2 pr-4"><code className="bg-muted px-1 rounded font-mono">glm-4-flash</code></td>
+                        <td className="py-2 pr-4"><code className="bg-muted px-1 rounded font-mono">open.bigmodel.cn/…/v4</code></td>
+                        <td className="py-2 pr-4 text-emerald-600 dark:text-emerald-400">✓ 支持</td>
+                        <td className="py-2">开发测试（免费额度）</td>
+                      </tr>
+                      <tr>
+                        <td className="py-2 pr-4 font-medium">GLM-4-Plus</td>
+                        <td className="py-2 pr-4"><code className="bg-muted px-1 rounded font-mono">glm-4-plus</code></td>
+                        <td className="py-2 pr-4"><code className="bg-muted px-1 rounded font-mono">open.bigmodel.cn/…/v4</code></td>
+                        <td className="py-2 pr-4 text-emerald-600 dark:text-emerald-400">✓ 支持</td>
+                        <td className="py-2">生产诊断报告，指令遵循强</td>
+                      </tr>
+                      <tr>
+                        <td className="py-2 pr-4 font-medium">KIMI 8k</td>
+                        <td className="py-2 pr-4"><code className="bg-muted px-1 rounded font-mono">moonshot-v1-8k</code></td>
+                        <td className="py-2 pr-4"><code className="bg-muted px-1 rounded font-mono">api.moonshot.cn/v1</code></td>
+                        <td className="py-2 pr-4 text-emerald-600 dark:text-emerald-400">✓ 支持</td>
+                        <td className="py-2">单次评测 + 即时反馈</td>
+                      </tr>
+                      <tr>
+                        <td className="py-2 pr-4 font-medium">KIMI 128k</td>
+                        <td className="py-2 pr-4"><code className="bg-muted px-1 rounded font-mono">moonshot-v1-128k</code></td>
+                        <td className="py-2 pr-4"><code className="bg-muted px-1 rounded font-mono">api.moonshot.cn/v1</code></td>
+                        <td className="py-2 pr-4 text-emerald-600 dark:text-emerald-400">✓ 支持</td>
+                        <td className="py-2">多轮历史 + 学习进度报告</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                <Callout type="info">所有模型均通过 <strong>OpenAI Python SDK</strong>（<code className="bg-black/5 dark:bg-white/10 px-1 rounded text-xs font-mono">openai</code> 包）调用，仅需替换 <code className="bg-black/5 dark:bg-white/10 px-1 rounded text-xs font-mono">base_url</code> 和 <code className="bg-black/5 dark:bg-white/10 px-1 rounded text-xs font-mono">api_key</code>，驰声 MCP 侧代码<strong>无需改动</strong>。</Callout>
               </SubDoc>
 
               <SubDoc id="code-selfhosted-agent" title="④ 自研后端 Agent（FastAPI / NestJS / Spring）">
@@ -1338,130 +1701,334 @@ async def evaluate(audio_id: str, ref_text: str):
               </SubDoc>
             </DocSection>
 
-            {/* ══════ 架构说明 ══════ */}
-            <DocSection id="architecture" icon={Terminal} title="架构说明">
-
-              <SubDoc id="arch-diagram" title="系统架构">
-                <div className="flex flex-wrap items-center justify-center gap-4 my-6">
-                  <div className="rounded-xl border-2 border-foreground/30 px-6 py-4 text-center min-w-[140px]">
-                    <p className="text-xs font-semibold mb-1">AI 客户端</p>
-                    <p className="text-[11px] text-muted-foreground">Claude Desktop<br/>Claude Code<br/>Cursor</p>
-                  </div>
-                  <div className="text-center">
-                    <p className="text-lg font-bold text-muted-foreground">⇄</p>
-                    <p className="text-[10px] text-muted-foreground">stdio</p>
-                  </div>
-                  <div className="rounded-xl border-2 border-emerald-500/50 bg-emerald-500/5 px-6 py-4 text-center min-w-[140px]">
-                    <p className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 mb-1">chivox-local-mcp</p>
-                    <p className="text-[11px] text-muted-foreground">本地代理<br/>SoX 录音</p>
-                  </div>
-                  <div className="text-center">
-                    <p className="text-lg font-bold text-muted-foreground">⇄</p>
-                    <p className="text-[10px] text-muted-foreground">HTTP / WS</p>
-                  </div>
-                  <div className="rounded-xl border-2 border-foreground/30 px-6 py-4 text-center min-w-[140px]">
-                    <p className="text-xs font-semibold mb-1">Remote Chivox</p>
-                    <p className="text-[11px] text-muted-foreground">MCP Server<br/>评测引擎</p>
-                  </div>
-                </div>
-              </SubDoc>
-
-              <SubDoc id="transport" title="传输协议">
-                <ul className="space-y-3">
-                  <li className="flex items-start gap-2">
-                    <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-foreground shrink-0" />
-                    <span><strong>stdio</strong> — AI 客户端通过标准输入输出与本地代理通信，这是 MCP 的标准传输方式</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-foreground shrink-0" />
-                    <span><strong>HTTP</strong> — 音频文件评测工具通过 HTTP 代理到远程服务，适用于非流式场景</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-foreground shrink-0" />
-                    <span><strong>WebSocket</strong> — 实时录音音频通过 WebSocket 流式推送，支持断线自动重连</span>
-                  </li>
-                </ul>
-              </SubDoc>
-            </DocSection>
-
-            {/* ══════ 示例代码 ══════ */}
-            <DocSection id="integration" icon={Code2} title="示例代码">
-
-              <SubDoc id="code-python" title="Python 上传音频">
-                <CodeBlock filename="upload.py" lang="python">{`import requests
-
-with open('audio.mp3', 'rb') as f:
-    r = requests.post(
-        'https://speech-eval.site/upload',
-        data=f,
-        headers={'Content-Type': 'audio/mp3'}
-    )
-
-result = r.json()
-print(f"audioId: {result['audioId']}")
-print(f"size: {result['size']} bytes")
-print(f"expires: {result['expiresIn']}")`}</CodeBlock>
-              </SubDoc>
-
-              <SubDoc id="code-javascript" title="JavaScript 上传音频">
-                <CodeBlock filename="upload.js" lang="javascript">{`const fs = require('fs');
-
-const audioData = fs.readFileSync('audio.mp3');
-
-const res = await fetch('https://speech-eval.site/upload', {
-  method: 'POST',
-  headers: { 'Content-Type': 'audio/mp3' },
-  body: audioData,
-});
-
-const result = await res.json();
-console.log('audioId:', result.audioId);`}</CodeBlock>
-              </SubDoc>
-            </DocSection>
-
             {/* ══════ 最佳实践 ══════ */}
             <DocSection id="best-practices" icon={FileText} title="最佳实践">
 
               <SubDoc id="prompt-templates" title="Prompt 模板">
-                <p>以下模板帮助你引导 LLM 对评测结果进行深度分析：</p>
-                <div className="space-y-4 mt-4">
+                <p className="text-sm text-muted-foreground">
+                  下面这些模板与{' '}
+                  <Link href="/demo" className="underline underline-offset-2">免费体验</Link>{' '}
+                  Demo 中实际使用的「教练 Prompt」一脉相承，全部围绕 <strong>角色 / 任务 / 方法 / 输出格式 / 语气</strong> 五段式结构，并使用占位符{' '}
+                  <code className="bg-muted px-1 rounded text-xs font-mono">{'{mcp_response}'}</code> 直接拼接 MCP 工具返回的 JSON。
+                  推荐在 <code className="bg-muted px-1 rounded text-xs font-mono">system</code> 消息里挂载，再把工具返回原文塞进
+                  <code className="bg-muted px-1 rounded text-xs font-mono">user</code> 消息，由 LLM 基于真实分数和音素生成可读诊断 / 练习材料。
+                </p>
+
+                <Callout type="tip">
+                  <strong>使用建议：</strong>
+                  <ul className="list-disc list-inside mt-1 space-y-1">
+                    <li>把 MCP 工具调用的完整 JSON（含 <code className="bg-white/40 dark:bg-black/30 px-1 rounded text-xs font-mono">overall / dp_type / phonemes</code> 等字段）原样塞入 <code className="bg-white/40 dark:bg-black/30 px-1 rounded text-xs font-mono">{'{mcp_response}'}</code>，不要预先做汇总——细节越完整诊断越具体。</li>
+                    <li>「诊断」类模板让 LLM 输出 Markdown 给最终用户阅读；「练习」类模板要求 LLM 输出严格 JSON 给前端渲染。两步分开调用，效果远好于一次性混合。</li>
+                    <li>题型决定 prompt：单词题用音素级、句子题加韵律、段落题加 chunk / 整体性，半开放题套四维评级。下面按这 6 类分别给出。</li>
+                  </ul>
+                </Callout>
+
+                {/* ─── A. 诊断类 · 输出 Markdown 给学习者阅读 ─── */}
+                <h4 className="text-sm font-semibold mt-6 mb-3 flex items-center gap-2">
+                  <MessageSquare className="h-4 w-4" /> A. 二次诊断 · 输出 Markdown
+                </h4>
+                <div className="space-y-4">
                   <div className="border border-border/60 rounded-lg p-4">
-                    <p className="font-semibold text-sm mb-2 flex items-center gap-2"><MessageSquare className="h-4 w-4" /> 发音诊断</p>
-                    <CodeBlock filename="prompt-diagnosis.txt">{`你是一位专业的英语口语教练。请根据以下 MCP 评测结果分析学生的发音表现：
+                    <p className="font-semibold text-sm mb-1 flex items-center gap-2">
+                      <Sparkle className="h-4 w-4" /> 1. 单词级 · 音素诊断
+                    </p>
+                    <p className="text-xs text-muted-foreground mb-2">
+                      适用工具：<code className="bg-muted px-1 rounded font-mono">en.word.score</code> / <code className="bg-muted px-1 rounded font-mono">cn.word.raw</code>。围绕 <code className="bg-muted px-1 rounded font-mono">phonemes[].dp_type</code> 找出错读音。
+                    </p>
+                    <CodeBlock filename="prompt-word-diagnosis.txt">{`你是一位专业的英语发音教练。下面是驰声 MCP（en.word.score）返回的单词级评测数据：
+一个目标词、总分与发音分、以及带有 dp_type 的音素数组。
 
-评测结果：{evaluation_result}
+## 任务
+为学习者写一份 **可直接阅读** 的发音诊断，每一条都要引用音素分数（写出 IPA 符号）。
 
-请按以下格式输出：
-1. 总体评价（一句话）
-2. 优势项（>80 分的指标）
-3. 弱项分析（<70 分的指标，定位到具体音素）
-4. 针对性练习建议（2-3 条可操作的建议）`}</CodeBlock>
+## 方法
+- 按 dp_type 分组：先看 mispron，再补充 normal 但分数 < 70 的"边缘音"。
+- 每个问题音素：① 典型母语干扰 → ② 你听到的声音 → ③ 一条具体的发音修正动作（下颌 / 舌位 / 气流 / 唇形）。
+- 重音符号 ˈ 标记的音节，重音错位也要单独列出（即便音素本身分数尚可）。
+- 最多列 4 条，按 **影响力从弱到强** 排序。
+
+## 输出
+精简 Markdown：可选一句总结 → 编号列表 → 单行 **🎯 优先级** 排序。
+
+## 语气
+友善、具体、可执行，不要空喊"加油"。
+
+## MCP 数据
+\`\`\`json
+{mcp_response}
+\`\`\``}</CodeBlock>
                   </div>
+
                   <div className="border border-border/60 rounded-lg p-4">
-                    <p className="font-semibold text-sm mb-2 flex items-center gap-2"><Mic className="h-4 w-4" /> 练习生成</p>
-                    <CodeBlock filename="prompt-practice.txt">{`根据以下弱项列表，为学生生成针对性的口语练习材料：
+                    <p className="font-semibold text-sm mb-1 flex items-center gap-2">
+                      <MessageSquare className="h-4 w-4" /> 2. 句子级 · 节奏 + 重音诊断
+                    </p>
+                    <p className="text-xs text-muted-foreground mb-2">
+                      适用工具：<code className="bg-muted px-1 rounded font-mono">en.sent.score</code>。开头先给一行"计分牌"，再从 phones → words → prosody。
+                    </p>
+                    <CodeBlock filename="prompt-sentence-diagnosis.txt">{`你是一位专业的英语口语教练。下面是驰声 MCP（en.sent.score）返回的句子级数据：refText、总分、发音子分（accuracy / integrity / fluency / rhythm）、可选 speed（WPM），以及 details[] 中的逐词得分、dp_type 与可选 phonemes[]。
 
-弱项：{weak_points}
+## 任务
+开头给一行紧凑的 **计分牌**（总分 + 各子分 + 速度），再按 **音素 → 词 → 韵律** 顺序展开诊断。
 
-请生成：
-1. 3 个绕口令（专门针对弱项音素）
-2. 5 个包含目标音素的常用短句（标注重音和连读）
-3. 1 段跟读练习段落（50-80 词）`}</CodeBlock>
+## 检查清单（每项都要覆盖；不适用则写"无明显问题"）
+1. **音素级**：每个 score < 70 或 dp_type ≠ normal 的词，展开 phonemes，命名典型错误（如 /ð/ → /d/）并给一条修正动作。
+2. **漏读 / 多读**：标注 dp_type=omit / insert，解释如何拉低 integrity。
+3. **韵律**：基于 rhythm + 错读词的重音，指出重音错位、陈述句调型平直、断句过多等。
+4. **流利度 vs 准确度**：若 fluency 高但 accuracy 低，明确指出，让学习者知道优先改哪一项。
+
+## 输出格式
+Markdown 子标题：**Pronunciation / Prosody / Study priority**（最后一行简短排序，按 ROI 从高到低）。
+
+## MCP 数据
+\`\`\`json
+{mcp_response}
+\`\`\``}</CodeBlock>
                   </div>
+
                   <div className="border border-border/60 rounded-lg p-4">
-                    <p className="font-semibold text-sm mb-2 flex items-center gap-2"><BarChart3 className="h-4 w-4" /> 学习报告</p>
-                    <CodeBlock filename="prompt-report.txt">{`请根据学生近 7 天的评测历史生成学习报告：
+                    <p className="font-semibold text-sm mb-1 flex items-center gap-2">
+                      <FileText className="h-4 w-4" /> 3. 段落级 · 音素族归并 + 完整度
+                    </p>
+                    <p className="text-xs text-muted-foreground mb-2">
+                      适用工具：<code className="bg-muted px-1 rounded font-mono">en.pred.score</code>。把同类错音合并为"音素族"，避免逐词复述。
+                    </p>
+                    <CodeBlock filename="prompt-paragraph-diagnosis.txt">{`你是一位专业的英语口语教练。下面是驰声 MCP（en.pred.score）返回的段落级数据：长 refText、总分、发音子分、可选 speed / integrity，以及大量 details[]（同一个词可能在不同子句中重复出现；空 char + dp_type=omit 表示漏读）。
 
-评测历史：{history}
+## 任务
+对整段做 **整体诊断**：
+(a) 完整度 / 漏读，
+(b) 反复出现的 **音素族**，
+(c) 节奏与断句，
+(d) 各子分之间是否相互印证。
 
-报告要求：
-1. 整体趋势（进步/持平/退步）
-2. 各维度变化（准确度、流利度、语速）
-3. 本周最大进步项
-4. 下周重点练习建议
-5. 鼓励性总结`}</CodeBlock>
+## 检查清单
+1. **integrity / dp_type**：列出每个 omit / insert，并给出所在子句；解释长读时为什么虚词容易被吞。
+2. **音素聚类**：将弱词按共同音素问题归族（/θ/ 链、/e/ 链、/ɒ/ 等），引用 details 中的实例。
+3. **韵律**：结合 rhythm 与标点 —— 短语内停顿过多？子句边界缺失？
+4. **整体一致性**：若 fluency 正常但 accuracy 差（或反之），点明并指出对练习设计的影响。
+
+## 输出格式
+Markdown 章节：**Summary / Completeness / Pronunciation (families) / Rhythm / Study priorities**（最后一项最多 4 条，按影响力排序）。
+
+## MCP 数据
+\`\`\`json
+{mcp_response}
+\`\`\``}</CodeBlock>
+                  </div>
+
+                  <div className="border border-border/60 rounded-lg p-4">
+                    <p className="font-semibold text-sm mb-1 flex items-center gap-2">
+                      <GraduationCap className="h-4 w-4" /> 4. 半开放题 · IELTS 风格四维评级
+                    </p>
+                    <p className="text-xs text-muted-foreground mb-2">
+                      适用工具：<code className="bg-muted px-1 rounded font-mono">en.pqan.score</code>。结合学习者 transcript + 四维分数，给出可教学的"升档建议"。
+                    </p>
+                    <CodeBlock filename="prompt-semi-open.txt">{`你是一位 **IELTS / 课堂口语风格** 的口语教练。下面是驰声 MCP（en.pqan.score）返回的半开放题数据：题目 refText、学习者 transcript、overall、四个维度分（grammar / content / fluency / pron）、speed（WPM）、以及结构化的 issues[] 标记。
+
+## 任务
+给出 **基于 rubric 的诊断**：先用一句话给出 0–100 的整体段位估计，再 **逐维度** 解释，并 **引用 transcript 中的短句**（不要复述全文）。最后给 3–5 条 **可执行的"升档建议"**（句型 / 模板，而不是"多练一点"）。
+
+## 权重（要明确告诉学习者）
+- **Content ~30%** — 想法深度、举例、具体程度
+- **Grammar ~25%** — 句型多样性、主谓一致、从句
+- **Fluency ~25%** — 语速、停顿、口头禅、衔接
+- **Pronunciation ~20%** — 音素 + 可懂度
+
+## 跨维度检查
+- 若 content 最低，先给"展开模板"，不要先抠音素。
+- 若 fluency 低 + WPM 低，区分"思考型停顿"与"发音卡顿"。
+- 若 pron 标出特定音，绑定到 transcript 里 **真实出现过的词**。
+
+## 输出格式
+Markdown：**段位估计** → 紧凑的 **得分表格** → **"To reach the next band"** 编号列表（每条给出可仿写的句型）。
+
+## MCP 数据
+\`\`\`json
+{mcp_response}
+\`\`\``}</CodeBlock>
+                  </div>
+
+                  <div className="border border-border/60 rounded-lg p-4">
+                    <p className="font-semibold text-sm mb-1 flex items-center gap-2">
+                      <Languages className="h-4 w-4" /> 5. 中文专项 · 声调 / 儿化 / 变调
+                    </p>
+                    <p className="text-xs text-muted-foreground mb-2">
+                      适用工具：<code className="bg-muted px-1 rounded font-mono">cn.word.raw</code> / <code className="bg-muted px-1 rounded font-mono">cn.sent.raw</code> / <code className="bg-muted px-1 rounded font-mono">cn.pred.raw</code>。中文评测最大权重在 **声调**，必须单独检查。
+                    </p>
+                    <CodeBlock filename="prompt-mandarin-coach.txt">{`你是一位专业的普通话口语教练。下面是驰声 MCP（cn.sent.raw）返回的中文句子评测数据：整句分数 + 逐字 details + 可选 phonemes + 流利 / 节奏分。
+
+## 中文评测的权重
+- **声调错误权重最高** —— 声调读错可能直接改变词义
+- dp_type=mispron 多来自：声调错、平翘舌混用、前后鼻音混用
+- 拼音对、声调错，听感仍是"洋腔洋调"
+
+## 检查清单（缺则写"无明显问题"）
+1. **儿化**：phonemes 出现 r(儿化) 或 dp_type 提示时，确认是否被读成"主音节 + 单独儿"两拍。
+2. **轻声**：叠词、词缀、句末语气词 —— 第二字应短促轻读，无完整声调曲线。
+3. **变调**：三声连读、不 + 后字、一 + 后字，是否符合普通话规则。
+4. **节奏**：用 rhythm + 逗号位置，标记停顿过长或过碎，建议 chunk 边界。
+
+## 输出
+Markdown 子标题：**总览 / 儿化 / 轻声 / 变调 / 节奏 / 学习优先级**（最后一项 1–3 条，按"听感自然度提升"排序）。
+
+## MCP 数据
+\`\`\`json
+{mcp_response}
+\`\`\``}</CodeBlock>
                   </div>
                 </div>
+
+                {/* ─── B. 练习类 · 输出 JSON 给前端渲染 ─── */}
+                <h4 className="text-sm font-semibold mt-7 mb-3 flex items-center gap-2">
+                  <Mic className="h-4 w-4" /> B. 微练习生成 · 输出严格 JSON
+                </h4>
+                <div className="space-y-4">
+                  <div className="border border-border/60 rounded-lg p-4">
+                    <p className="font-semibold text-sm mb-1 flex items-center gap-2">
+                      <ListChecks className="h-4 w-4" /> 6. 单词 / 句子 · 微练习
+                    </p>
+                    <p className="text-xs text-muted-foreground mb-2">
+                      建议在 <strong>诊断完成后</strong> 第二轮调用：让 LLM 严格按弱项音素生成，避免"通用绕口令包"。
+                    </p>
+                    <CodeBlock filename="prompt-micro-drills.txt">{`你仍是这位学习者的发音教练。**第二轮诊断已经完成** —— 现在严格基于诊断里点名的弱音素，生成 **1:1 对应** 的微练习（不要给通用题）。
+
+## 输出（仅返回一段合法 JSON 数组，外层不要任何文字）
+根节点必须是数组，每个元素含 category（字符串）、icon（单个 emoji）、items（{ "label", "content" } 数组）。
+\`\`\`json
+[
+  { "category": "Phoneme drills", "icon": "🎯", "items": [ { "label": "…", "content": "…" } ] },
+  { "category": "Awareness",      "icon": "🗣️", "items": [ { "label": "…", "content": "…" } ] },
+  { "category": "Whole word",     "icon": "📝", "items": [ { "label": "…", "content": "…" } ] }
+]
+\`\`\`
+
+## 规则
+- **Phoneme drills**：诊断里每个 mispron 音素至少给一对最小对立对 + 一句短绕口令 / 重复句。
+- **Awareness**：当重音偏弱时，给一条 stress / 舌位 / 下颌姿态提示。
+- **Whole word**：2–3 句自然句，目标词分别出现在句首 / 句中 / 句末。
+- 所有 content 必须可念出声；字符串内不要再嵌套 JSON。
+
+## 上下文
+诊断结论：{previous_diagnosis}
+原始 MCP：
+\`\`\`json
+{mcp_response}
+\`\`\``}</CodeBlock>
+                  </div>
+
+                  <div className="border border-border/60 rounded-lg p-4">
+                    <p className="font-semibold text-sm mb-1 flex items-center gap-2">
+                      <Notebook className="h-4 w-4" /> 7. 段落 · Chunk Map + 元认知
+                    </p>
+                    <p className="text-xs text-muted-foreground mb-2">
+                      段落级练习要从"音素"上升到"短语 / 整段 / 元认知录回放"。直接对应 <code className="bg-muted px-1 rounded font-mono">en.pred.score</code> 的诊断结果。
+                    </p>
+                    <CodeBlock filename="prompt-paragraph-drills.txt">{`你仍是这位学习者的口语教练。**段落级二次诊断** 已经列出了漏读位置和音素族 —— 现在请生成 **整段练习**：把弱音素串成"族"练习、用 chunk map 把虚词粘回短语，并附一条录音 → 回放 → 对照 MCP details 的元认知步骤。
+
+## 输出（仅返回一段合法 JSON 数组）
+\`\`\`json
+[
+  { "category": "Phoneme families", "icon": "🎯", "items": [ { "label": "…", "content": "…" } ] },
+  { "category": "Chunking",         "icon": "🎵", "items": [ { "label": "…", "content": "…" } ] },
+  { "category": "Metacognition",    "icon": "🧠", "items": [ { "label": "…", "content": "…" } ] }
+]
+\`\`\`
+
+## 规则
+- **Phoneme families**：至少 3 条，按诊断里的音素族（/θ/、/e/、/ɒ/ 等）组织最小对立对 / 词链。
+- **Chunking**：① 给一行用 [ ] 和 / 标注的 chunk map（可加大致停顿秒数）；② 给一句"把漏掉的虚词嵌入短语"的练习（不要孤立练）。
+- **Metacognition**：一条"录音 → 回放 → 对照 MCP details"的 N 遍练习（N 写明，2–3 之间）。
+- 字符串只能是纯展示文本，禁止嵌套 JSON。
+
+## 上下文
+诊断结论：{previous_diagnosis}
+\`\`\`json
+{mcp_response}
+\`\`\``}</CodeBlock>
+                  </div>
+                </div>
+
+                {/* ─── C. 跨题 / 运营 ─── */}
+                <h4 className="text-sm font-semibold mt-7 mb-3 flex items-center gap-2">
+                  <BarChart3 className="h-4 w-4" /> C. 跨题 / 运营
+                </h4>
+                <div className="space-y-4">
+                  <div className="border border-border/60 rounded-lg p-4">
+                    <p className="font-semibold text-sm mb-1 flex items-center gap-2">
+                      <Gauge className="h-4 w-4" /> 8. 多日学习报告
+                    </p>
+                    <p className="text-xs text-muted-foreground mb-2">
+                      把过去 N 天的 MCP 评测结果聚合后丢给 LLM，输出适合发给学生 / 家长的周报。
+                    </p>
+                    <CodeBlock filename="prompt-weekly-report.txt">{`你是一位英语口语学习顾问。下面是这位学习者过去 7 天的驰声 MCP 评测历史（按时间顺序），每条包含题型、coreType、overall、子分、weak_phonemes 摘要。
+
+## 任务
+为学习者生成一份 **周报**，目标读者：本人 + 家长 / 老师。
+强调 **趋势** 与 **下一步计划**，不要复述每一次具体分数。
+
+## 必须包含
+1. **整体趋势**：进步 / 持平 / 退步（一句话 + 简短依据）
+2. **维度变化**：accuracy / fluency / rhythm / integrity / speed 任意有数据的维度，给出"本周均分 vs 上周"
+3. **本周高光**：分数提升最大的题型 / 音素 / 句型
+4. **顽固问题**：连续 3 次以上未达 70 的音素或维度
+5. **下周计划**：3 条具体动作（每条对应一个 MCP 工具或一个练习类型）
+6. **结尾**：1–2 句鼓励性总结，避免空话
+
+## 风格
+- 像一位认真但不啰嗦的私教
+- 出现学生姓名时使用占位 {student_name}
+- 数字一律保留整数
+
+## 评测历史
+\`\`\`json
+{history}
+\`\`\``}</CodeBlock>
+                  </div>
+
+                  <div className="border border-border/60 rounded-lg p-4">
+                    <p className="font-semibold text-sm mb-1 flex items-center gap-2">
+                      <ListChecks className="h-4 w-4" /> 9. 错误归因 · JSON 摘要
+                    </p>
+                    <p className="text-xs text-muted-foreground mb-2">
+                      用于后端聚合 / 数据看板：让 LLM 把一次评测压缩成结构化摘要，方便入库统计。
+                    </p>
+                    <CodeBlock filename="prompt-error-summary.txt">{`你是一个评测结果归类器。下面是驰声 MCP 一次评测的完整返回。请抽取关键信息并 **仅返回合法 JSON**（不要任何解释文字）。
+
+## Schema
+\`\`\`json
+{
+  "core_type": "string，例如 en.sent.score",
+  "overall": 0,
+  "sub_scores": { "accuracy": 0, "integrity": 0, "fluency": 0, "rhythm": 0 },
+  "weak_phonemes": [
+    { "ipa": "string", "avg_score": 0, "occur": 0, "example_word": "string" }
+  ],
+  "omissions": [{ "after": "string", "missing": "string" }],
+  "stress_issues": [{ "word": "string", "expected": "string", "actual": "string" }],
+  "primary_issue_tag": "phoneme|stress|fluency|integrity|content|none",
+  "next_action_hint": "string，10 字以内，例如 \"练 /θ/ 对立对\""
+}
+\`\`\`
+
+## 规则
+- weak_phonemes 只收 avg_score < 70 的项，最多 5 项，按 occur 降序。
+- 不要复述 refText，不要 markdown。
+- 字段缺失时使用 null 或空数组，不要省略 key。
+
+## MCP 数据
+\`\`\`json
+{mcp_response}
+\`\`\``}</CodeBlock>
+                  </div>
+                </div>
+
+                <Callout type="info">
+                  <strong>怎么接到 MCP 工具调用？</strong>
+                  <br />
+                  以「直调 chat.completions + 动态 tools」为例：第一轮 LLM 调出 <code className="bg-white/40 dark:bg-black/30 px-1 rounded text-xs font-mono">en.sent.score</code> 工具，把工具 result（即 <code className="bg-white/40 dark:bg-black/30 px-1 rounded text-xs font-mono">tool</code> 消息内容）原样填入上面任意「诊断」模板的{' '}
+                  <code className="bg-white/40 dark:bg-black/30 px-1 rounded text-xs font-mono">{'{mcp_response}'}</code>，作为第二轮 user 消息发回；拿到诊断结论再走第三轮，套「微练习」模板得到 JSON。三轮调用即可串起 <strong>评测 → 诊断 → 练习</strong> 全链路。
+                </Callout>
               </SubDoc>
 
               <SubDoc id="error-handling" title="错误处理">
@@ -1521,15 +2088,21 @@ console.log('audioId:', result.audioId);`}</CodeBlock>
                     </tbody>
                   </table>
                 </div>
+                <p className="text-xs text-muted-foreground mt-3">
+                  上表为托管侧<strong>技术默认</strong>；计费与试用/商用<strong>调用配额、并发档位</strong>以{' '}
+                  <Link href="/dashboard/plans" className="text-foreground underline underline-offset-2">
+                    会员套餐
+                  </Link>
+                  说明为准，与上表独立。
+                </p>
               </SubDoc>
               <SubDoc id="changelog" title="更新日志">
-                <div className="space-y-3">
+                <Callout type="info">
+                  <strong>当前线上版本：v1.0.0</strong>（网站未正式上线）。以下变更项为开发阶段规划记录，以正式发布公告为准。
+                </Callout>
+                <div className="space-y-3 mt-4">
                   {[
-                    { ver: 'v3.0.0', date: '2026-04-16', desc: '新增本地代理模式，支持实时录音流式评测，工具扩展至 16 种' },
-                    { ver: 'v2.3.0', date: '2026-03-25', desc: '支持 HTTPS，域名 speech-eval.site' },
-                    { ver: 'v2.2.0', date: '2026-03-24', desc: '添加 MCP 配置指南（Cursor / Claude Desktop）' },
-                    { ver: 'v2.1.0', date: '2026-03-24', desc: '简化上传流程，统一使用 HTTP API' },
-                    { ver: 'v2.0.0', date: '2026-03-24', desc: '初始版本，支持多种评测类型' },
+                    { ver: 'v1.0.0', date: 'TBD', desc: '当前线上版本（网站未正式上线）' },
                   ].map(l => (
                     <div key={l.ver} className="flex items-start gap-3">
                       <span className="font-mono text-xs font-bold bg-muted px-2 py-0.5 rounded shrink-0">{l.ver}</span>

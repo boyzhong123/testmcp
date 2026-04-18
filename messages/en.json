@@ -12,18 +12,18 @@
     "faq": "FAQ"
   },
   "Hero": {
-    "badge": "Speech Assessment Protocol for Developers",
-    "title_line1": "Speech Assessment",
-    "title_line2": "Meets LLM",
-    "description": "Chivox MCP outputs high-granularity speech assessment metadata via a standard protocol, enabling LLMs to understand, analyze, and generate personalized oral teaching feedback.",
-    "cta_primary": "Try Now",
+    "badge": "LLM × Speech Assessment · MCP Protocol",
+    "title_line1": "Speech Assessment,",
+    "title_line2": "Readable to LLMs",
+    "description": "One MCP call gives your LLM phoneme-level assessment data — diagnosis, correction and personalized practice, out of the box.",
+    "cta_primary": "Try It Free",
     "cta_secondary": "Read the Docs",
     "trusted": "Already serving over",
     "typewriter_lines": [
-      "One-Click LLM Integration",
-      "Structured Outputs LLMs Consume",
-      "Phoneme Diagnostics Into the LLM",
-      "Closed-Loop English Speaking Learning"
+      "Readable to LLMs",
+      "Structured Diagnostics",
+      "Phoneme-Level Correction",
+      "Closed-Loop Speaking Practice"
     ]
   },
   "Features": {
@@ -87,30 +87,7 @@
   },
   "Pricing": {
     "title": "Pricing",
-    "description": "Tiered by usage — from free trial to enterprise custom — flexibly adapting to every stage.",
-    "free_title": "Developer",
-    "free_desc": "For exploration and testing",
-    "free_price": "Free",
-    "free_f1": "1,000 requests / month",
-    "free_f2": "Basic assessment dimensions",
-    "free_f3": "Community support",
-    "free_cta": "Start Free",
-    "pro_title": "Pro",
-    "pro_desc": "For production applications",
-    "pro_price": "¥99",
-    "pro_unit": "/mo",
-    "pro_f1": "50,000 requests / month",
-    "pro_f2": "All advanced features",
-    "pro_f3": "Priority email support",
-    "pro_cta": "Upgrade to Pro",
-    "pro_badge": "Popular",
-    "enterprise_title": "Enterprise",
-    "enterprise_desc": "For large-scale deployment",
-    "enterprise_price": "Custom",
-    "enterprise_f1": "Unlimited requests",
-    "enterprise_f2": "Private deployment & SLA",
-    "enterprise_f3": "24/7 dedicated support",
-    "enterprise_cta": "Contact Sales"
+    "description": "Tiered by usage and concurrency — higher volume gets lower unit price."
   },
   "FAQ": {
     "title": "Frequently Asked Questions",
@@ -121,11 +98,11 @@
     "q3": "Which languages are supported?",
     "a3": "Currently we support Chinese (Mandarin) and English speech assessment. More languages are being added — please contact us for specific language needs.",
     "q4": "How do I install and integrate the MCP service?",
-    "a4": "Install our MCP Server package via npm, configure your API Key, and you're ready to use it in MCP-compatible clients like Claude and Cursor. See our developer documentation for details.",
+    "a4": "Install the @chivox/mcp package via npm (`npx -y @chivox/mcp`), add one line to the mcp.json of Claude Desktop / Cursor with your API Key, and you're ready. See the developer docs for details.",
     "q5": "How is MCP different from a regular speech assessment API?",
     "a5": "Traditional APIs only return scores that developers must interpret and present. MCP outputs assessment data in an LLM-readable format, allowing models to directly perform secondary analysis and generate teaching content — significantly reducing development costs.",
     "q6": "How is data security ensured?",
-    "a6": "MCP services use HTTPS encrypted transmission. Audio data is destroyed immediately after assessment — no retention. Enterprise users can opt for private deployment.",
+    "a6": "MCP services use HTTPS / TLS 1.2+ encrypted transmission. Audio is destroyed immediately after assessment with zero retention. Chivox is ISO 27001 certified and China MLPS Level 3 assessed; enterprise users can opt for private deployment and data-residency options.",
     "q7": "Does it support real-time assessment?",
     "a7": "Yes. MCP provides streaming assessment capabilities, returning intermediate results while the user is reading, suitable for interactive oral practice scenarios."
   },
