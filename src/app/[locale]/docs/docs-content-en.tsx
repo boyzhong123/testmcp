@@ -1001,6 +1001,143 @@ async def run(audio_id: str, ref_text: str):
 asyncio.run(run("audio_abc123", "Nice to meet you."))`}</CodeBlock>
         </SubDoc>
 
+        <SubDoc id="llm-doubao" title="Doubao Seed 2.0 (Volcano Ark)">
+          <p>
+            ByteDance&apos;s <strong>Doubao Seed 2.0</strong> family (released Feb 2026) ships Pro / Lite / Mini / Code variants on <strong>Volcano Ark</strong>, all behind an OpenAI-compatible{' '}
+            <code className="bg-muted px-1 rounded text-xs font-mono">/api/v3/chat/completions</code> endpoint with native <strong>function calling, JSON Schema structured output, and chain-of-thought thinking mode</strong>.
+            Plugging it into Chivox MCP follows the exact same dynamic-tools pattern as DeepSeek / GLM / KIMI.
+          </p>
+
+          <Callout type="tip">
+            Seed 2.0 shines at <strong>multi-step tool orchestration</strong>: the model can plan &quot;first call <code className="bg-white/40 dark:bg-black/30 px-1 rounded text-xs font-mono">en.sent.score</code>, then drill weak words with <code className="bg-white/40 dark:bg-black/30 px-1 rounded text-xs font-mono">en.word.score</code>&quot; in a single turn — a great fit for &quot;evaluate → diagnose → re-test&quot; agent loops.
+            Thinking mode is on by default; disable it with <code className="bg-white/40 dark:bg-black/30 px-1 rounded text-xs font-mono">{'thinking: { type: "disabled" }'}</code> when latency matters.
+          </Callout>
+
+          <p className="font-semibold mt-4 mb-2">Recommended variants</p>
+          <div className="overflow-x-auto rounded-lg border border-border/60">
+            <table className="w-full text-xs">
+              <thead><tr className="border-b border-border/40 bg-muted/30">
+                <th className="text-left py-2 px-3 font-medium">model id</th>
+                <th className="text-left py-2 px-3 font-medium">tier</th>
+                <th className="text-left py-2 px-3 font-medium">use case</th>
+              </tr></thead>
+              <tbody className="divide-y divide-border/30">
+                <tr><td className="py-2 px-3 font-mono">doubao-seed-2-0-pro-260215</td><td className="py-2 px-3">Pro · flagship</td><td className="py-2 px-3">Multi-step evaluation orchestration + deep diagnosis agents</td></tr>
+                <tr><td className="py-2 px-3 font-mono">doubao-seed-2-0-lite-260215</td><td className="py-2 px-3">Lite · balanced</td><td className="py-2 px-3">Online tutoring single-turn diagnosis — best price / quality</td></tr>
+                <tr><td className="py-2 px-3 font-mono">doubao-seed-2-0-mini-260215</td><td className="py-2 px-3">Mini · compact</td><td className="py-2 px-3">High-concurrency / mobile / edge — low-latency feedback</td></tr>
+                <tr><td className="py-2 px-3 font-mono">doubao-seed-2-0-code-preview-260215</td><td className="py-2 px-3">Code · preview</td><td className="py-2 px-3">Code generation / tool DSL — not the primary speech pick</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <p className="font-semibold mt-4 mb-2">Environment</p>
+          <CodeBlock filename=".env" lang="bash" locale={L}>{`# Volcano Ark console → API key management
+ARK_API_KEY=ak-xxxxxxxxxxxxxxxxxxxxxxxx
+CHIVOX_APP_KEY=your_chivox_app_key
+CHIVOX_SECRET_KEY=your_chivox_secret_key`}</CodeBlock>
+
+          <p className="font-semibold mt-4 mb-2">Full example (Python · dynamic tools + tool-call loop)</p>
+          <CodeBlock filename="doubao_seed20_chivox.py" lang="python" locale={L}>{`import os, json, asyncio
+from openai import OpenAI
+from mcp.client.streamable_http import streamablehttp_client
+from mcp import ClientSession
+
+# Volcano Ark OpenAI-compatible endpoint
+client = OpenAI(
+    api_key=os.environ["ARK_API_KEY"],
+    base_url="https://ark.cn-beijing.volces.com/api/v3",
+)
+
+MODEL = "doubao-seed-2-0-pro-260215"   # or lite / mini
+
+async def evaluate_with_doubao(audio_id: str, ref_text: str):
+    async with streamablehttp_client("https://speech-eval.site/mcp") as (r, w, _):
+        async with ClientSession(r, w) as mcp:
+            await mcp.initialize()
+
+            # 1. Inject all 16 Chivox tool schemas dynamically
+            tools = (await mcp.list_tools()).tools
+            ark_tools = [{
+                "type": "function",
+                "function": {
+                    "name": t.name,
+                    "description": t.description,
+                    "parameters": t.inputSchema,
+                },
+            } for t in tools]
+
+            messages = [
+                {"role": "system",
+                 "content": "You are a professional English speaking coach who actively calls Chivox evaluation tools to read real scores."},
+                {"role": "user",
+                 "content": f"Evaluate this recording. audio_id={audio_id}, refText: {ref_text}. "
+                            f"Run sentence-level scoring first; if any word is weak, follow up with word-level."},
+            ]
+
+            # 2. Round 1 — let Doubao pick tools
+            resp = client.chat.completions.create(
+                model=MODEL,
+                messages=messages,
+                tools=ark_tools,
+                tool_choice="auto",
+                # extra_body={"thinking": {"type": "disabled"}},  # toggle off for low latency
+            )
+
+            msg = resp.choices[0].message
+            messages.append(msg)
+
+            # 3. Tool-call loop — Doubao may emit multiple tool_calls per turn
+            for call in (msg.tool_calls or []):
+                result = await mcp.call_tool(
+                    call.function.name,
+                    arguments=json.loads(call.function.arguments),
+                )
+                messages.append({
+                    "role": "tool",
+                    "tool_call_id": call.id,
+                    "content": result.content[0].text,
+                })
+
+            # 4. Round 2 — Doubao reads the real evaluation JSON and produces coaching prose
+            final = client.chat.completions.create(
+                model=MODEL,
+                messages=messages,
+            )
+            return final.choices[0].message.content
+
+print(asyncio.run(evaluate_with_doubao(
+    audio_id="audio_abc123",
+    ref_text="The quick brown fox jumps over the lazy dog.",
+)))`}</CodeBlock>
+
+          <p className="font-semibold mt-4 mb-2">Thinking mode (optional)</p>
+          <p className="text-sm text-muted-foreground">
+            Seed 2.0 enables <strong>thinking</strong> by default — chain-of-thought before answer — which clearly improves multi-step orchestration but adds 30%–80% latency.
+            Toggle it via <code className="bg-muted px-1 rounded text-xs font-mono">extra_body</code>:
+          </p>
+          <CodeBlock filename="thinking_mode.py" lang="python" locale={L}>{`# Disable thinking — faster, ideal for live feedback
+client.chat.completions.create(
+    model="doubao-seed-2-0-lite-260215",
+    messages=messages,
+    tools=ark_tools,
+    extra_body={"thinking": {"type": "disabled"}},
+)
+
+# Enable thinking — default; ideal for Pro + multi-step agents
+client.chat.completions.create(
+    model="doubao-seed-2-0-pro-260215",
+    messages=messages,
+    tools=ark_tools,
+    extra_body={"thinking": {"type": "enabled"}},
+)`}</CodeBlock>
+
+          <Callout type="info">
+            <strong>Picking a variant:</strong> use <code className="bg-white/40 dark:bg-black/30 px-1 rounded text-xs font-mono">doubao-seed-2-0-lite</code> with thinking off for 1-on-1 tutoring;
+            <code className="bg-white/40 dark:bg-black/30 px-1 rounded text-xs font-mono">doubao-seed-2-0-pro</code> with thinking on for K12 / exam prep that needs multi-task coordination + level-up suggestions;
+            <code className="bg-white/40 dark:bg-black/30 px-1 rounded text-xs font-mono">doubao-seed-2-0-mini</code> for mobile / real-time conversational scoring.
+          </Callout>
+        </SubDoc>
+
         <SubDoc id="llm-comparison" title="Model comparison">
           <div className="overflow-x-auto">
             <table className="w-full text-xs">
@@ -1036,6 +1173,24 @@ asyncio.run(run("audio_abc123", "Nice to meet you."))`}</CodeBlock>
                   <td className="py-2 pr-4"><code className="bg-muted px-1 rounded font-mono">moonshot-v1-128k</code></td>
                   <td className="py-2 pr-4 text-emerald-600 dark:text-emerald-400">Yes</td>
                   <td className="py-2">Long history &amp; progress reports</td>
+                </tr>
+                <tr>
+                  <td className="py-2 pr-4 font-medium">Doubao Seed 2.0 Pro</td>
+                  <td className="py-2 pr-4"><code className="bg-muted px-1 rounded font-mono">doubao-seed-2-0-pro-260215</code></td>
+                  <td className="py-2 pr-4 text-emerald-600 dark:text-emerald-400">Yes (thinking)</td>
+                  <td className="py-2">Multi-step tool orchestration &amp; deep diagnosis</td>
+                </tr>
+                <tr>
+                  <td className="py-2 pr-4 font-medium">Doubao Seed 2.0 Lite</td>
+                  <td className="py-2 pr-4"><code className="bg-muted px-1 rounded font-mono">doubao-seed-2-0-lite-260215</code></td>
+                  <td className="py-2 pr-4 text-emerald-600 dark:text-emerald-400">Yes</td>
+                  <td className="py-2">Online tutoring · best price/quality</td>
+                </tr>
+                <tr>
+                  <td className="py-2 pr-4 font-medium">Doubao Seed 2.0 Mini</td>
+                  <td className="py-2 pr-4"><code className="bg-muted px-1 rounded font-mono">doubao-seed-2-0-mini-260215</code></td>
+                  <td className="py-2 pr-4 text-emerald-600 dark:text-emerald-400">Yes</td>
+                  <td className="py-2">Mobile / edge — low-latency live feedback</td>
                 </tr>
               </tbody>
             </table>

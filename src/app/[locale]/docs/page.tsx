@@ -77,6 +77,7 @@ const NAV = [
     { id: 'llm-deepseek', label: 'DeepSeek' },
     { id: 'llm-glm', label: 'GLM（智谱）' },
     { id: 'llm-kimi', label: 'KIMI（Moonshot）' },
+    { id: 'llm-doubao', label: '豆包 Seed 2.0（火山方舟）' },
     { id: 'llm-comparison', label: '模型对比速查' },
     { id: 'code-selfhosted-agent', label: '自研后端 Agent' },
   ]},
@@ -138,6 +139,7 @@ const NAV_EN: NavGroup[] = [
     { id: 'llm-deepseek', label: 'DeepSeek' },
     { id: 'llm-glm', label: 'GLM (Zhipu)' },
     { id: 'llm-kimi', label: 'KIMI (Moonshot)' },
+    { id: 'llm-doubao', label: 'Doubao Seed 2.0 (Volcano Ark)' },
     { id: 'llm-comparison', label: 'Model comparison' },
     { id: 'code-selfhosted-agent', label: 'Custom backend' },
   ]},
@@ -1361,6 +1363,147 @@ asyncio.run(evaluate_with_kimi("audio_abc123", "Nice to meet you."))`}</CodeBloc
                 <Callout type="tip">KIMI 的长上下文特别适合「多轮口语练习 + 历史分析」场景：把用户过去 10 次的评测 JSON 全部塞进 messages，让 KIMI 生成横跨多次练习的进步报告，这是 8k 模型做不到的。</Callout>
               </SubDoc>
 
+              <SubDoc id="llm-doubao" title="豆包 Seed 2.0（火山方舟）">
+                <p>
+                  字节跳动 <strong>豆包 Seed 2.0</strong>（2026 年 2 月发布）是 ByteDance Seed 团队推出的新一代通用大模型，覆盖 Pro / Lite / Mini / Code 多种规格，
+                  通过 <strong>火山方舟（Volcano Ark）</strong> 提供 OpenAI 兼容的 <code className="bg-muted px-1 rounded text-xs font-mono">/api/v3/chat/completions</code> 接口，
+                  原生支持 <strong>Function Calling、JSON Schema 结构化输出、深度思考（Chain-of-Thought）模式</strong>，
+                  接驰声 MCP 几乎无须改动业务代码。
+                </p>
+
+                <Callout type="tip">
+                  豆包 Seed 2.0 的优势在 <strong>深度思考 + 工具编排</strong>：让模型一次性规划"先调 <code className="bg-white/40 dark:bg-black/30 px-1 rounded text-xs font-mono">en.sent.score</code>，看完弱项再调 <code className="bg-white/40 dark:bg-black/30 px-1 rounded text-xs font-mono">en.word.score</code> 进一步定位音素"，
+                  适合做"多步评测 + 自动纠音"这类 Agent 场景。
+                  默认开启思考模式，可通过 <code className="bg-white/40 dark:bg-black/30 px-1 rounded text-xs font-mono">{'thinking: { type: "disabled" }'}</code> 关闭以节省时延。
+                </Callout>
+
+                <p className="font-semibold mt-4 mb-2">推荐版本</p>
+                <div className="overflow-x-auto rounded-lg border border-border/60">
+                  <table className="w-full text-xs">
+                    <thead><tr className="border-b border-border/40 bg-muted/30">
+                      <th className="text-left py-2 px-3 font-medium">model</th>
+                      <th className="text-left py-2 px-3 font-medium">规格</th>
+                      <th className="text-left py-2 px-3 font-medium">推荐用途</th>
+                    </tr></thead>
+                    <tbody className="divide-y divide-border/30">
+                      <tr><td className="py-2 px-3 font-mono">doubao-seed-2-0-pro-260215</td><td className="py-2 px-3">Pro · 旗舰</td><td className="py-2 px-3">多步评测 + 深度诊断 + 复杂 Agent 编排</td></tr>
+                      <tr><td className="py-2 px-3 font-mono">doubao-seed-2-0-lite-260215</td><td className="py-2 px-3">Lite · 平衡</td><td className="py-2 px-3">在线辅导单轮评测 + 自然语言反馈，性价比首选</td></tr>
+                      <tr><td className="py-2 px-3 font-mono">doubao-seed-2-0-mini-260215</td><td className="py-2 px-3">Mini · 极小</td><td className="py-2 px-3">高并发 / 边缘部署 / 移动端实时反馈</td></tr>
+                      <tr><td className="py-2 px-3 font-mono">doubao-seed-2-0-code-preview-260215</td><td className="py-2 px-3">Code · 预览</td><td className="py-2 px-3">代码生成 / 工具编排 DSL，对评测场景非主推</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+
+                <p className="font-semibold mt-4 mb-2">环境准备</p>
+                <CodeBlock filename=".env" lang="bash">{`# 火山方舟控制台 → API Key 管理
+ARK_API_KEY=ak-xxxxxxxxxxxxxxxxxxxxxxxx
+CHIVOX_APP_KEY=your_chivox_app_key
+CHIVOX_SECRET_KEY=your_chivox_secret_key`}</CodeBlock>
+
+                <p className="font-semibold mt-4 mb-2">完整示例（Python · 动态 tools + 折返跑）</p>
+                <CodeBlock filename="doubao_seed20_chivox.py" lang="python">{`import os, json, asyncio
+from openai import OpenAI
+from mcp.client.streamable_http import streamablehttp_client
+from mcp import ClientSession
+
+# 火山方舟 OpenAI 兼容端点
+client = OpenAI(
+    api_key=os.environ["ARK_API_KEY"],
+    base_url="https://ark.cn-beijing.volces.com/api/v3",
+)
+
+MODEL = "doubao-seed-2-0-pro-260215"   # 也可换成 lite / mini
+
+async def evaluate_with_doubao(audio_id: str, ref_text: str):
+    async with streamablehttp_client("https://speech-eval.site/mcp") as (r, w, _):
+        async with ClientSession(r, w) as mcp:
+            await mcp.initialize()
+
+            # ① 把驰声 16 个评测工具的 schema 动态注入豆包
+            tools = (await mcp.list_tools()).tools
+            ark_tools = [{
+                "type": "function",
+                "function": {
+                    "name": t.name,
+                    "description": t.description,
+                    "parameters": t.inputSchema,
+                },
+            } for t in tools]
+
+            messages = [
+                {"role": "system",
+                 "content": "你是一位专业的英语口语教练，会主动调用驰声评测工具获取真实分数。"},
+                {"role": "user",
+                 "content": f"请评测这段录音，audio_id={audio_id}，参考文本：{ref_text}。"
+                            f"先做句子级评测，弱项再追加单词级定位。"},
+            ]
+
+            # ② 第一轮 —— 让豆包根据 prompt 自主选工具
+            resp = client.chat.completions.create(
+                model=MODEL,
+                messages=messages,
+                tools=ark_tools,
+                tool_choice="auto",
+                # extra_body={"thinking": {"type": "disabled"}},  # 需要时可关思考
+            )
+
+            msg = resp.choices[0].message
+            messages.append(msg)
+
+            # ③ 折返跑：豆包可能一次发起多个 tool_calls，全部回填
+            for call in (msg.tool_calls or []):
+                result = await mcp.call_tool(
+                    call.function.name,
+                    arguments=json.loads(call.function.arguments),
+                )
+                messages.append({
+                    "role": "tool",
+                    "tool_call_id": call.id,
+                    "content": result.content[0].text,
+                })
+
+            # ④ 第二轮 —— 让豆包基于真实评测 JSON 输出诊断 / 练习建议
+            final = client.chat.completions.create(
+                model=MODEL,
+                messages=messages,
+            )
+            return final.choices[0].message.content
+
+print(asyncio.run(evaluate_with_doubao(
+    audio_id="audio_abc123",
+    ref_text="The quick brown fox jumps over the lazy dog.",
+)))`}</CodeBlock>
+
+                <p className="font-semibold mt-4 mb-2">深度思考模式（可选）</p>
+                <p className="text-sm text-muted-foreground">
+                  豆包 Seed 2.0 默认开启 <strong>thinking</strong> 模式，会在内部生成思维链再产出答案，
+                  对"多步评测编排 / 复杂诊断"质量明显更好；但会增加 30%~80% 的端到端延迟。
+                  在 <code className="bg-muted px-1 rounded text-xs font-mono">extra_body</code> 里可显式控制：
+                </p>
+                <CodeBlock filename="thinking_mode.py" lang="python">{`# 关闭思考（更快、适合实时反馈）
+client.chat.completions.create(
+    model="doubao-seed-2-0-lite-260215",
+    messages=messages,
+    tools=ark_tools,
+    extra_body={"thinking": {"type": "disabled"}},
+)
+
+# 开启思考（默认，适合 Pro 模型 + 多步 Agent）
+client.chat.completions.create(
+    model="doubao-seed-2-0-pro-260215",
+    messages=messages,
+    tools=ark_tools,
+    extra_body={"thinking": {"type": "enabled"}},
+)`}</CodeBlock>
+
+                <Callout type="info">
+                  <strong>选型建议：</strong>
+                  课堂 / 培训类一对一辅导用 <code className="bg-white/40 dark:bg-black/30 px-1 rounded text-xs font-mono">doubao-seed-2-0-lite</code> + 关思考；
+                  K12 / 考试场景需要"多题型联动 + 升级建议"时用 <code className="bg-white/40 dark:bg-black/30 px-1 rounded text-xs font-mono">doubao-seed-2-0-pro</code> + 开思考；
+                  移动端实时口语对话用 <code className="bg-white/40 dark:bg-black/30 px-1 rounded text-xs font-mono">doubao-seed-2-0-mini</code> 控制成本与时延。
+                </Callout>
+              </SubDoc>
+
               <SubDoc id="llm-comparison" title="模型对比速查">
                 <div className="overflow-x-auto">
                   <table className="w-full text-xs">
@@ -1415,6 +1558,27 @@ asyncio.run(evaluate_with_kimi("audio_abc123", "Nice to meet you."))`}</CodeBloc
                         <td className="py-2 pr-4"><code className="bg-muted px-1 rounded font-mono">api.moonshot.cn/v1</code></td>
                         <td className="py-2 pr-4 text-emerald-600 dark:text-emerald-400">✓ 支持</td>
                         <td className="py-2">多轮历史 + 学习进度报告</td>
+                      </tr>
+                      <tr>
+                        <td className="py-2 pr-4 font-medium">豆包 Seed 2.0 Pro</td>
+                        <td className="py-2 pr-4"><code className="bg-muted px-1 rounded font-mono">doubao-seed-2-0-pro-260215</code></td>
+                        <td className="py-2 pr-4"><code className="bg-muted px-1 rounded font-mono">ark.cn-beijing.volces.com/api/v3</code></td>
+                        <td className="py-2 pr-4 text-emerald-600 dark:text-emerald-400">✓ 支持（含深度思考）</td>
+                        <td className="py-2">多步评测编排 + 深度诊断 Agent</td>
+                      </tr>
+                      <tr>
+                        <td className="py-2 pr-4 font-medium">豆包 Seed 2.0 Lite</td>
+                        <td className="py-2 pr-4"><code className="bg-muted px-1 rounded font-mono">doubao-seed-2-0-lite-260215</code></td>
+                        <td className="py-2 pr-4"><code className="bg-muted px-1 rounded font-mono">ark.cn-beijing.volces.com/api/v3</code></td>
+                        <td className="py-2 pr-4 text-emerald-600 dark:text-emerald-400">✓ 支持</td>
+                        <td className="py-2">在线辅导 + 单轮诊断，性价比首选</td>
+                      </tr>
+                      <tr>
+                        <td className="py-2 pr-4 font-medium">豆包 Seed 2.0 Mini</td>
+                        <td className="py-2 pr-4"><code className="bg-muted px-1 rounded font-mono">doubao-seed-2-0-mini-260215</code></td>
+                        <td className="py-2 pr-4"><code className="bg-muted px-1 rounded font-mono">ark.cn-beijing.volces.com/api/v3</code></td>
+                        <td className="py-2 pr-4 text-emerald-600 dark:text-emerald-400">✓ 支持</td>
+                        <td className="py-2">移动端 / 边缘部署 / 低延迟实时反馈</td>
                       </tr>
                     </tbody>
                   </table>
