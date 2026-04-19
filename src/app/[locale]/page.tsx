@@ -142,7 +142,7 @@ export default async function HomePage() {
             </span>
           </FadeUp>
           <FadeUp delay={0.1}>
-            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight leading-[1.1] mb-6 max-w-3xl">
+            <h1 className="heading-display text-4xl sm:text-5xl md:text-6xl lg:text-7xl leading-[1.08] mb-6 max-w-3xl">
               {tHero('title_line1')}<br />
               <HeroTypewriter />
             </h1>
@@ -201,7 +201,7 @@ export default async function HomePage() {
                 { value: 100, suffix: '+', label: zhEn('接入企业客户', 'Enterprise Integrations') },
               ].map((m) => (
                 <div key={m.label} className="bg-background/70 backdrop-blur-sm px-4 py-4 text-center">
-                  <div className="text-xl md:text-2xl font-bold tracking-tight tabular-nums">
+                  <div className="text-xl md:text-2xl font-semibold tracking-[-0.015em] tabular-nums">
                     <CountUp value={m.value} suffix={m.suffix} />
                   </div>
                   <div className="text-[11px] text-muted-foreground mt-1">{m.label}</div>
@@ -224,7 +224,7 @@ export default async function HomePage() {
           {/* 标题 */}
           <FadeUp className="text-center mb-10">
             <span className="inline-block text-[11px] tracking-[0.2em] uppercase text-muted-foreground mb-3">Interactive Demo · 零门槛试用</span>
-            <h2 className="text-2xl md:text-3xl font-bold tracking-tight mb-3">
+            <h2 className="text-2xl md:text-3xl font-semibold tracking-[-0.015em] mb-3">
               {zhEn('30 秒看懂 Chivox MCP', 'Understand Chivox MCP in 30s')} <span className="text-muted-foreground font-normal">· {zhEn('评测 → 诊断 → 练习', 'Assess → Diagnose → Practice')}</span>
             </h2>
             <p className="text-muted-foreground max-w-2xl mx-auto leading-relaxed">
@@ -244,7 +244,7 @@ export default async function HomePage() {
         <div className="container mx-auto px-6">
           <FadeUp className="text-center mb-10">
             <span className="inline-block text-[11px] tracking-[0.2em] uppercase text-muted-foreground mb-3">Product Value</span>
-            <h2 className="text-2xl md:text-3xl font-bold tracking-tight mb-3">{zhEn('三大核心价值', 'Three Core Values')}</h2>
+            <h2 className="text-2xl md:text-3xl font-semibold tracking-[-0.015em] mb-3">{zhEn('三大核心价值', 'Three Core Values')}</h2>
             <p className="text-muted-foreground max-w-xl mx-auto">{zhEn('从细颗粒度评分数据，到 LLM 语义深度分析，再到全场景一键落地 —— 一条协议打通 AI 听说能力栈。', 'From fine-grained scoring data to deep LLM analysis and production-ready deployment — one protocol unlocks AI listening and speaking capability.')}</p>
           </FadeUp>
 
@@ -258,7 +258,7 @@ export default async function HomePage() {
                 </IconWrap>
                 <span className="text-[11px] font-mono text-muted-foreground/60 tracking-wider">01</span>
               </div>
-              <h3 className="text-lg font-bold mb-2">{tFeatures('title')}</h3>
+              <h3 className="text-lg font-semibold mb-2">{tFeatures('title')}</h3>
               <p className="text-sm text-muted-foreground leading-relaxed mb-5">
                 {zhEn('四大主维度（Accuracy · Integrity · Fluency · Rhythm）+ 音素级对齐 + 错误类型分类，考试级颗粒度直送 LLM。', 'Four core dimensions (Accuracy · Integrity · Fluency · Rhythm) + phoneme alignment + error typing, all LLM-ready.')}
               </p>
@@ -323,7 +323,7 @@ export default async function HomePage() {
                 </IconWrap>
                 <span className="text-[11px] font-mono text-muted-foreground/60 tracking-wider">02</span>
               </div>
-              <h3 className="text-lg font-bold mb-2">{tValue('title')}</h3>
+              <h3 className="text-lg font-semibold mb-2">{tValue('title')}</h3>
               <p className="text-sm text-muted-foreground leading-relaxed mb-5">
                 {zhEn(
                   '用一段 Prompt，把 MCP 返回的结构化评测（维度分、音素、dp_type 等）整理成课堂可用的诊断与练习建议；可套用驰声提供的 Prompt Skill 模板快速落地。',
@@ -401,7 +401,7 @@ export default async function HomePage() {
                 </IconWrap>
                 <span className="text-[11px] font-mono text-muted-foreground/60 tracking-wider">03</span>
               </div>
-              <h3 className="text-lg font-bold mb-2">{tAdvanced('title')}</h3>
+              <h3 className="text-lg font-semibold mb-2">{tAdvanced('title')}</h3>
               <p className="text-sm text-muted-foreground leading-relaxed mb-5">
                 {zhEn('基于 MCP 标准协议，任意支持 MCP 的 AI 客户端一行配置即刻获得考试级语音评测能力，无需封装 SDK。', 'Based on MCP, any compatible AI client gains exam-grade speech evaluation with one line of config — no SDK wrapping required.')}
               </p>
@@ -480,7 +480,7 @@ export default async function HomePage() {
         <div className="container mx-auto px-6">
           <FadeUp className="text-center mb-10">
             <span className="inline-block text-[11px] tracking-[0.2em] uppercase text-muted-foreground mb-3">Dual Mode</span>
-            <h2 className="text-2xl md:text-3xl font-bold tracking-tight mb-3">{zhEn('边录边评 · 双模式评测', 'Record-and-Evaluate · Dual Mode')}</h2>
+            <h2 className="text-2xl md:text-3xl font-semibold tracking-[-0.015em] mb-3">{zhEn('边录边评 · 双模式评测', 'Record-and-Evaluate · Dual Mode')}</h2>
             <p className="text-muted-foreground max-w-xl mx-auto">{zhEn('流式实时评测 + 音频文件评测，覆盖从交互口语练习到批量质检的全部链路', 'Streaming real-time evaluation + file-based evaluation, covering interactive practice to batch QA.')}</p>
           </FadeUp>
           <div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto">
@@ -490,7 +490,7 @@ export default async function HomePage() {
                   <IconWrap className="h-10 w-10 rounded-lg bg-foreground/5 flex items-center justify-center">
                     <Radio className="h-5 w-5 text-foreground" />
                   </IconWrap>
-                  <h3 className="text-lg font-bold">{zhEn('实时录音评测', 'Real-time Recording Evaluation')}</h3>
+                  <h3 className="text-lg font-semibold">{zhEn('实时录音评测', 'Real-time Recording Evaluation')}</h3>
                 </div>
                 <p className="text-sm text-muted-foreground leading-relaxed mb-6">{zhEn('通过本地麦克风采集语音，音频以 WebSocket 流式推送到评测引擎。无需生成中间文件，录完即出分，适合交互式口语练习。', 'Capture voice from microphone and stream via WebSocket to the engine. No temp files, instant scoring, ideal for interactive speaking practice.')}</p>
                 <div className="mt-auto space-y-5">
@@ -528,7 +528,7 @@ export default async function HomePage() {
                   <IconWrap className="h-10 w-10 rounded-lg bg-foreground/5 flex items-center justify-center">
                     <FileAudio className="h-5 w-5 text-foreground" />
                   </IconWrap>
-                  <h3 className="text-lg font-bold">{zhEn('音频文件评测', 'Audio File Evaluation')}</h3>
+                  <h3 className="text-lg font-semibold">{zhEn('音频文件评测', 'Audio File Evaluation')}</h3>
                 </div>
                 <p className="text-sm text-muted-foreground leading-relaxed mb-6">{zhEn('支持本地文件路径、Base64 编码、URL 三种输入方式。传入路径即可评测，代理自动处理编码和上传，适合批量处理场景。', 'Supports local path, Base64, and URL. Pass a path and the proxy handles encoding/upload automatically, ideal for batch workflows.')}</p>
                 <div className="mt-auto space-y-5">
@@ -569,7 +569,7 @@ export default async function HomePage() {
               ].map((m) => (
                 <div key={m.k} className="bg-background px-3 py-3">
                   <div className="text-[10px] uppercase tracking-wider text-muted-foreground/70">{m.k}</div>
-                  <div className="text-base font-bold tracking-tight mt-1">{m.v}</div>
+                  <div className="text-base font-semibold tracking-[-0.015em] mt-1">{m.v}</div>
                   <div className="text-[10px] text-muted-foreground mt-0.5">{m.hint}</div>
                 </div>
               ))}
@@ -605,7 +605,7 @@ export default async function HomePage() {
         <div className="container mx-auto px-6">
           <FadeUp className="text-center mb-10">
             <span className="inline-block text-[11px] tracking-[0.2em] uppercase text-muted-foreground mb-3">Assessment Parameters</span>
-            <h2 className="text-2xl md:text-3xl font-bold tracking-tight mb-3">{tFeatures('all_params_title')}</h2>
+            <h2 className="text-2xl md:text-3xl font-semibold tracking-[-0.015em] mb-3">{tFeatures('all_params_title')}</h2>
             <p className="text-muted-foreground max-w-lg mx-auto leading-relaxed">{tFeatures('all_params_desc')}</p>
           </FadeUp>
 
@@ -628,7 +628,7 @@ export default async function HomePage() {
           <div className="grid lg:grid-cols-5 gap-8 md:gap-12 items-start max-w-6xl mx-auto">
             <div className="lg:col-span-2 min-w-0">
               <span className="inline-block text-[11px] tracking-[0.2em] uppercase text-zinc-500 mb-3">Deep Analysis</span>
-              <h2 className="text-xl sm:text-2xl md:text-3xl font-bold tracking-tight mb-4">{tValue('demo_title')}</h2>
+              <h2 className="text-xl sm:text-2xl md:text-3xl font-semibold tracking-[-0.015em] mb-4">{tValue('demo_title')}</h2>
               <p className="text-zinc-400 leading-relaxed mb-8">{tValue('demo_desc')}</p>
               <ul className="space-y-2.5 mb-7 md:mb-8">
                 {[tValue('demo_point1'), tValue('demo_point2'), tValue('demo_point3')].map((p, i) => (
@@ -720,7 +720,7 @@ export default async function HomePage() {
         <div className="container mx-auto px-6">
           <FadeUp className="text-center mb-10">
             <span className="inline-block text-[11px] tracking-[0.2em] uppercase text-muted-foreground mb-3">Scenarios · 01 / 02</span>
-            <h2 className="text-2xl md:text-3xl font-bold tracking-tight mb-3">{zhEn('AI 原生场景 · 让任意 Agent 都会听会说', 'AI-native Scenarios · Give any agent ears and voice')}</h2>
+            <h2 className="text-2xl md:text-3xl font-semibold tracking-[-0.015em] mb-3">{zhEn('AI 原生场景 · 让任意 Agent 都会听会说', 'AI-native Scenarios · Give any agent ears and voice')}</h2>
             <p className="text-muted-foreground max-w-2xl mx-auto leading-relaxed">
               {zhEn('驰声评分引擎与人工专家一致性 95%+，这份考试级能力通过 MCP 走进每个 AI 产品里。LLM 只要调用一次，就多了一只"听得懂人说话"的耳朵。', 'Chivox scoring aligns with human experts at 95%+. Through MCP, this exam-grade ability enters any AI product so one tool call gives your LLM a real listening ear.')}
             </p>
@@ -783,7 +783,7 @@ export default async function HomePage() {
                     </div>
                   </div>
                   <div className="p-5 md:p-6 flex-1 flex flex-col">
-                    <h3 className="text-base md:text-lg font-bold mb-2 leading-snug">{s.title}</h3>
+                    <h3 className="text-base md:text-lg font-semibold mb-2 leading-snug">{s.title}</h3>
                     <p className="text-sm text-muted-foreground leading-relaxed mb-4">{s.desc}</p>
                     <ul className="mt-auto space-y-2">
                       {s.bullets.map((b) => (
@@ -823,7 +823,7 @@ export default async function HomePage() {
         <div className="container mx-auto px-6">
           <FadeUp className="text-center mb-10">
             <span className="inline-block text-[11px] tracking-[0.2em] uppercase text-muted-foreground mb-3">Scenarios · 02 / 02</span>
-            <h2 className="text-2xl md:text-3xl font-bold tracking-tight mb-3">{zhEn('嵌入你熟悉的载体 · 零改造接入', 'Embed into familiar products · zero rework')}</h2>
+            <h2 className="text-2xl md:text-3xl font-semibold tracking-[-0.015em] mb-3">{zhEn('嵌入你熟悉的载体 · 零改造接入', 'Embed into familiar products · zero rework')}</h2>
             <p className="text-muted-foreground max-w-2xl mx-auto leading-relaxed">
               {zhEn('不用从零搭 App、不用改造现有系统。在 IM、内容生产工具、出海产品里，一条 MCP 调用让"听说能力"融进工作流里，用户零学习成本就能拥有。', 'No need to build from scratch or refactor existing systems. In IM, content tools, and global apps, one MCP call injects listening/speaking capabilities into your workflow.')}
             </p>
@@ -886,7 +886,7 @@ export default async function HomePage() {
                     </div>
                   </div>
                   <div className="p-5 md:p-6 flex-1 flex flex-col">
-                    <h3 className="text-base md:text-lg font-bold mb-2 leading-snug">{s.title}</h3>
+                    <h3 className="text-base md:text-lg font-semibold mb-2 leading-snug">{s.title}</h3>
                     <p className="text-sm text-muted-foreground leading-relaxed mb-4">{s.desc}</p>
                     <ul className="mt-auto space-y-2">
                       {s.bullets.map((b) => (
@@ -919,7 +919,7 @@ export default async function HomePage() {
         <div className="container mx-auto px-6">
           <FadeUp className="text-center mb-10">
             <span className="inline-block text-[11px] tracking-[0.2em] uppercase text-muted-foreground mb-3">Pricing</span>
-            <h2 className="text-2xl md:text-3xl font-bold tracking-tight mb-3">{tPricing('title')}</h2>
+            <h2 className="text-2xl md:text-3xl font-semibold tracking-[-0.015em] mb-3">{tPricing('title')}</h2>
             <p className="text-muted-foreground max-w-xl mx-auto leading-relaxed">
               {zhEn('按 ', 'Tiered by ')}<span className="text-foreground font-medium">{zhEn('调用量', 'usage')}</span> + <span className="text-foreground font-medium">{zhEn('并发数', 'concurrency')}</span>{zhEn(' 阶梯计费，用得越多单价越低。具体报价请联系销售获取。', ' — higher volume gets lower unit price. Contact sales for exact quotes.')}
             </p>
@@ -1082,25 +1082,25 @@ export default async function HomePage() {
           <div className="max-w-5xl mx-auto">
             <FadeUp className="text-center mb-12">
               <span className="inline-block text-[11px] tracking-[0.2em] uppercase text-muted-foreground mb-3">About Chivox</span>
-              <h2 className="text-2xl md:text-3xl font-bold tracking-tight mb-4">{tAbout('title')}</h2>
+              <h2 className="text-2xl md:text-3xl font-semibold tracking-[-0.015em] mb-4">{tAbout('title')}</h2>
               <p className="text-muted-foreground leading-relaxed max-w-2xl mx-auto">{tAbout('description')}</p>
             </FadeUp>
 
             <StaggerContainer className="grid grid-cols-3 gap-px bg-border/40 border border-border/40 rounded-xl overflow-hidden max-w-3xl mx-auto mb-10" staggerDelay={0.12}>
               <StaggerItem className="bg-background/80 backdrop-blur-sm px-4 py-6 text-center">
-                <div className="text-3xl md:text-4xl font-bold tracking-tight">
+                <div className="text-3xl md:text-4xl font-semibold tracking-[-0.015em]">
                   <CountUp value={10} suffix="+" />
                 </div>
                 <div className="text-xs text-muted-foreground mt-1.5">{tAbout('stat1_label')}</div>
               </StaggerItem>
               <StaggerItem className="bg-background/80 backdrop-blur-sm px-4 py-6 text-center">
-                <div className="text-3xl md:text-4xl font-bold tracking-tight">
+                <div className="text-3xl md:text-4xl font-semibold tracking-[-0.015em]">
                   <CountUp value={1} suffix={isZh ? '亿+' : '00M+'} />
                 </div>
                 <div className="text-xs text-muted-foreground mt-1.5">{tAbout('stat2_label')}</div>
               </StaggerItem>
               <StaggerItem className="bg-background/80 backdrop-blur-sm px-4 py-6 text-center">
-                <div className="text-3xl md:text-4xl font-bold tracking-tight">
+                <div className="text-3xl md:text-4xl font-semibold tracking-[-0.015em]">
                   <CountUp value={100} suffix="+" />
                 </div>
                 <div className="text-xs text-muted-foreground mt-1.5">{tAbout('stat3_label')}</div>
@@ -1123,7 +1123,7 @@ export default async function HomePage() {
                   ].map((m) => (
                     <div key={m.year} className="flex flex-col items-center text-center">
                       <div className="h-1.5 w-1.5 rounded-full bg-foreground relative z-10 mb-4 ring-4 ring-muted/30" />
-                      <div className="text-sm font-bold tracking-tight mb-1">{m.year}</div>
+                      <div className="text-sm font-semibold tracking-[-0.015em] mb-1">{m.year}</div>
                       <div className="text-[11px] text-muted-foreground leading-snug">{m.label}</div>
                     </div>
                   ))}

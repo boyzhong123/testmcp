@@ -16,7 +16,7 @@ export default async function PrivacyPage() {
 
         {isZh ? (
           <>
-            <h1 className="text-3xl font-bold tracking-tight mb-2">隐私政策</h1>
+            <h1 className="text-3xl font-semibold tracking-[-0.015em] mb-2">隐私政策</h1>
             <p className="text-sm text-muted-foreground mb-10">最后更新：2026 年 1 月 1 日</p>
 
             <div className="prose prose-sm max-w-none text-foreground/80 space-y-8">
@@ -92,7 +92,7 @@ export default async function PrivacyPage() {
           </>
         ) : (
           <>
-            <h1 className="text-3xl font-bold tracking-tight mb-2">Privacy Policy</h1>
+            <h1 className="text-3xl font-semibold tracking-[-0.015em] mb-2">Privacy Policy</h1>
             <p className="text-sm text-muted-foreground mb-10">Last updated: January 1, 2026</p>
 
             <div className="prose prose-sm max-w-none text-foreground/80 space-y-8">

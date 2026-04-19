@@ -8,7 +8,17 @@ export function HeroTypewriter() {
   const texts = t.raw('typewriter_lines') as string[];
 
   return (
-    <span className="bg-gradient-to-r from-foreground via-foreground/70 to-muted-foreground bg-clip-text text-transparent">
+    <span
+      className="hero-typewriter-gradient inline-block align-baseline"
+      style={{
+        backgroundImage:
+          'linear-gradient(135deg, var(--hero-grad-from) 0%, var(--hero-grad-via) 55%, var(--hero-grad-to) 100%)',
+        WebkitBackgroundClip: 'text',
+        backgroundClip: 'text',
+        WebkitTextFillColor: 'transparent',
+        color: 'transparent',
+      }}
+    >
       <Typewriter texts={texts} speed={100} deleteSpeed={50} pauseMs={2200} />
     </span>
   );

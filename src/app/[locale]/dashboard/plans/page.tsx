@@ -95,7 +95,7 @@ export default function PlansPage() {
       {/* ── 页头 ── */}
       <div className="flex flex-wrap items-start justify-between gap-4 mb-8">
         <div>
-          <h1 className="text-xl font-bold tracking-tight mb-2">{uiZh ? '会员套餐' : 'Membership plans'}</h1>
+          <h1 className="text-xl font-semibold tracking-[-0.015em] mb-2">{uiZh ? '会员套餐' : 'Membership plans'}</h1>
           <p className="text-sm text-muted-foreground">
             {uiZh ? (
               <>
@@ -267,7 +267,7 @@ export default function PlansPage() {
       {/* ── 套餐能力对比（无具体数字，只示意相对强度） ── */}
       <div className="flex items-center gap-2 mb-4">
         <Sparkles className="h-4 w-4 text-foreground" />
-        <h2 className="text-base font-bold tracking-tight">{uiZh ? '套餐能力对比' : 'Plan comparison'}</h2>
+        <h2 className="text-base font-semibold tracking-[-0.015em]">{uiZh ? '套餐能力对比' : 'Plan comparison'}</h2>
         <span className="text-xs text-muted-foreground">
           {uiZh ? '· 能力强度示意，不代表最终配额' : '· Illustrative strength, not final quotas'}
         </span>

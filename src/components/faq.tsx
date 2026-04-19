@@ -29,7 +29,7 @@ export function FAQ() {
           {/* 左栏：标题 + 联系入口 */}
           <div className="lg:col-span-2 lg:sticky lg:top-24 self-start">
             <span className="inline-block text-[11px] tracking-[0.2em] uppercase text-muted-foreground mb-3">FAQ</span>
-            <h2 className="text-2xl md:text-3xl font-bold tracking-tight mb-4">
+            <h2 className="text-2xl md:text-3xl font-semibold tracking-[-0.015em] mb-4">
               {t('title')}
             </h2>
             <p className="text-sm text-muted-foreground leading-relaxed mb-8">

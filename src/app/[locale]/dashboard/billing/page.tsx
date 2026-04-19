@@ -52,7 +52,7 @@ export default function BillingPage() {
 
   return (
     <div>
-      <h1 className="text-xl font-bold tracking-tight mb-2">{t.title}</h1>
+      <h1 className="text-xl font-semibold tracking-[-0.015em] mb-2">{t.title}</h1>
       <p className="text-sm text-muted-foreground mb-8">{t.subtitle}</p>
 
       {/* Current Month Summary */}
@@ -62,7 +62,7 @@ export default function BillingPage() {
             <CreditCard className="h-4 w-4" />
             <span className="text-xs font-medium">{t.currentPlan}</span>
           </div>
-          <div className="text-lg font-bold">{currentPlan.name}</div>
+          <div className="text-lg font-semibold">{currentPlan.name}</div>
           <div className="text-xs text-muted-foreground mt-0.5">
             {currentPlan.price === 0 ? t.free : currentPlan.price === -1 ? t.custom : `¥${currentPlan.price}${t.perMonth}`}
           </div>
@@ -91,7 +91,7 @@ export default function BillingPage() {
 
       {/* Cost Calculator */}
       <div className="rounded-xl border border-border bg-background p-6 mb-8 max-w-2xl">
-        <h2 className="text-lg font-bold tracking-tight mb-1">{t.calcTitle}</h2>
+        <h2 className="text-lg font-semibold tracking-[-0.015em] mb-1">{t.calcTitle}</h2>
         <p className="text-sm text-muted-foreground mb-5">{t.calcDesc}</p>
 
         <div className="flex items-center gap-3 mb-5">
@@ -132,7 +132,7 @@ export default function BillingPage() {
       </div>
 
       {/* Billing History */}
-      <h2 className="text-lg font-bold tracking-tight mb-4">{t.history}</h2>
+      <h2 className="text-lg font-semibold tracking-[-0.015em] mb-4">{t.history}</h2>
       <div className="rounded-xl border border-border bg-background overflow-hidden max-w-4xl">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">

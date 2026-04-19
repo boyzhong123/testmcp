@@ -73,7 +73,7 @@ export function DocSection({
     <section id={id} className="scroll-mt-24 mb-16">
       <div className="flex items-center gap-3 mb-6 pb-3 border-b border-border/40">
         <Icon className="h-5 w-5 text-muted-foreground shrink-0" />
-        <h2 className="text-xl font-bold tracking-tight">{title}</h2>
+        <h2 className="text-xl font-semibold tracking-[-0.015em]">{title}</h2>
       </div>
       <div className="text-sm leading-relaxed text-foreground/90 space-y-6">{children}</div>
     </section>

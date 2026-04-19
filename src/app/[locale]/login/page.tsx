@@ -95,7 +95,7 @@ export default function LoginPage() {
               <span className="w-3 h-px bg-white/30" />
               Developer Console
             </span>
-            <h1 className="text-[30px] xl:text-[34px] font-bold tracking-tight leading-[1.15] mb-4">
+            <h1 className="text-[30px] xl:text-[34px] font-semibold tracking-[-0.015em] leading-[1.15] mb-4">
               {t.heroTitlePrefix}{' '}
               <span className="bg-gradient-to-r from-white via-white/85 to-white/40 bg-clip-text text-transparent">
                 {t.heroTitleHighlight}
@@ -175,7 +175,7 @@ export default function LoginPage() {
             </span>
           </Link>
 
-          <h2 className="text-[22px] font-bold tracking-tight mb-1">{t.title}</h2>
+          <h2 className="text-[22px] font-semibold tracking-[-0.015em] mb-1">{t.title}</h2>
           <p className="text-sm text-muted-foreground mb-6">{t.subtitle}</p>
 
           {error && (

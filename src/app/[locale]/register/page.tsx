@@ -100,7 +100,7 @@ export default function RegisterPage() {
           </Link>
 
           <div className="max-w-xs">
-            <h1 className="text-[28px] font-bold tracking-tight leading-[1.2] mb-3">
+            <h1 className="text-[28px] font-semibold tracking-[-0.015em] leading-[1.2] mb-3">
               {t.heroTitle.split('\n')[0]}<br />{t.heroTitle.split('\n')[1]}
             </h1>
             <p className="text-[13px] text-white/50 leading-relaxed mb-6">
@@ -140,7 +140,7 @@ export default function RegisterPage() {
             </span>
           </Link>
 
-          <h2 className="text-[22px] font-bold tracking-tight mb-1">{t.title}</h2>
+          <h2 className="text-[22px] font-semibold tracking-[-0.015em] mb-1">{t.title}</h2>
           <p className="text-sm text-muted-foreground mb-5">{t.subtitle}</p>
 
           {error && (

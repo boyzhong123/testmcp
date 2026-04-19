@@ -716,7 +716,7 @@ export function DemoPreview() {
                 {shellData.scores.map((s, si) => (
                   <div key={`${s.label}-${si}`} className="rounded-lg border border-border/40 bg-background p-2 text-center">
                     <div className={cn(
-                      'text-lg font-bold tabular-nums',
+                      'text-lg font-semibold tabular-nums',
                       s.tone === 'amber' ? 'text-amber-600 dark:text-amber-400' : 'text-emerald-600 dark:text-emerald-400'
                     )}>
                       {s.value}

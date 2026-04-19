@@ -70,7 +70,7 @@ function ArchitectureSection({ L }: { L: 'en' }) {
             </p>
           </div>
           <div className="text-center">
-            <p className="text-lg font-bold text-muted-foreground">⇄</p>
+            <p className="text-lg font-semibold text-muted-foreground">⇄</p>
             <p className="text-[10px] text-muted-foreground">stdio</p>
           </div>
           <div className="rounded-xl border-2 border-emerald-500/50 bg-emerald-500/5 px-6 py-4 text-center min-w-[140px]">
@@ -82,7 +82,7 @@ function ArchitectureSection({ L }: { L: 'en' }) {
             </p>
           </div>
           <div className="text-center">
-            <p className="text-lg font-bold text-muted-foreground">⇄</p>
+            <p className="text-lg font-semibold text-muted-foreground">⇄</p>
             <p className="text-[10px] text-muted-foreground">HTTP / WS</p>
           </div>
           <div className="rounded-xl border-2 border-foreground/30 px-6 py-4 text-center min-w-[140px]">
@@ -860,8 +860,9 @@ async with streamablehttp_client("https://speech-eval.site/mcp") as (r, w, _):
 
         <SubDoc id="llm-deepseek" title="DeepSeek">
           <p>
-            Use <code className="bg-muted px-1 rounded text-xs font-mono">deepseek-chat</code> (V3) for tool calling;{' '}
-            <code className="bg-muted px-1 rounded text-xs font-mono">deepseek-reasoner</code> (R1) has no function-calling — chain V3 for tools, then R1 for analysis if needed.
+            Latest model is <strong>DeepSeek-V3.2</strong> (Dec 2025) — the first model to natively fuse <em>thinking + tool use</em>.
+            Use <code className="bg-muted px-1 rounded text-xs font-mono">deepseek-chat</code> for non-thinking mode and{' '}
+            <code className="bg-muted px-1 rounded text-xs font-mono">deepseek-reasoner</code> for thinking mode — <strong>both support function calling</strong> with a 128K context.
           </p>
           <CodeBlock filename="deepseek_chivox.py" lang="python" locale={L}>{`import os, json, asyncio
 from openai import OpenAI
@@ -870,7 +871,7 @@ from mcp import ClientSession
 
 client = OpenAI(
     api_key=os.environ["DEEPSEEK_API_KEY"],
-    base_url="https://api.deepseek.com",
+    base_url="https://api.deepseek.com/v1",
 )
 
 async def run(audio_id: str, ref_text: str):
@@ -907,8 +908,13 @@ async def run(audio_id: str, ref_text: str):
 asyncio.run(run("audio_abc123", "Hello, nice to meet you."))`}</CodeBlock>
         </SubDoc>
 
-        <SubDoc id="llm-glm" title="GLM (Zhipu)">
-          <p>OpenAI-compatible base URL: <code className="bg-muted px-1 rounded text-xs font-mono">https://open.bigmodel.cn/api/paas/v4/</code></p>
+        <SubDoc id="llm-glm" title="GLM (Zhipu / Z.ai)">
+          <p>
+            Latest flagships are <strong>GLM-5</strong> and <strong>GLM-5.1</strong> (Feb 2026, 744B-A40B MoE, 200K context, on par with Claude Opus 4.5),
+            with <code className="bg-muted px-1 rounded text-xs font-mono">glm-4.7</code> / <code className="bg-muted px-1 rounded text-xs font-mono">glm-4.6</code> still available
+            and <code className="bg-muted px-1 rounded text-xs font-mono">glm-4-flash</code> kept as the free dev tier.
+            OpenAI-compatible base URL: <code className="bg-muted px-1 rounded text-xs font-mono">https://open.bigmodel.cn/api/paas/v4/</code>.
+          </p>
           <CodeBlock filename="glm_chivox.py" lang="python" locale={L}>{`import os, json, asyncio
 from openai import OpenAI
 from mcp.client.streamable_http import streamablehttp_client
@@ -932,7 +938,8 @@ async def run(audio_id: str, ref_text: str):
             messages = [{"role": "user", "content":
                 f"Score audioId={audio_id}, reference: {ref_text}"}]
             resp = client.chat.completions.create(
-                model="glm-4-flash", messages=messages, tools=oa_tools)
+                model="glm-4-flash",   # free dev tier; production: glm-5 / glm-4.7
+                messages=messages, tools=oa_tools)
             msg = resp.choices[0].message
             if msg.tool_calls:
                 messages.append(msg)
@@ -951,11 +958,20 @@ async def run(audio_id: str, ref_text: str):
                 return final.choices[0].message.content
 
 asyncio.run(run("audio_abc123", "How are you today?"))`}</CodeBlock>
+          <Callout type="tip">
+            Use <code className="bg-white/40 dark:bg-black/30 px-1 rounded text-xs font-mono">glm-4-flash</code> (free) for dev,
+            <code className="bg-white/40 dark:bg-black/30 px-1 rounded text-xs font-mono">glm-4.7</code> for everyday tutoring diagnosis,
+            and <code className="bg-white/40 dark:bg-black/30 px-1 rounded text-xs font-mono">glm-5</code> / <code className="bg-white/40 dark:bg-black/30 px-1 rounded text-xs font-mono">glm-5.1</code>
+            for K12 / multi-step agentic orchestration with 200K context.
+          </Callout>
         </SubDoc>
 
         <SubDoc id="llm-kimi" title="KIMI (Moonshot)">
           <p>
-            Base URL <code className="bg-muted px-1 rounded text-xs font-mono">https://api.moonshot.cn/v1</code> — pick 8k / 32k / 128k models for long coaching histories.
+            Latest flagship is <strong>Kimi K2.5</strong> (Jan 27, 2026) — MoE, <strong>256K context</strong>, native multimodal, agent-cluster collaboration.
+            Variants: <code className="bg-muted px-1 rounded text-xs font-mono">kimi-k2.5</code>, <code className="bg-muted px-1 rounded text-xs font-mono">kimi-k2-thinking</code>, <code className="bg-muted px-1 rounded text-xs font-mono">kimi-k2-turbo-preview</code>.
+            Legacy <code className="bg-muted px-1 rounded text-xs font-mono">moonshot-v1-8k/32k/128k</code> still works but the <strong>K2.5 family is recommended</strong>.
+            Base URL: <code className="bg-muted px-1 rounded text-xs font-mono">https://api.moonshot.cn/v1</code> (China) or <code className="bg-muted px-1 rounded text-xs font-mono">https://api.moonshot.ai/v1</code> (global).
           </p>
           <CodeBlock filename="kimi_chivox.py" lang="python" locale={L}>{`import os, json, asyncio
 from openai import OpenAI
@@ -980,7 +996,8 @@ async def run(audio_id: str, ref_text: str):
             messages = [{"role": "user", "content":
                 f"Score English audioId={audio_id}, reference: {ref_text}"}]
             resp = client.chat.completions.create(
-                model="moonshot-v1-8k", messages=messages, tools=oa_tools)
+                model="kimi-k2.5",   # flagship; or kimi-k2-turbo-preview / moonshot-v1-128k
+                messages=messages, tools=oa_tools)
             msg = resp.choices[0].message
             if msg.tool_calls:
                 messages.append(msg)
@@ -995,10 +1012,15 @@ async def run(audio_id: str, ref_text: str):
                         "content": result.content[0].text,
                     })
                 final = client.chat.completions.create(
-                    model="moonshot-v1-8k", messages=messages)
+                    model="kimi-k2.5", messages=messages)
                 return final.choices[0].message.content
 
 asyncio.run(run("audio_abc123", "Nice to meet you."))`}</CodeBlock>
+          <Callout type="tip">
+            K2.5&apos;s 256K context + agent-cluster mode shines for &quot;multi-session history + multi-step orchestration&quot;: stuff 30 past evaluation JSONs into messages and let it produce a cross-session progress report.
+            Use <code className="bg-white/40 dark:bg-black/30 px-1 rounded text-xs font-mono">kimi-k2-thinking</code> for deeper reasoning,
+            <code className="bg-white/40 dark:bg-black/30 px-1 rounded text-xs font-mono">kimi-k2-turbo-preview</code> for low-latency live feedback.
+          </Callout>
         </SubDoc>
 
         <SubDoc id="llm-doubao" title="Doubao Seed 2.0 (Volcano Ark)">
@@ -1026,6 +1048,8 @@ asyncio.run(run("audio_abc123", "Nice to meet you."))`}</CodeBlock>
                 <tr><td className="py-2 px-3 font-mono">doubao-seed-2-0-lite-260215</td><td className="py-2 px-3">Lite · balanced</td><td className="py-2 px-3">Online tutoring single-turn diagnosis — best price / quality</td></tr>
                 <tr><td className="py-2 px-3 font-mono">doubao-seed-2-0-mini-260215</td><td className="py-2 px-3">Mini · compact</td><td className="py-2 px-3">High-concurrency / mobile / edge — low-latency feedback</td></tr>
                 <tr><td className="py-2 px-3 font-mono">doubao-seed-2-0-code-preview-260215</td><td className="py-2 px-3">Code · preview</td><td className="py-2 px-3">Code generation / tool DSL — not the primary speech pick</td></tr>
+                <tr><td className="py-2 px-3 font-mono">doubao-seed-1-8-251228</td><td className="py-2 px-3">1.8 · deep thinking</td><td className="py-2 px-3">Tunable reasoning_effort (minimal/low/medium/high), previous-gen still active</td></tr>
+                <tr><td className="py-2 px-3 font-mono">doubao-seed-1-6-251015</td><td className="py-2 px-3">1.6 · classic</td><td className="py-2 px-3">256K context classic — keep using for already-shipped projects</td></tr>
               </tbody>
             </table>
           </div>
@@ -1138,6 +1162,323 @@ client.chat.completions.create(
           </Callout>
         </SubDoc>
 
+        <SubDoc id="llm-qwen" title="Qwen (Alibaba Model Studio / DashScope)">
+          <p>
+            Alibaba&apos;s <strong>Qwen 3.6</strong> series (Apr 2026) is the latest — flagship <code className="bg-muted px-1 rounded text-xs font-mono">qwen3.6-plus</code>,
+            fast tier <code className="bg-muted px-1 rounded text-xs font-mono">qwen3.6-flash</code>, and the open-weight MoE <code className="bg-muted px-1 rounded text-xs font-mono">qwen3.6-35b-a3b</code>.
+            Older aliases <code className="bg-muted px-1 rounded text-xs font-mono">qwen-max</code> / <code className="bg-muted px-1 rounded text-xs font-mono">qwen-plus</code> still resolve.
+            Served via <strong>Model Studio</strong> with OpenAI-compatible endpoints:
+            <code className="bg-muted px-1 rounded text-xs font-mono">https://dashscope.aliyuncs.com/compatible-mode/v1</code> (China Beijing),{' '}
+            <code className="bg-muted px-1 rounded text-xs font-mono">https://dashscope-intl.aliyuncs.com/compatible-mode/v1</code> (Singapore),{' '}
+            <code className="bg-muted px-1 rounded text-xs font-mono">https://dashscope-us.aliyuncs.com/compatible-mode/v1</code> (US Virginia).
+          </p>
+          <CodeBlock filename="qwen_chivox.py" lang="python" locale={L}>{`import os, json, asyncio
+from openai import OpenAI
+from mcp.client.streamable_http import streamablehttp_client
+from mcp import ClientSession
+
+client = OpenAI(
+    api_key=os.environ["DASHSCOPE_API_KEY"],
+    base_url="https://dashscope.aliyuncs.com/compatible-mode/v1",
+)
+
+async def run(audio_id: str, ref_text: str):
+    async with streamablehttp_client("https://speech-eval.site/mcp") as (r, w, _):
+        async with ClientSession(r, w) as mcp:
+            await mcp.initialize()
+            tools = (await mcp.list_tools()).tools
+            oa_tools = [{"type": "function", "function": {
+                "name": t.name,
+                "description": t.description,
+                "parameters": t.inputSchema,
+            }} for t in tools]
+            messages = [{"role": "user", "content":
+                f"Score audioId={audio_id}, reference: {ref_text}"}]
+            resp = client.chat.completions.create(
+                model="qwen3.6-plus",   # flagship; or qwen3.6-flash / qwen-long
+                messages=messages, tools=oa_tools)
+            msg = resp.choices[0].message
+            if msg.tool_calls:
+                messages.append(msg)
+                for call in msg.tool_calls:
+                    result = await mcp.call_tool(
+                        call.function.name,
+                        arguments=json.loads(call.function.arguments),
+                    )
+                    messages.append({
+                        "role": "tool",
+                        "tool_call_id": call.id,
+                        "content": result.content[0].text,
+                    })
+                final = client.chat.completions.create(
+                    model="qwen3.6-plus", messages=messages)
+                return final.choices[0].message.content
+
+asyncio.run(run("audio_abc123", "The weather is nice today."))`}</CodeBlock>
+          <Callout type="tip">
+            Recommended: <code className="bg-white/40 dark:bg-black/30 px-1 rounded text-xs font-mono">qwen3.6-plus</code> (flagship, agentic coding &amp; reasoning),{' '}
+            <code className="bg-white/40 dark:bg-black/30 px-1 rounded text-xs font-mono">qwen3.6-flash</code> (fast / cheap),{' '}
+            <code className="bg-white/40 dark:bg-black/30 px-1 rounded text-xs font-mono">qwen3-max</code> (previous flagship), and{' '}
+            <code className="bg-white/40 dark:bg-black/30 px-1 rounded text-xs font-mono">qwen-long</code> (1M context).
+            All support function calling; pass <code className="bg-white/40 dark:bg-black/30 px-1 rounded text-xs font-mono">extra_body=&#123;&quot;preserve_thinking&quot;: True&#125;</code> to keep thought history across agent turns.
+          </Callout>
+        </SubDoc>
+
+        <SubDoc id="llm-openai" title="OpenAI (GPT-5.1)">
+          <p>
+            OpenAI&apos;s flagship is <strong>GPT-5.1</strong> (released 2025-11-13) — <strong>400K context</strong>, 128K max output, with a configurable
+            <code className="bg-muted px-1 rounded text-xs font-mono">reasoning_effort</code> parameter (none / low / medium / high).
+            Also available: <code className="bg-muted px-1 rounded text-xs font-mono">gpt-5.1-chat-latest</code> (the snapshot ChatGPT uses, 128K context, optimised for chat) and <code className="bg-muted px-1 rounded text-xs font-mono">gpt-5-mini</code> (cost-efficient).
+            All natively support Function Calling and Structured Outputs.
+          </p>
+
+          <p className="font-semibold mt-4 mb-2">Environment</p>
+          <CodeBlock filename=".env" lang="bash" locale={L}>{`OPENAI_API_KEY=sk-xxxxxxxxxxxxxxxxxxxxxxxx
+CHIVOX_APP_KEY=your_chivox_app_key
+CHIVOX_SECRET_KEY=your_chivox_secret_key`}</CodeBlock>
+
+          <p className="font-semibold mt-4 mb-2">Full example (Python · GPT-5.1 + Chivox MCP)</p>
+          <CodeBlock filename="openai_chivox.py" lang="python" locale={L}>{`import os, json, asyncio
+from openai import OpenAI
+from mcp.client.streamable_http import streamablehttp_client
+from mcp import ClientSession
+
+client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
+
+async def evaluate_with_gpt(audio_id: str, ref_text: str):
+    async with streamablehttp_client("https://speech-eval.site/mcp") as (r, w, _):
+        async with ClientSession(r, w) as mcp:
+            await mcp.initialize()
+            tools = (await mcp.list_tools()).tools
+            oa_tools = [{"type": "function", "function": {
+                "name": t.name,
+                "description": t.description,
+                "parameters": t.inputSchema,
+            }} for t in tools]
+
+            messages = [
+                {"role": "system",
+                 "content": "You are an English speaking coach. Always call the Chivox eval tool first to get real scores."},
+                {"role": "user",
+                 "content": f"Score this take. audioId={audio_id}, reference: {ref_text}"},
+            ]
+
+            resp = client.chat.completions.create(
+                model="gpt-5.1",
+                messages=messages,
+                tools=oa_tools,
+                tool_choice="auto",
+                reasoning_effort="medium",   # GPT-5.1 only: none / low / medium / high
+            )
+
+            msg = resp.choices[0].message
+            messages.append(msg)
+            for call in (msg.tool_calls or []):
+                result = await mcp.call_tool(
+                    call.function.name,
+                    arguments=json.loads(call.function.arguments),
+                )
+                messages.append({
+                    "role": "tool",
+                    "tool_call_id": call.id,
+                    "content": result.content[0].text,
+                })
+
+            final = client.chat.completions.create(
+                model="gpt-5.1", messages=messages)
+            return final.choices[0].message.content
+
+print(asyncio.run(evaluate_with_gpt(
+    "audio_abc123", "The quick brown fox jumps over the lazy dog.")))`}</CodeBlock>
+          <Callout type="tip">
+            <strong>Picking a variant:</strong>
+            default to <code className="bg-white/40 dark:bg-black/30 px-1 rounded text-xs font-mono">gpt-5.1</code> with reasoning_effort=&quot;medium&quot; for tool + diagnosis loops;
+            use <code className="bg-white/40 dark:bg-black/30 px-1 rounded text-xs font-mono">gpt-5.1-chat-latest</code> for pure conversational coaching;
+            switch to <code className="bg-white/40 dark:bg-black/30 px-1 rounded text-xs font-mono">gpt-5-mini</code> for high-volume / batch scoring;
+            crank reasoning_effort to <code className="bg-white/40 dark:bg-black/30 px-1 rounded text-xs font-mono">high</code> for deep multi-step agent planning.
+          </Callout>
+        </SubDoc>
+
+        <SubDoc id="llm-claude" title="Claude (Anthropic)">
+          <p>
+            Anthropic&apos;s current flagship is <strong>Claude Opus 4.7</strong>, with <strong>Claude Sonnet 4.6</strong> (balanced) and <strong>Claude Haiku 4.5</strong> (fast).
+            Claude uses the <strong>Messages API</strong> (different from OpenAI Chat Completions) and a <code className="bg-muted px-1 rounded text-xs font-mono">tool_use</code> / <code className="bg-muted px-1 rounded text-xs font-mono">tool_result</code> block protocol.
+            Tool schemas use the <code className="bg-muted px-1 rounded text-xs font-mono">input_schema</code> field (equivalent to OpenAI&apos;s <code className="bg-muted px-1 rounded text-xs font-mono">parameters</code>).
+            Opus 4.5+ adds a new <code className="bg-muted px-1 rounded text-xs font-mono">effort</code> control (low/medium/high) — medium gets you Sonnet 4.5 quality with ~76% fewer tokens.
+          </p>
+
+          <p className="font-semibold mt-4 mb-2">Environment</p>
+          <CodeBlock filename=".env" lang="bash" locale={L}>{`ANTHROPIC_API_KEY=sk-ant-xxxxxxxxxxxxxxxxxxxxxxxx
+CHIVOX_APP_KEY=your_chivox_app_key
+CHIVOX_SECRET_KEY=your_chivox_secret_key`}</CodeBlock>
+
+          <p className="font-semibold mt-4 mb-2">Full example (Python · native Anthropic SDK + MCP bridge)</p>
+          <CodeBlock filename="claude_chivox.py" lang="python" locale={L}>{`# pip install anthropic mcp
+import os, json, asyncio
+from anthropic import Anthropic
+from mcp.client.streamable_http import streamablehttp_client
+from mcp import ClientSession
+
+client = Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
+
+async def evaluate_with_claude(audio_id: str, ref_text: str):
+    async with streamablehttp_client("https://speech-eval.site/mcp") as (r, w, _):
+        async with ClientSession(r, w) as mcp:
+            await mcp.initialize()
+
+            # Convert MCP tools to Anthropic shape (uses input_schema, not parameters)
+            tools = (await mcp.list_tools()).tools
+            anth_tools = [{
+                "name": t.name,
+                "description": t.description,
+                "input_schema": t.inputSchema,
+            } for t in tools]
+
+            messages = [{"role": "user",
+                         "content": f"Score this take: audioId={audio_id}, reference: {ref_text}"}]
+
+            # Tool loop — Claude may emit multiple tool_use blocks across turns
+            while True:
+                resp = client.messages.create(
+                    model="claude-opus-4-7",   # or claude-sonnet-4-6 / claude-haiku-4-5
+                    max_tokens=2048,
+                    tools=anth_tools,
+                    messages=messages,
+                    system="You are an English speaking coach. Always call the Chivox eval tool first.",
+                )
+
+                # Append the full assistant turn (including tool_use blocks)
+                messages.append({"role": "assistant", "content": resp.content})
+
+                if resp.stop_reason != "tool_use":
+                    return "".join(b.text for b in resp.content if b.type == "text")
+
+                # Extract every tool_use block, run it, return tool_result
+                tool_results = []
+                for block in resp.content:
+                    if block.type == "tool_use":
+                        result = await mcp.call_tool(block.name, arguments=block.input)
+                        tool_results.append({
+                            "type": "tool_result",
+                            "tool_use_id": block.id,
+                            "content": result.content[0].text,
+                        })
+                messages.append({"role": "user", "content": tool_results})
+
+print(asyncio.run(evaluate_with_claude(
+    "audio_abc123", "The quick brown fox jumps over the lazy dog.")))`}</CodeBlock>
+          <Callout type="tip">
+            <strong>Picking a variant:</strong>
+            <code className="bg-white/40 dark:bg-black/30 px-1 rounded text-xs font-mono">claude-opus-4-7</code> for deep diagnosis &amp; complex agent orchestration (step-change in agentic coding over 4.6);
+            <code className="bg-white/40 dark:bg-black/30 px-1 rounded text-xs font-mono">claude-sonnet-4-6</code> for daily tool + diagnosis loop (best price/quality);
+            <code className="bg-white/40 dark:bg-black/30 px-1 rounded text-xs font-mono">claude-haiku-4-5</code> for high-throughput live feedback.
+            Claude is also natively available on AWS Bedrock and Google Vertex AI if you need data residency.
+          </Callout>
+        </SubDoc>
+
+        <SubDoc id="llm-gemini" title="Gemini (Google)">
+          <p>
+            Google&apos;s newest is <strong>Gemini 3 Flash</strong> (<code className="bg-muted px-1 rounded text-xs font-mono">gemini-3-flash-preview</code>, Dec 17 2025) — Pro-grade reasoning at Flash latency / cost.
+            Also available: <strong>Gemini 3.1 Pro Preview</strong> (frontier flagship) and <strong>Gemini 3.1 Flash-Lite Preview</strong>.
+            All support Function Calling, parallel/compositional calls, and a new <code className="bg-muted px-1 rounded text-xs font-mono">thinking_level</code> parameter.
+            We recommend the <strong>OpenAI-compatible endpoint</strong> so you can reuse your existing OpenAI SDK + MCP bridge code with zero rewrites.
+          </p>
+
+          <p className="font-semibold mt-4 mb-2">Environment</p>
+          <CodeBlock filename=".env" lang="bash" locale={L}>{`GEMINI_API_KEY=AIzaSyxxxxxxxxxxxxxxxxxxxxxxxxxxx
+CHIVOX_APP_KEY=your_chivox_app_key
+CHIVOX_SECRET_KEY=your_chivox_secret_key`}</CodeBlock>
+
+          <p className="font-semibold mt-4 mb-2">Option 1 — OpenAI-compatible endpoint (recommended, zero migration cost)</p>
+          <CodeBlock filename="gemini_openai_compat.py" lang="python" locale={L}>{`import os, json, asyncio
+from openai import OpenAI
+from mcp.client.streamable_http import streamablehttp_client
+from mcp import ClientSession
+
+# Gemini OpenAI-compatible endpoint — full OpenAI SDK reuse
+client = OpenAI(
+    api_key=os.environ["GEMINI_API_KEY"],
+    base_url="https://generativelanguage.googleapis.com/v1beta/openai/",
+)
+
+async def evaluate_with_gemini(audio_id: str, ref_text: str):
+    async with streamablehttp_client("https://speech-eval.site/mcp") as (r, w, _):
+        async with ClientSession(r, w) as mcp:
+            await mcp.initialize()
+            tools = (await mcp.list_tools()).tools
+            oa_tools = [{"type": "function", "function": {
+                "name": t.name,
+                "description": t.description,
+                "parameters": t.inputSchema,
+            }} for t in tools]
+
+            messages = [{"role": "user",
+                         "content": f"Score audioId={audio_id}, reference: {ref_text}"}]
+
+            resp = client.chat.completions.create(
+                model="gemini-3-flash-preview",   # or gemini-3.1-pro-preview
+                messages=messages,
+                tools=oa_tools,
+                tool_choice="auto",
+            )
+            msg = resp.choices[0].message
+            messages.append(msg)
+            for call in (msg.tool_calls or []):
+                result = await mcp.call_tool(
+                    call.function.name,
+                    arguments=json.loads(call.function.arguments),
+                )
+                messages.append({
+                    "role": "tool",
+                    "tool_call_id": call.id,
+                    "content": result.content[0].text,
+                })
+
+            final = client.chat.completions.create(
+                model="gemini-3-flash-preview", messages=messages)
+            return final.choices[0].message.content
+
+print(asyncio.run(evaluate_with_gemini(
+    "audio_abc123", "The quick brown fox jumps over the lazy dog.")))`}</CodeBlock>
+
+          <p className="font-semibold mt-4 mb-2">Option 2 — Native google-genai SDK (thinking_level / streaming function calls)</p>
+          <CodeBlock filename="gemini_native.py" lang="python" locale={L}>{`# pip install google-genai
+from google import genai
+from google.genai import types
+
+client = genai.Client(api_key=os.environ["GEMINI_API_KEY"])
+
+# Convert MCP tools to Gemini function_declarations
+fn_decls = [{
+    "name": t.name,
+    "description": t.description,
+    "parameters": t.inputSchema,
+} for t in tools]
+
+resp = client.models.generate_content(
+    model="gemini-3-flash-preview",
+    contents=f"Score audioId={audio_id}, reference: {ref_text}",
+    config=types.GenerateContentConfig(
+        tools=[types.Tool(function_declarations=fn_decls)],
+        # Gemini 3+: thinking_level replaces the older thinking_budget
+        # thinking_level="high",
+    ),
+)
+
+# Tool call lives in response.candidates[0].content.parts[0].function_call
+fc = resp.candidates[0].content.parts[0].function_call
+print(f"call: {fc.name}({dict(fc.args)})  id={fc.id}")`}</CodeBlock>
+          <Callout type="tip">
+            <strong>Picking a variant:</strong>
+            default to <code className="bg-white/40 dark:bg-black/30 px-1 rounded text-xs font-mono">gemini-3-flash-preview</code> (3× faster than 2.5 Pro at ~$0.50/M input — already the default in the Gemini app);
+            use <code className="bg-white/40 dark:bg-black/30 px-1 rounded text-xs font-mono">gemini-3.1-pro-preview</code> for complex multi-step agents and coding;
+            pick <code className="bg-white/40 dark:bg-black/30 px-1 rounded text-xs font-mono">gemini-3.1-flash-lite-preview</code> for the cheapest large-context multimodal batches.
+          </Callout>
+          <Callout type="info">
+            <strong>Note:</strong> from Gemini 3 onward every <code className="bg-white/40 dark:bg-black/30 px-1 rounded text-xs font-mono">function_call</code> carries a unique <code className="bg-white/40 dark:bg-black/30 px-1 rounded text-xs font-mono">id</code>; you must echo it back in the <code className="bg-white/40 dark:bg-black/30 px-1 rounded text-xs font-mono">function_response</code> for multi-turn tool use, or the request is rejected. The OpenAI-compatible endpoint handles this automatically.
+          </Callout>
+        </SubDoc>
+
         <SubDoc id="llm-comparison" title="Model comparison">
           <div className="overflow-x-auto">
             <table className="w-full text-xs">
@@ -1151,28 +1492,52 @@ client.chat.completions.create(
               </thead>
               <tbody className="divide-y divide-border/30">
                 <tr>
-                  <td className="py-2 pr-4 font-medium">DeepSeek V3</td>
+                  <td className="py-2 pr-4 font-medium">DeepSeek V3.2 · non-thinking</td>
                   <td className="py-2 pr-4"><code className="bg-muted px-1 rounded font-mono">deepseek-chat</code></td>
                   <td className="py-2 pr-4 text-emerald-600 dark:text-emerald-400">Yes</td>
                   <td className="py-2">Best default for tool + diagnosis loop</td>
                 </tr>
                 <tr>
-                  <td className="py-2 pr-4 font-medium">DeepSeek R1</td>
+                  <td className="py-2 pr-4 font-medium">DeepSeek V3.2 · thinking</td>
                   <td className="py-2 pr-4"><code className="bg-muted px-1 rounded font-mono">deepseek-reasoner</code></td>
-                  <td className="py-2 pr-4 text-rose-500">No</td>
-                  <td className="py-2">Reasoning-only — run tools on V3 first</td>
+                  <td className="py-2 pr-4 text-emerald-600 dark:text-emerald-400">Yes (in chain-of-thought)</td>
+                  <td className="py-2">Deep analysis + error attribution</td>
+                </tr>
+                <tr>
+                  <td className="py-2 pr-4 font-medium">GLM-5 · flagship</td>
+                  <td className="py-2 pr-4"><code className="bg-muted px-1 rounded font-mono">glm-5</code> / <code className="bg-muted px-1 rounded font-mono">glm-5.1</code></td>
+                  <td className="py-2 pr-4 text-emerald-600 dark:text-emerald-400">Yes</td>
+                  <td className="py-2">200K context + agentic orchestration</td>
+                </tr>
+                <tr>
+                  <td className="py-2 pr-4 font-medium">GLM-4.7</td>
+                  <td className="py-2 pr-4"><code className="bg-muted px-1 rounded font-mono">glm-4.7</code></td>
+                  <td className="py-2 pr-4 text-emerald-600 dark:text-emerald-400">Yes</td>
+                  <td className="py-2">Best price/quality for daily diagnosis</td>
                 </tr>
                 <tr>
                   <td className="py-2 pr-4 font-medium">GLM-4-Flash</td>
                   <td className="py-2 pr-4"><code className="bg-muted px-1 rounded font-mono">glm-4-flash</code></td>
                   <td className="py-2 pr-4 text-emerald-600 dark:text-emerald-400">Yes</td>
-                  <td className="py-2">Fast / economical for dev</td>
+                  <td className="py-2">Free dev tier</td>
                 </tr>
                 <tr>
-                  <td className="py-2 pr-4 font-medium">KIMI 128k</td>
-                  <td className="py-2 pr-4"><code className="bg-muted px-1 rounded font-mono">moonshot-v1-128k</code></td>
+                  <td className="py-2 pr-4 font-medium">Kimi K2.5</td>
+                  <td className="py-2 pr-4"><code className="bg-muted px-1 rounded font-mono">kimi-k2.5</code></td>
                   <td className="py-2 pr-4 text-emerald-600 dark:text-emerald-400">Yes</td>
-                  <td className="py-2">Long history &amp; progress reports</td>
+                  <td className="py-2">256K + multimodal + agent cluster</td>
+                </tr>
+                <tr>
+                  <td className="py-2 pr-4 font-medium">Kimi K2 Thinking</td>
+                  <td className="py-2 pr-4"><code className="bg-muted px-1 rounded font-mono">kimi-k2-thinking</code></td>
+                  <td className="py-2 pr-4 text-emerald-600 dark:text-emerald-400">Yes</td>
+                  <td className="py-2">Multi-step reasoning + progress reports</td>
+                </tr>
+                <tr>
+                  <td className="py-2 pr-4 font-medium">Kimi K2 Turbo</td>
+                  <td className="py-2 pr-4"><code className="bg-muted px-1 rounded font-mono">kimi-k2-turbo-preview</code></td>
+                  <td className="py-2 pr-4 text-emerald-600 dark:text-emerald-400">Yes</td>
+                  <td className="py-2">Low-latency live feedback</td>
                 </tr>
                 <tr>
                   <td className="py-2 pr-4 font-medium">Doubao Seed 2.0 Pro</td>
@@ -1192,9 +1557,72 @@ client.chat.completions.create(
                   <td className="py-2 pr-4 text-emerald-600 dark:text-emerald-400">Yes</td>
                   <td className="py-2">Mobile / edge — low-latency live feedback</td>
                 </tr>
+                <tr>
+                  <td className="py-2 pr-4 font-medium">Qwen 3.6 Plus</td>
+                  <td className="py-2 pr-4"><code className="bg-muted px-1 rounded font-mono">qwen3.6-plus</code></td>
+                  <td className="py-2 pr-4 text-emerald-600 dark:text-emerald-400">Yes</td>
+                  <td className="py-2">Alibaba flagship — agentic coding &amp; reasoning</td>
+                </tr>
+                <tr>
+                  <td className="py-2 pr-4 font-medium">Qwen 3.6 Flash</td>
+                  <td className="py-2 pr-4"><code className="bg-muted px-1 rounded font-mono">qwen3.6-flash</code></td>
+                  <td className="py-2 pr-4 text-emerald-600 dark:text-emerald-400">Yes</td>
+                  <td className="py-2">Fast / cheap balanced tier</td>
+                </tr>
+                <tr>
+                  <td className="py-2 pr-4 font-medium">GPT-5.1 (flagship)</td>
+                  <td className="py-2 pr-4"><code className="bg-muted px-1 rounded font-mono">gpt-5.1</code></td>
+                  <td className="py-2 pr-4 text-emerald-600 dark:text-emerald-400">Yes (reasoning_effort)</td>
+                  <td className="py-2">400K context + deep reasoning + complex agents</td>
+                </tr>
+                <tr>
+                  <td className="py-2 pr-4 font-medium">GPT-5.1 Chat</td>
+                  <td className="py-2 pr-4"><code className="bg-muted px-1 rounded font-mono">gpt-5.1-chat-latest</code></td>
+                  <td className="py-2 pr-4 text-emerald-600 dark:text-emerald-400">Yes</td>
+                  <td className="py-2">ChatGPT snapshot — conversational coaching</td>
+                </tr>
+                <tr>
+                  <td className="py-2 pr-4 font-medium">GPT-5 mini</td>
+                  <td className="py-2 pr-4"><code className="bg-muted px-1 rounded font-mono">gpt-5-mini</code></td>
+                  <td className="py-2 pr-4 text-emerald-600 dark:text-emerald-400">Yes</td>
+                  <td className="py-2">High-volume / batch scoring</td>
+                </tr>
+                <tr>
+                  <td className="py-2 pr-4 font-medium">Claude Opus 4.7</td>
+                  <td className="py-2 pr-4"><code className="bg-muted px-1 rounded font-mono">claude-opus-4-7</code></td>
+                  <td className="py-2 pr-4 text-emerald-600 dark:text-emerald-400">Yes (tool_use)</td>
+                  <td className="py-2">Anthropic flagship — agentic coding &amp; deep diagnosis</td>
+                </tr>
+                <tr>
+                  <td className="py-2 pr-4 font-medium">Claude Sonnet 4.6</td>
+                  <td className="py-2 pr-4"><code className="bg-muted px-1 rounded font-mono">claude-sonnet-4-6</code></td>
+                  <td className="py-2 pr-4 text-emerald-600 dark:text-emerald-400">Yes</td>
+                  <td className="py-2">Best price/quality for daily diagnosis loop</td>
+                </tr>
+                <tr>
+                  <td className="py-2 pr-4 font-medium">Claude Haiku 4.5</td>
+                  <td className="py-2 pr-4"><code className="bg-muted px-1 rounded font-mono">claude-haiku-4-5</code></td>
+                  <td className="py-2 pr-4 text-emerald-600 dark:text-emerald-400">Yes</td>
+                  <td className="py-2">High-throughput live feedback</td>
+                </tr>
+                <tr>
+                  <td className="py-2 pr-4 font-medium">Gemini 3 Flash</td>
+                  <td className="py-2 pr-4"><code className="bg-muted px-1 rounded font-mono">gemini-3-flash-preview</code></td>
+                  <td className="py-2 pr-4 text-emerald-600 dark:text-emerald-400">Yes (parallel / compositional)</td>
+                  <td className="py-2">Pro-grade reasoning at Flash latency / price</td>
+                </tr>
+                <tr>
+                  <td className="py-2 pr-4 font-medium">Gemini 3.1 Pro Preview</td>
+                  <td className="py-2 pr-4"><code className="bg-muted px-1 rounded font-mono">gemini-3.1-pro-preview</code></td>
+                  <td className="py-2 pr-4 text-emerald-600 dark:text-emerald-400">Yes (thinking_level)</td>
+                  <td className="py-2">Frontier flagship for complex multi-step agents</td>
+                </tr>
               </tbody>
             </table>
           </div>
+          <Callout type="info">
+            Every model except <strong>Claude</strong> (which uses Anthropic&apos;s native SDK with the <code className="bg-black/5 dark:bg-white/10 px-1 rounded text-xs font-mono">tool_use</code> / <code className="bg-black/5 dark:bg-white/10 px-1 rounded text-xs font-mono">tool_result</code> protocol) can be called through the <strong>OpenAI Python SDK</strong> by swapping <code className="bg-black/5 dark:bg-white/10 px-1 rounded text-xs font-mono">base_url</code> + <code className="bg-black/5 dark:bg-white/10 px-1 rounded text-xs font-mono">api_key</code> — no changes needed on the Chivox MCP side.
+          </Callout>
         </SubDoc>
 
         <SubDoc id="code-selfhosted-agent" title="Custom backend (FastAPI / Nest / Spring)">

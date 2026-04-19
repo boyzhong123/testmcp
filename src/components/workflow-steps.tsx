@@ -321,7 +321,7 @@ export function WorkflowSteps() {
           {/* Left: header + tabs + steps */}
           <div className="lg:col-span-2">
             <span className="text-xs tracking-widest uppercase text-muted-foreground mb-3 block">{isZh ? 'How it works' : 'How It Works'}</span>
-            <h2 className="text-2xl md:text-3xl font-bold tracking-tight mb-3">{isZh ? '一段录音如何变成温柔反馈' : 'How one audio turns into smart feedback'}</h2>
+            <h2 className="text-2xl md:text-3xl font-semibold tracking-[-0.015em] mb-3">{isZh ? '一段录音如何变成温柔反馈' : 'How one audio turns into smart feedback'}</h2>
             <p className="text-sm text-muted-foreground leading-relaxed mb-5">
               {isZh ? (
                 <>以「AI 雅思口语陪练」为例。开发者<span className="text-foreground font-medium">只填一次地址</span>，用户<span className="text-foreground font-medium">每次说话都自动被打分 + 给反馈</span>。</>

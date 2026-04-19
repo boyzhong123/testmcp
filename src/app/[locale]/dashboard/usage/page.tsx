@@ -68,7 +68,7 @@ export default function UsagePage() {
 
   return (
     <div>
-      <h1 className="text-xl font-bold tracking-tight mb-2">{t.title}</h1>
+      <h1 className="text-xl font-semibold tracking-[-0.015em] mb-2">{t.title}</h1>
       <p className="text-sm text-muted-foreground mb-6">{t.subtitle}</p>
 
       {/* Key Tabs */}
@@ -182,7 +182,7 @@ export default function UsagePage() {
       </div>
 
       {/* Records Table */}
-      <h2 className="text-lg font-bold tracking-tight mb-4">{t.records}</h2>
+      <h2 className="text-lg font-semibold tracking-[-0.015em] mb-4">{t.records}</h2>
       <div className="rounded-xl border border-border bg-background overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">

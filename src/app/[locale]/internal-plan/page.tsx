@@ -5,7 +5,7 @@ export default function InternalPlanPage() {
         {/* Header */}
         <div className="border-b border-zinc-200 pb-8 mb-12">
           <p className="text-xs text-zinc-400 uppercase tracking-widest mb-2">INTERNAL · 内部文档 · v2</p>
-          <h1 className="text-3xl font-bold tracking-tight mb-2">驰声语音评测 MCP — 详细开发计划</h1>
+          <h1 className="text-3xl font-semibold tracking-[-0.015em] mb-2">驰声语音评测 MCP — 详细开发计划</h1>
           <p className="text-zinc-500 text-sm">苏州驰声信息科技有限公司 · 2026 Q2 · 周期 4 周（4/14 → 5/9）</p>
           <div className="mt-4 flex flex-wrap gap-2 text-xs">
             {['MCP Server','并发架构','鉴权计费','开发者网站','文档站','在线体验','SDK','监控'].map(t=>(

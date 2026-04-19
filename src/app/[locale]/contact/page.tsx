@@ -14,7 +14,7 @@ export default function ContactPage() {
           <ArrowLeft className="h-4 w-4" /> {isZh ? '返回首页' : 'Back to Home'}
         </Link>
 
-        <h1 className="text-3xl md:text-4xl font-bold tracking-tight mb-3">{isZh ? '联系我们' : 'Contact Us'}</h1>
+        <h1 className="text-3xl md:text-4xl font-semibold tracking-[-0.015em] mb-3">{isZh ? '联系我们' : 'Contact Us'}</h1>
         <p className="text-muted-foreground mb-12 max-w-lg">
           {isZh ? '无论是企业合作还是技术咨询，我们期待与您对话。' : 'For business collaboration or technical consulting, we would love to talk.'}
         </p>

@@ -1436,7 +1436,7 @@ export default function DemoPage() {
           <ArrowLeft className="h-4 w-4" /> {ui.back}
         </Link>
 
-        <h1 className="text-3xl md:text-4xl font-bold tracking-tight mb-3">{ui.title}</h1>
+        <h1 className="text-3xl md:text-4xl font-semibold tracking-[-0.015em] mb-3">{ui.title}</h1>
         <p className="text-muted-foreground mb-8 max-w-2xl leading-relaxed">{ui.lead}</p>
 
         {/* 评测内核切换（与站点语言独立） */}

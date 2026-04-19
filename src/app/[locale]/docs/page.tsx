@@ -78,6 +78,9 @@ const NAV = [
     { id: 'llm-glm', label: 'GLM（智谱）' },
     { id: 'llm-kimi', label: 'KIMI（Moonshot）' },
     { id: 'llm-doubao', label: '豆包 Seed 2.0（火山方舟）' },
+    { id: 'llm-openai', label: 'OpenAI（GPT-5.1）' },
+    { id: 'llm-claude', label: 'Claude（Anthropic）' },
+    { id: 'llm-gemini', label: 'Gemini（Google）' },
     { id: 'llm-comparison', label: '模型对比速查' },
     { id: 'code-selfhosted-agent', label: '自研后端 Agent' },
   ]},
@@ -140,6 +143,10 @@ const NAV_EN: NavGroup[] = [
     { id: 'llm-glm', label: 'GLM (Zhipu)' },
     { id: 'llm-kimi', label: 'KIMI (Moonshot)' },
     { id: 'llm-doubao', label: 'Doubao Seed 2.0 (Volcano Ark)' },
+    { id: 'llm-qwen', label: 'Qwen (Alibaba)' },
+    { id: 'llm-openai', label: 'OpenAI (GPT-5.1)' },
+    { id: 'llm-claude', label: 'Claude (Anthropic)' },
+    { id: 'llm-gemini', label: 'Gemini (Google)' },
     { id: 'llm-comparison', label: 'Model comparison' },
     { id: 'code-selfhosted-agent', label: 'Custom backend' },
   ]},
@@ -522,7 +529,7 @@ asyncio.run(main())`}</CodeBlock>
                     <p className="text-[11px] text-muted-foreground">Claude Desktop<br/>Claude Code<br/>Cursor</p>
                   </div>
                   <div className="text-center">
-                    <p className="text-lg font-bold text-muted-foreground">⇄</p>
+                    <p className="text-lg font-semibold text-muted-foreground">⇄</p>
                     <p className="text-[10px] text-muted-foreground">stdio</p>
                   </div>
                   <div className="rounded-xl border-2 border-emerald-500/50 bg-emerald-500/5 px-6 py-4 text-center min-w-[140px]">
@@ -530,7 +537,7 @@ asyncio.run(main())`}</CodeBlock>
                     <p className="text-[11px] text-muted-foreground">本地代理<br/>SoX 录音</p>
                   </div>
                   <div className="text-center">
-                    <p className="text-lg font-bold text-muted-foreground">⇄</p>
+                    <p className="text-lg font-semibold text-muted-foreground">⇄</p>
                     <p className="text-[10px] text-muted-foreground">HTTP / WS</p>
                   </div>
                   <div className="rounded-xl border-2 border-foreground/30 px-6 py-4 text-center min-w-[140px]">
@@ -982,7 +989,7 @@ const mcp = new Client({ name: "chivox-biz", version: "1.0.0" });
 await mcp.connect(new StreamableHTTPClientTransport(new URL("https://speech-eval.site/mcp")));
 
 const { tools } = await mcp.listTools();
-const openai = new OpenAI({ apiKey: process.env.DEEPSEEK_KEY, baseURL: "https://api.deepseek.com" });
+const openai = new OpenAI({ apiKey: process.env.DEEPSEEK_KEY, baseURL: "https://api.deepseek.com/v1" });
 
 const resp = await openai.chat.completions.create({
   model: "deepseek-chat",
@@ -1163,7 +1170,12 @@ async with streamablehttp_client("https://speech-eval.site/mcp") as (r, w, _):
               </SubDoc>
 
               <SubDoc id="llm-deepseek" title="DeepSeek">
-                <p>DeepSeek 提供与 OpenAI 完全兼容的 API，推荐使用 <code className="bg-muted px-1 rounded text-xs font-mono">deepseek-chat</code>（V3）或 <code className="bg-muted px-1 rounded text-xs font-mono">deepseek-reasoner</code>（R1）。</p>
+                <p>
+                  DeepSeek 提供与 OpenAI 完全兼容的 API，当前最新模型为 <strong>DeepSeek-V3.2</strong>（2025 年 12 月发布，首个把"思考 + 工具调用"原生融合的模型）。
+                  通过 <code className="bg-muted px-1 rounded text-xs font-mono">deepseek-chat</code> 进入<strong>非思考模式</strong>，
+                  通过 <code className="bg-muted px-1 rounded text-xs font-mono">deepseek-reasoner</code> 进入<strong>思考模式</strong>，
+                  <strong>两种模式均支持 Function Calling</strong>，128K 上下文。
+                </p>
 
                 <p className="font-semibold mt-4 mb-2">环境准备</p>
                 <CodeBlock filename=".env" lang="bash">{`DEEPSEEK_API_KEY=sk-xxxxxxxxxxxxxxxx
@@ -1179,7 +1191,7 @@ from mcp import ClientSession
 # DeepSeek 客户端（OpenAI 兼容）
 client = OpenAI(
     api_key=os.environ["DEEPSEEK_API_KEY"],
-    base_url="https://api.deepseek.com",
+    base_url="https://api.deepseek.com/v1",
 )
 
 async def evaluate_with_deepseek(audio_id: str, ref_text: str):
@@ -1228,11 +1240,20 @@ async def evaluate_with_deepseek(audio_id: str, ref_text: str):
                 return final.choices[0].message.content
 
 asyncio.run(evaluate_with_deepseek("audio_abc123", "Hello, nice to meet you."))`}</CodeBlock>
-                <Callout type="tip"><strong>推荐使用 deepseek-chat（V3）</strong>处理评测结果诊断，速度快、成本低；若需要深度分析或出题逻辑，可换用 deepseek-reasoner（R1），但注意 R1 不支持 Function Calling，需先用 V3 做工具调用再将结果交给 R1 分析。</Callout>
+                <Callout type="tip">
+                  <strong>选型建议（V3.2）：</strong>日常评测诊断用 <code className="bg-white/40 dark:bg-black/30 px-1 rounded text-xs font-mono">deepseek-chat</code>，速度快、token 消耗低；
+                  需要深度分析（错误归因 / 个性化练习路径）时用 <code className="bg-white/40 dark:bg-black/30 px-1 rounded text-xs font-mono">deepseek-reasoner</code>，
+                  V3.2 起<strong>思考模式也能在思维链中调用工具</strong>，可以一次性完成"调评测 → 思考 → 出诊断"，无需再切回 V3 做工具调用。
+                </Callout>
               </SubDoc>
 
-              <SubDoc id="llm-glm" title="GLM（智谱 AI）">
-                <p>智谱 AI 提供 <code className="bg-muted px-1 rounded text-xs font-mono">glm-4</code>、<code className="bg-muted px-1 rounded text-xs font-mono">glm-4-flash</code>（免费）等模型，支持 OpenAI 兼容接口，同时也有官方 Python SDK。</p>
+              <SubDoc id="llm-glm" title="GLM（智谱 AI / Z.ai）">
+                <p>
+                  智谱 AI 当前最新旗舰为 <strong>GLM-5 / GLM-5.1</strong>（2026 年 2 月发布，744B-A40B MoE，200K 上下文，对标 Claude Opus 4.5），
+                  以及上一代 <strong>GLM-4.7</strong>、<strong>GLM-4.6</strong>。
+                  此外保留 <code className="bg-muted px-1 rounded text-xs font-mono">glm-4-flash</code>（免费快速版）方便开发测试。
+                  全部模型支持 OpenAI 兼容接口与原生 <code className="bg-muted px-1 rounded text-xs font-mono">zhipuai</code> SDK，原生 Function Calling。
+                </p>
 
                 <p className="font-semibold mt-4 mb-2">环境准备</p>
                 <CodeBlock filename=".env" lang="bash">{`ZHIPU_API_KEY=xxxxxxxx.xxxxxxxxxxxxxxxx
@@ -1265,7 +1286,7 @@ async def evaluate_with_glm(audio_id: str, ref_text: str):
                 f"请评测这段录音，audioId={audio_id}，参考文本：{ref_text}"}]
 
             resp = client.chat.completions.create(
-                model="glm-4-flash",   # 免费模型；生产可换 glm-4 或 glm-4-plus
+                model="glm-4-flash",   # 免费快速版；生产推荐 glm-5 / glm-4.7
                 messages=messages,
                 tools=oa_tools,
             )
@@ -1296,15 +1317,26 @@ client = ZhipuAI(api_key=os.environ["ZHIPU_API_KEY"])
 
 # 其余逻辑与方式一相同，仅替换 client 实例
 resp = client.chat.completions.create(
-    model="glm-4-flash",
+    model="glm-5",   # 旗舰；也可用 glm-4.7 / glm-4-flash
     messages=messages,
     tools=oa_tools,
 )`}</CodeBlock>
-                <Callout type="tip"><strong>glm-4-flash 免费</strong>，适合开发测试；<strong>glm-4-plus</strong> 上下文更长、指令遵循更准，适合生产环境中的诊断报告生成。</Callout>
+                <Callout type="tip">
+                  <strong>选型建议：</strong>
+                  开发联调用 <code className="bg-white/40 dark:bg-black/30 px-1 rounded text-xs font-mono">glm-4-flash</code>（免费）；
+                  在线辅导日常诊断用 <code className="bg-white/40 dark:bg-black/30 px-1 rounded text-xs font-mono">glm-4.7</code> 性价比最高；
+                  K12 / 复杂 Agent 编排（多步评测 + 个性化练习路径）用 <code className="bg-white/40 dark:bg-black/30 px-1 rounded text-xs font-mono">glm-5</code> / <code className="bg-white/40 dark:bg-black/30 px-1 rounded text-xs font-mono">glm-5.1</code>，
+                  200K 上下文、Agent 能力对标 Claude Opus 系列。
+                </Callout>
               </SubDoc>
 
               <SubDoc id="llm-kimi" title="KIMI（Moonshot AI）">
-                <p>Moonshot AI 的 KIMI 模型同样兼容 OpenAI API，支持超长上下文（最高 128k），特别适合需要分析多段录音历史或生成详细学习报告的场景。</p>
+                <p>
+                  Moonshot AI 当前最新旗舰是 <strong>Kimi K2.5</strong>（2026 年 1 月 27 日发布，MoE 架构、<strong>256K 上下文</strong>、原生多模态、Agent 集群协作）。
+                  另外提供 <code className="bg-muted px-1 rounded text-xs font-mono">kimi-k2-thinking</code>（深度思考）、<code className="bg-muted px-1 rounded text-xs font-mono">kimi-k2-turbo-preview</code>（高速版）。
+                  上一代 <code className="bg-muted px-1 rounded text-xs font-mono">moonshot-v1-8k/32k/128k</code> 仍然兼容，但<strong>推荐迁移到 kimi-k2.5</strong>。
+                  全部模型 OpenAI 兼容，原生 Function Calling。
+                </p>
 
                 <p className="font-semibold mt-4 mb-2">环境准备</p>
                 <CodeBlock filename=".env" lang="bash">{`MOONSHOT_API_KEY=sk-xxxxxxxxxxxxxxxxxxxxxxxx
@@ -1317,6 +1349,7 @@ from openai import OpenAI
 from mcp.client.streamable_http import streamablehttp_client
 from mcp import ClientSession
 
+# 中国大陆用 api.moonshot.cn；海外/国际版用 api.moonshot.ai
 client = OpenAI(
     api_key=os.environ["MOONSHOT_API_KEY"],
     base_url="https://api.moonshot.cn/v1",
@@ -1337,7 +1370,7 @@ async def evaluate_with_kimi(audio_id: str, ref_text: str):
                 f"请评测这段英文录音，audioId={audio_id}，参考文本：{ref_text}"}]
 
             resp = client.chat.completions.create(
-                model="moonshot-v1-8k",   # 也可选 moonshot-v1-32k / moonshot-v1-128k
+                model="kimi-k2.5",   # 旗舰；也可选 kimi-k2-turbo-preview / moonshot-v1-128k
                 messages=messages,
                 tools=oa_tools,
             )
@@ -1356,11 +1389,16 @@ async def evaluate_with_kimi(audio_id: str, ref_text: str):
                         "content": result.content[0].text,
                     })
                 final = client.chat.completions.create(
-                    model="moonshot-v1-8k", messages=messages)
+                    model="kimi-k2.5", messages=messages)
                 return final.choices[0].message.content
 
 asyncio.run(evaluate_with_kimi("audio_abc123", "Nice to meet you."))`}</CodeBlock>
-                <Callout type="tip">KIMI 的长上下文特别适合「多轮口语练习 + 历史分析」场景：把用户过去 10 次的评测 JSON 全部塞进 messages，让 KIMI 生成横跨多次练习的进步报告，这是 8k 模型做不到的。</Callout>
+                <Callout type="tip">
+                  Kimi K2.5 原生 <strong>256K 上下文 + Agent 集群协作</strong>，特别适合「多轮口语练习 + 历史分析 + 多步评测编排」场景：
+                  把用户过去 30 次评测的完整 JSON 全部塞进 messages，让 K2.5 一次性生成跨多次练习的进步报告与个性化练习路径。
+                  需要更深推理时使用 <code className="bg-white/40 dark:bg-black/30 px-1 rounded text-xs font-mono">kimi-k2-thinking</code>，
+                  追求实时反馈用 <code className="bg-white/40 dark:bg-black/30 px-1 rounded text-xs font-mono">kimi-k2-turbo-preview</code>。
+                </Callout>
               </SubDoc>
 
               <SubDoc id="llm-doubao" title="豆包 Seed 2.0（火山方舟）">
@@ -1390,6 +1428,8 @@ asyncio.run(evaluate_with_kimi("audio_abc123", "Nice to meet you."))`}</CodeBloc
                       <tr><td className="py-2 px-3 font-mono">doubao-seed-2-0-lite-260215</td><td className="py-2 px-3">Lite · 平衡</td><td className="py-2 px-3">在线辅导单轮评测 + 自然语言反馈，性价比首选</td></tr>
                       <tr><td className="py-2 px-3 font-mono">doubao-seed-2-0-mini-260215</td><td className="py-2 px-3">Mini · 极小</td><td className="py-2 px-3">高并发 / 边缘部署 / 移动端实时反馈</td></tr>
                       <tr><td className="py-2 px-3 font-mono">doubao-seed-2-0-code-preview-260215</td><td className="py-2 px-3">Code · 预览</td><td className="py-2 px-3">代码生成 / 工具编排 DSL，对评测场景非主推</td></tr>
+                      <tr><td className="py-2 px-3 font-mono">doubao-seed-1-8-251228</td><td className="py-2 px-3">1.8 · 深度思考</td><td className="py-2 px-3">支持 reasoning_effort 调档（minimal/low/medium/high），上一代深度思考强化版仍可用</td></tr>
+                      <tr><td className="py-2 px-3 font-mono">doubao-seed-1-6-251015</td><td className="py-2 px-3">1.6 · 经典</td><td className="py-2 px-3">256K 上下文经典版，已上线项目可继续沿用</td></tr>
                     </tbody>
                   </table>
                 </div>
@@ -1504,6 +1544,261 @@ client.chat.completions.create(
                 </Callout>
               </SubDoc>
 
+              <SubDoc id="llm-openai" title="OpenAI（GPT-5.1）">
+                <p>
+                  OpenAI 当前旗舰为 <strong>GPT-5.1</strong>（2025-11-13 发布），<strong>400K 上下文</strong>、128K 最大输出，
+                  支持可调推理强度 <code className="bg-muted px-1 rounded text-xs font-mono">reasoning_effort</code>（none / low / medium / high）。
+                  另有 <code className="bg-muted px-1 rounded text-xs font-mono">gpt-5.1-chat-latest</code>（ChatGPT 同款，128K 上下文，对话场景更优）和 <code className="bg-muted px-1 rounded text-xs font-mono">gpt-5-mini</code>（性价比版）。
+                  全部模型原生支持 Function Calling 与 Structured Outputs。
+                </p>
+
+                <p className="font-semibold mt-4 mb-2">环境准备</p>
+                <CodeBlock filename=".env" lang="bash">{`OPENAI_API_KEY=sk-xxxxxxxxxxxxxxxxxxxxxxxx
+CHIVOX_APP_KEY=your_chivox_app_key
+CHIVOX_SECRET_KEY=your_chivox_secret_key`}</CodeBlock>
+
+                <p className="font-semibold mt-4 mb-2">完整示例（Python · GPT-5.1 + 驰声 MCP）</p>
+                <CodeBlock filename="openai_chivox.py" lang="python">{`import os, json, asyncio
+from openai import OpenAI
+from mcp.client.streamable_http import streamablehttp_client
+from mcp import ClientSession
+
+client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
+
+async def evaluate_with_gpt(audio_id: str, ref_text: str):
+    async with streamablehttp_client("https://speech-eval.site/mcp") as (r, w, _):
+        async with ClientSession(r, w) as mcp:
+            await mcp.initialize()
+            tools = (await mcp.list_tools()).tools
+            oa_tools = [{"type": "function", "function": {
+                "name": t.name,
+                "description": t.description,
+                "parameters": t.inputSchema,
+            }} for t in tools]
+
+            messages = [
+                {"role": "system",
+                 "content": "你是英语口语教练，必须调用驰声评测工具拿真实分数后再回答。"},
+                {"role": "user",
+                 "content": f"请评测：audioId={audio_id}，参考文本：{ref_text}"},
+            ]
+
+            resp = client.chat.completions.create(
+                model="gpt-5.1",
+                messages=messages,
+                tools=oa_tools,
+                tool_choice="auto",
+                reasoning_effort="medium",   # GPT-5.1 新参数：none / low / medium / high
+            )
+
+            msg = resp.choices[0].message
+            messages.append(msg)
+            for call in (msg.tool_calls or []):
+                result = await mcp.call_tool(
+                    call.function.name,
+                    arguments=json.loads(call.function.arguments),
+                )
+                messages.append({
+                    "role": "tool",
+                    "tool_call_id": call.id,
+                    "content": result.content[0].text,
+                })
+
+            final = client.chat.completions.create(
+                model="gpt-5.1", messages=messages)
+            return final.choices[0].message.content
+
+print(asyncio.run(evaluate_with_gpt(
+    "audio_abc123", "The quick brown fox jumps over the lazy dog.")))`}</CodeBlock>
+                <Callout type="tip">
+                  <strong>选型建议：</strong>
+                  评测调用 + 诊断默认用 <code className="bg-white/40 dark:bg-black/30 px-1 rounded text-xs font-mono">gpt-5.1</code>（reasoning_effort=&quot;medium&quot;，质量与延迟平衡）；
+                  纯对话/课堂讲解用 <code className="bg-white/40 dark:bg-black/30 px-1 rounded text-xs font-mono">gpt-5.1-chat-latest</code>；
+                  高并发批量评测降本用 <code className="bg-white/40 dark:bg-black/30 px-1 rounded text-xs font-mono">gpt-5-mini</code>。
+                  深度推理 / 多步 Agent 编排把 reasoning_effort 调到 <code className="bg-white/40 dark:bg-black/30 px-1 rounded text-xs font-mono">high</code>。
+                </Callout>
+              </SubDoc>
+
+              <SubDoc id="llm-claude" title="Claude（Anthropic）">
+                <p>
+                  Anthropic 当前最新为 <strong>Claude Opus 4.7</strong>（旗舰）、<strong>Claude Sonnet 4.6</strong>（平衡）、<strong>Claude Haiku 4.5</strong>（高速）。
+                  Claude 用 <strong>Messages API</strong>（与 OpenAI Chat Completions 不同），工具协议是 <code className="bg-muted px-1 rounded text-xs font-mono">tool_use</code> / <code className="bg-muted px-1 rounded text-xs font-mono">tool_result</code> 块结构。
+                  支持文本 + 视觉输入，工具 schema 用 <code className="bg-muted px-1 rounded text-xs font-mono">input_schema</code> 字段（与 OpenAI 的 <code className="bg-muted px-1 rounded text-xs font-mono">parameters</code> 等价）。
+                </p>
+
+                <p className="font-semibold mt-4 mb-2">环境准备</p>
+                <CodeBlock filename=".env" lang="bash">{`ANTHROPIC_API_KEY=sk-ant-xxxxxxxxxxxxxxxxxxxxxxxx
+CHIVOX_APP_KEY=your_chivox_app_key
+CHIVOX_SECRET_KEY=your_chivox_secret_key`}</CodeBlock>
+
+                <p className="font-semibold mt-4 mb-2">完整示例（Python · 原生 Anthropic SDK + MCP 工具桥接）</p>
+                <CodeBlock filename="claude_chivox.py" lang="python">{`# pip install anthropic mcp
+import os, json, asyncio
+from anthropic import Anthropic
+from mcp.client.streamable_http import streamablehttp_client
+from mcp import ClientSession
+
+client = Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
+
+async def evaluate_with_claude(audio_id: str, ref_text: str):
+    async with streamablehttp_client("https://speech-eval.site/mcp") as (r, w, _):
+        async with ClientSession(r, w) as mcp:
+            await mcp.initialize()
+
+            # 把驰声 MCP 工具转成 Anthropic 风格（用 input_schema 而非 parameters）
+            tools = (await mcp.list_tools()).tools
+            anth_tools = [{
+                "name": t.name,
+                "description": t.description,
+                "input_schema": t.inputSchema,
+            } for t in tools]
+
+            messages = [{"role": "user",
+                         "content": f"请评测这段录音 audioId={audio_id}，参考文本：{ref_text}"}]
+
+            # 工具循环：Claude 可能多轮 tool_use，需逐轮回填
+            while True:
+                resp = client.messages.create(
+                    model="claude-opus-4-7",   # 或 claude-sonnet-4-6 / claude-haiku-4-5
+                    max_tokens=2048,
+                    tools=anth_tools,
+                    messages=messages,
+                    system="你是专业英语口语教练，必须调用驰声评测工具获取真实分数。",
+                )
+
+                # 把整段助手回复（含 tool_use 块）追加进 messages
+                messages.append({"role": "assistant", "content": resp.content})
+
+                if resp.stop_reason != "tool_use":
+                    # 没有更多工具调用，输出最终诊断
+                    return "".join(b.text for b in resp.content if b.type == "text")
+
+                # 提取所有 tool_use 块、并行执行、把 tool_result 回填给 Claude
+                tool_results = []
+                for block in resp.content:
+                    if block.type == "tool_use":
+                        result = await mcp.call_tool(block.name, arguments=block.input)
+                        tool_results.append({
+                            "type": "tool_result",
+                            "tool_use_id": block.id,
+                            "content": result.content[0].text,
+                        })
+                messages.append({"role": "user", "content": tool_results})
+
+print(asyncio.run(evaluate_with_claude(
+    "audio_abc123", "The quick brown fox jumps over the lazy dog.")))`}</CodeBlock>
+                <Callout type="tip">
+                  <strong>选型建议：</strong>
+                  深度评测诊断 + 复杂 Agent 编排用 <code className="bg-white/40 dark:bg-black/30 px-1 rounded text-xs font-mono">claude-opus-4-7</code>（旗舰，编程/Agent 提升明显）；
+                  日常评测 + 性价比首选 <code className="bg-white/40 dark:bg-black/30 px-1 rounded text-xs font-mono">claude-sonnet-4-6</code>；
+                  高并发实时反馈用 <code className="bg-white/40 dark:bg-black/30 px-1 rounded text-xs font-mono">claude-haiku-4-5</code>。
+                  Opus 4.5 起新增 <code className="bg-white/40 dark:bg-black/30 px-1 rounded text-xs font-mono">effort</code> 参数（low/medium/high），medium 即可达到 Sonnet 4.5 同等质量但 token 减少 ~76%。
+                </Callout>
+              </SubDoc>
+
+              <SubDoc id="llm-gemini" title="Gemini（Google）">
+                <p>
+                  Google 最新 <strong>Gemini 3 Flash</strong>（<code className="bg-muted px-1 rounded text-xs font-mono">gemini-3-flash-preview</code>，2025-12-17）以 Flash 价位提供 Pro 级推理；
+                  另有 <strong>Gemini 3.1 Pro Preview</strong>（旗舰）、<strong>Gemini 3.1 Flash-Lite Preview</strong>。
+                  全部支持 Function Calling、并行调用、组合调用，原生多模态，<code className="bg-muted px-1 rounded text-xs font-mono">thinking_level</code> 控制推理深度。
+                  推荐用 <strong>OpenAI 兼容端点</strong>，可直接复用 OpenAI SDK 与已有的 MCP 工具桥接代码。
+                </p>
+
+                <p className="font-semibold mt-4 mb-2">环境准备</p>
+                <CodeBlock filename=".env" lang="bash">{`GEMINI_API_KEY=AIzaSyxxxxxxxxxxxxxxxxxxxxxxxxxxx
+CHIVOX_APP_KEY=your_chivox_app_key
+CHIVOX_SECRET_KEY=your_chivox_secret_key`}</CodeBlock>
+
+                <p className="font-semibold mt-4 mb-2">方式一：OpenAI 兼容端点（推荐，零迁移成本）</p>
+                <CodeBlock filename="gemini_openai_compat.py" lang="python">{`import os, json, asyncio
+from openai import OpenAI
+from mcp.client.streamable_http import streamablehttp_client
+from mcp import ClientSession
+
+# Gemini OpenAI 兼容端点 —— 完全复用 OpenAI SDK
+client = OpenAI(
+    api_key=os.environ["GEMINI_API_KEY"],
+    base_url="https://generativelanguage.googleapis.com/v1beta/openai/",
+)
+
+async def evaluate_with_gemini(audio_id: str, ref_text: str):
+    async with streamablehttp_client("https://speech-eval.site/mcp") as (r, w, _):
+        async with ClientSession(r, w) as mcp:
+            await mcp.initialize()
+            tools = (await mcp.list_tools()).tools
+            oa_tools = [{"type": "function", "function": {
+                "name": t.name,
+                "description": t.description,
+                "parameters": t.inputSchema,
+            }} for t in tools]
+
+            messages = [{"role": "user",
+                         "content": f"请评测：audioId={audio_id}，参考文本：{ref_text}"}]
+
+            resp = client.chat.completions.create(
+                model="gemini-3-flash-preview",   # 或 gemini-3.1-pro-preview
+                messages=messages,
+                tools=oa_tools,
+                tool_choice="auto",
+            )
+            msg = resp.choices[0].message
+            messages.append(msg)
+            for call in (msg.tool_calls or []):
+                result = await mcp.call_tool(
+                    call.function.name,
+                    arguments=json.loads(call.function.arguments),
+                )
+                messages.append({
+                    "role": "tool",
+                    "tool_call_id": call.id,
+                    "content": result.content[0].text,
+                })
+
+            final = client.chat.completions.create(
+                model="gemini-3-flash-preview", messages=messages)
+            return final.choices[0].message.content
+
+print(asyncio.run(evaluate_with_gemini(
+    "audio_abc123", "The quick brown fox jumps over the lazy dog.")))`}</CodeBlock>
+
+                <p className="font-semibold mt-4 mb-2">方式二：原生 google-genai SDK（thinking_level / 流式工具调用）</p>
+                <CodeBlock filename="gemini_native.py" lang="python">{`# pip install google-genai
+from google import genai
+from google.genai import types
+
+client = genai.Client(api_key=os.environ["GEMINI_API_KEY"])
+
+# 把 MCP 工具转成 Gemini function_declarations
+fn_decls = [{
+    "name": t.name,
+    "description": t.description,
+    "parameters": t.inputSchema,
+} for t in tools]
+
+resp = client.models.generate_content(
+    model="gemini-3-flash-preview",
+    contents=f"评测 audioId={audio_id}，参考文本：{ref_text}",
+    config=types.GenerateContentConfig(
+        tools=[types.Tool(function_declarations=fn_decls)],
+        # Gemini 3 起：thinking_level 替代旧的 thinking_budget
+        # thinking_level="high",
+    ),
+)
+
+# tool_call 在 response.candidates[0].content.parts[0].function_call
+fc = resp.candidates[0].content.parts[0].function_call
+print(f"call: {fc.name}({dict(fc.args)})  id={fc.id}")`}</CodeBlock>
+                <Callout type="tip">
+                  <strong>选型建议：</strong>
+                  日常评测用 <code className="bg-white/40 dark:bg-black/30 px-1 rounded text-xs font-mono">gemini-3-flash-preview</code>（速度比 2.5 Pro 快 3 倍、价格 ~$0.50/M 输入），已是 Gemini App 默认；
+                  复杂多步 Agent / 编程任务用 <code className="bg-white/40 dark:bg-black/30 px-1 rounded text-xs font-mono">gemini-3.1-pro-preview</code>；
+                  超大上下文 + 多模态批处理用同系列的 <code className="bg-white/40 dark:bg-black/30 px-1 rounded text-xs font-mono">gemini-3.1-flash-lite-preview</code>。
+                </Callout>
+                <Callout type="info">
+                  <strong>注意：</strong>Gemini 3 起每次 function_call 自动带 <code className="bg-white/40 dark:bg-black/30 px-1 rounded text-xs font-mono">id</code>，多轮工具调用必须把 id 透传回 <code className="bg-white/40 dark:bg-black/30 px-1 rounded text-xs font-mono">function_response</code>，否则会被拒绝（OpenAI 兼容端点已自动处理）。
+                </Callout>
+              </SubDoc>
+
               <SubDoc id="llm-comparison" title="模型对比速查">
                 <div className="overflow-x-auto">
                   <table className="w-full text-xs">
@@ -1518,46 +1813,60 @@ client.chat.completions.create(
                     </thead>
                     <tbody className="divide-y divide-border/30">
                       <tr>
-                        <td className="py-2 pr-4 font-medium">DeepSeek V3</td>
+                        <td className="py-2 pr-4 font-medium">DeepSeek V3.2 · 非思考</td>
                         <td className="py-2 pr-4"><code className="bg-muted px-1 rounded font-mono">deepseek-chat</code></td>
-                        <td className="py-2 pr-4"><code className="bg-muted px-1 rounded font-mono">api.deepseek.com</code></td>
+                        <td className="py-2 pr-4"><code className="bg-muted px-1 rounded font-mono">api.deepseek.com/v1</code></td>
                         <td className="py-2 pr-4 text-emerald-600 dark:text-emerald-400">✓ 支持</td>
                         <td className="py-2">评测调用 + 诊断，性价比最高</td>
                       </tr>
                       <tr>
-                        <td className="py-2 pr-4 font-medium">DeepSeek R1</td>
+                        <td className="py-2 pr-4 font-medium">DeepSeek V3.2 · 思考</td>
                         <td className="py-2 pr-4"><code className="bg-muted px-1 rounded font-mono">deepseek-reasoner</code></td>
-                        <td className="py-2 pr-4"><code className="bg-muted px-1 rounded font-mono">api.deepseek.com</code></td>
-                        <td className="py-2 pr-4 text-rose-500">✗ 不支持</td>
-                        <td className="py-2">深度分析（需先用 V3 调工具）</td>
+                        <td className="py-2 pr-4"><code className="bg-muted px-1 rounded font-mono">api.deepseek.com/v1</code></td>
+                        <td className="py-2 pr-4 text-emerald-600 dark:text-emerald-400">✓ 支持（思考中可调工具）</td>
+                        <td className="py-2">深度分析 + 错因归因 + 个性化练习路径</td>
+                      </tr>
+                      <tr>
+                        <td className="py-2 pr-4 font-medium">GLM-5 · 旗舰</td>
+                        <td className="py-2 pr-4"><code className="bg-muted px-1 rounded font-mono">glm-5</code> / <code className="bg-muted px-1 rounded font-mono">glm-5.1</code></td>
+                        <td className="py-2 pr-4"><code className="bg-muted px-1 rounded font-mono">open.bigmodel.cn/…/v4</code></td>
+                        <td className="py-2 pr-4 text-emerald-600 dark:text-emerald-400">✓ 支持</td>
+                        <td className="py-2">200K 长上下文 + Agent 编排，复杂诊断</td>
+                      </tr>
+                      <tr>
+                        <td className="py-2 pr-4 font-medium">GLM-4.7</td>
+                        <td className="py-2 pr-4"><code className="bg-muted px-1 rounded font-mono">glm-4.7</code></td>
+                        <td className="py-2 pr-4"><code className="bg-muted px-1 rounded font-mono">open.bigmodel.cn/…/v4</code></td>
+                        <td className="py-2 pr-4 text-emerald-600 dark:text-emerald-400">✓ 支持</td>
+                        <td className="py-2">在线辅导日常诊断，性价比首选</td>
                       </tr>
                       <tr>
                         <td className="py-2 pr-4 font-medium">GLM-4-Flash</td>
                         <td className="py-2 pr-4"><code className="bg-muted px-1 rounded font-mono">glm-4-flash</code></td>
                         <td className="py-2 pr-4"><code className="bg-muted px-1 rounded font-mono">open.bigmodel.cn/…/v4</code></td>
                         <td className="py-2 pr-4 text-emerald-600 dark:text-emerald-400">✓ 支持</td>
-                        <td className="py-2">开发测试（免费额度）</td>
+                        <td className="py-2">免费额度，开发联调</td>
                       </tr>
                       <tr>
-                        <td className="py-2 pr-4 font-medium">GLM-4-Plus</td>
-                        <td className="py-2 pr-4"><code className="bg-muted px-1 rounded font-mono">glm-4-plus</code></td>
-                        <td className="py-2 pr-4"><code className="bg-muted px-1 rounded font-mono">open.bigmodel.cn/…/v4</code></td>
-                        <td className="py-2 pr-4 text-emerald-600 dark:text-emerald-400">✓ 支持</td>
-                        <td className="py-2">生产诊断报告，指令遵循强</td>
-                      </tr>
-                      <tr>
-                        <td className="py-2 pr-4 font-medium">KIMI 8k</td>
-                        <td className="py-2 pr-4"><code className="bg-muted px-1 rounded font-mono">moonshot-v1-8k</code></td>
+                        <td className="py-2 pr-4 font-medium">Kimi K2.5（旗舰）</td>
+                        <td className="py-2 pr-4"><code className="bg-muted px-1 rounded font-mono">kimi-k2.5</code></td>
                         <td className="py-2 pr-4"><code className="bg-muted px-1 rounded font-mono">api.moonshot.cn/v1</code></td>
                         <td className="py-2 pr-4 text-emerald-600 dark:text-emerald-400">✓ 支持</td>
-                        <td className="py-2">单次评测 + 即时反馈</td>
+                        <td className="py-2">256K + 多模态 + Agent 集群协作</td>
                       </tr>
                       <tr>
-                        <td className="py-2 pr-4 font-medium">KIMI 128k</td>
-                        <td className="py-2 pr-4"><code className="bg-muted px-1 rounded font-mono">moonshot-v1-128k</code></td>
+                        <td className="py-2 pr-4 font-medium">Kimi K2 Thinking</td>
+                        <td className="py-2 pr-4"><code className="bg-muted px-1 rounded font-mono">kimi-k2-thinking</code></td>
                         <td className="py-2 pr-4"><code className="bg-muted px-1 rounded font-mono">api.moonshot.cn/v1</code></td>
                         <td className="py-2 pr-4 text-emerald-600 dark:text-emerald-400">✓ 支持</td>
-                        <td className="py-2">多轮历史 + 学习进度报告</td>
+                        <td className="py-2">多步推理 + 多轮历史进度报告</td>
+                      </tr>
+                      <tr>
+                        <td className="py-2 pr-4 font-medium">Kimi K2 Turbo</td>
+                        <td className="py-2 pr-4"><code className="bg-muted px-1 rounded font-mono">kimi-k2-turbo-preview</code></td>
+                        <td className="py-2 pr-4"><code className="bg-muted px-1 rounded font-mono">api.moonshot.cn/v1</code></td>
+                        <td className="py-2 pr-4 text-emerald-600 dark:text-emerald-400">✓ 支持</td>
+                        <td className="py-2">高速响应版，实时反馈</td>
                       </tr>
                       <tr>
                         <td className="py-2 pr-4 font-medium">豆包 Seed 2.0 Pro</td>
@@ -1580,10 +1889,68 @@ client.chat.completions.create(
                         <td className="py-2 pr-4 text-emerald-600 dark:text-emerald-400">✓ 支持</td>
                         <td className="py-2">移动端 / 边缘部署 / 低延迟实时反馈</td>
                       </tr>
+                      <tr>
+                        <td className="py-2 pr-4 font-medium">GPT-5.1（旗舰）</td>
+                        <td className="py-2 pr-4"><code className="bg-muted px-1 rounded font-mono">gpt-5.1</code></td>
+                        <td className="py-2 pr-4"><code className="bg-muted px-1 rounded font-mono">api.openai.com/v1</code></td>
+                        <td className="py-2 pr-4 text-emerald-600 dark:text-emerald-400">✓ 支持（reasoning_effort 可调）</td>
+                        <td className="py-2">400K 上下文 + 深度推理 + 复杂 Agent 编排</td>
+                      </tr>
+                      <tr>
+                        <td className="py-2 pr-4 font-medium">GPT-5.1 Chat</td>
+                        <td className="py-2 pr-4"><code className="bg-muted px-1 rounded font-mono">gpt-5.1-chat-latest</code></td>
+                        <td className="py-2 pr-4"><code className="bg-muted px-1 rounded font-mono">api.openai.com/v1</code></td>
+                        <td className="py-2 pr-4 text-emerald-600 dark:text-emerald-400">✓ 支持</td>
+                        <td className="py-2">ChatGPT 同款，对话 / 课堂讲解</td>
+                      </tr>
+                      <tr>
+                        <td className="py-2 pr-4 font-medium">GPT-5 mini</td>
+                        <td className="py-2 pr-4"><code className="bg-muted px-1 rounded font-mono">gpt-5-mini</code></td>
+                        <td className="py-2 pr-4"><code className="bg-muted px-1 rounded font-mono">api.openai.com/v1</code></td>
+                        <td className="py-2 pr-4 text-emerald-600 dark:text-emerald-400">✓ 支持</td>
+                        <td className="py-2">高并发 / 批量评测降本</td>
+                      </tr>
+                      <tr>
+                        <td className="py-2 pr-4 font-medium">Claude Opus 4.7</td>
+                        <td className="py-2 pr-4"><code className="bg-muted px-1 rounded font-mono">claude-opus-4-7</code></td>
+                        <td className="py-2 pr-4"><code className="bg-muted px-1 rounded font-mono">api.anthropic.com/v1</code></td>
+                        <td className="py-2 pr-4 text-emerald-600 dark:text-emerald-400">✓ 支持（tool_use 协议）</td>
+                        <td className="py-2">旗舰，编程 / Agent / 深度诊断</td>
+                      </tr>
+                      <tr>
+                        <td className="py-2 pr-4 font-medium">Claude Sonnet 4.6</td>
+                        <td className="py-2 pr-4"><code className="bg-muted px-1 rounded font-mono">claude-sonnet-4-6</code></td>
+                        <td className="py-2 pr-4"><code className="bg-muted px-1 rounded font-mono">api.anthropic.com/v1</code></td>
+                        <td className="py-2 pr-4 text-emerald-600 dark:text-emerald-400">✓ 支持</td>
+                        <td className="py-2">日常评测 + 性价比首选</td>
+                      </tr>
+                      <tr>
+                        <td className="py-2 pr-4 font-medium">Claude Haiku 4.5</td>
+                        <td className="py-2 pr-4"><code className="bg-muted px-1 rounded font-mono">claude-haiku-4-5</code></td>
+                        <td className="py-2 pr-4"><code className="bg-muted px-1 rounded font-mono">api.anthropic.com/v1</code></td>
+                        <td className="py-2 pr-4 text-emerald-600 dark:text-emerald-400">✓ 支持</td>
+                        <td className="py-2">高并发实时反馈</td>
+                      </tr>
+                      <tr>
+                        <td className="py-2 pr-4 font-medium">Gemini 3 Flash</td>
+                        <td className="py-2 pr-4"><code className="bg-muted px-1 rounded font-mono">gemini-3-flash-preview</code></td>
+                        <td className="py-2 pr-4"><code className="bg-muted px-1 rounded font-mono">…/v1beta/openai/</code></td>
+                        <td className="py-2 pr-4 text-emerald-600 dark:text-emerald-400">✓ 支持（并行 / 组合）</td>
+                        <td className="py-2">Pro 级推理 + Flash 价位，Gemini App 默认</td>
+                      </tr>
+                      <tr>
+                        <td className="py-2 pr-4 font-medium">Gemini 3.1 Pro Preview</td>
+                        <td className="py-2 pr-4"><code className="bg-muted px-1 rounded font-mono">gemini-3.1-pro-preview</code></td>
+                        <td className="py-2 pr-4"><code className="bg-muted px-1 rounded font-mono">…/v1beta/openai/</code></td>
+                        <td className="py-2 pr-4 text-emerald-600 dark:text-emerald-400">✓ 支持（thinking_level 可调）</td>
+                        <td className="py-2">复杂多步 Agent + 编程任务</td>
+                      </tr>
                     </tbody>
                   </table>
                 </div>
-                <Callout type="info">所有模型均通过 <strong>OpenAI Python SDK</strong>（<code className="bg-black/5 dark:bg-white/10 px-1 rounded text-xs font-mono">openai</code> 包）调用，仅需替换 <code className="bg-black/5 dark:bg-white/10 px-1 rounded text-xs font-mono">base_url</code> 和 <code className="bg-black/5 dark:bg-white/10 px-1 rounded text-xs font-mono">api_key</code>，驰声 MCP 侧代码<strong>无需改动</strong>。</Callout>
+                <Callout type="info">
+                  除 <strong>Claude</strong> 用 Anthropic 原生 SDK（<code className="bg-black/5 dark:bg-white/10 px-1 rounded text-xs font-mono">anthropic</code> 包，<code className="bg-black/5 dark:bg-white/10 px-1 rounded text-xs font-mono">tool_use</code> / <code className="bg-black/5 dark:bg-white/10 px-1 rounded text-xs font-mono">tool_result</code> 协议）外，其余所有模型均可通过 <strong>OpenAI Python SDK</strong>（<code className="bg-black/5 dark:bg-white/10 px-1 rounded text-xs font-mono">openai</code> 包）调用，仅需替换 <code className="bg-black/5 dark:bg-white/10 px-1 rounded text-xs font-mono">base_url</code> 与 <code className="bg-black/5 dark:bg-white/10 px-1 rounded text-xs font-mono">api_key</code>，驰声 MCP 侧代码<strong>无需改动</strong>。
+                </Callout>
               </SubDoc>
 
               <SubDoc id="code-selfhosted-agent" title="④ 自研后端 Agent（FastAPI / NestJS / Spring）">

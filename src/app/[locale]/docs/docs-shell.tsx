@@ -168,7 +168,7 @@ export function DocsShell({ nav, backLabel, title, subtitle, children }: DocsShe
           <ArrowLeft className="h-4 w-4" /> {backLabel}
         </Link>
 
-        <h1 className="text-3xl md:text-4xl font-bold tracking-tight mb-2">{title}</h1>
+        <h1 className="text-3xl md:text-4xl font-semibold tracking-[-0.015em] mb-2">{title}</h1>
         <p className="text-muted-foreground mb-10">{subtitle}</p>
 
         <div className="grid gap-8 md:gap-10 lg:grid-cols-[18rem_minmax(0,1fr)]">

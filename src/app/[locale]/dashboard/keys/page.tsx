@@ -86,7 +86,7 @@ export default function KeysPage() {
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-xl font-bold tracking-tight">{t.title}</h1>
+        <h1 className="text-xl font-semibold tracking-[-0.015em]">{t.title}</h1>
       </div>
 
       <button
@@ -308,7 +308,7 @@ function CreateKeyModal({
       <div className="absolute inset-0 bg-black/50" onClick={onClose} />
       <div className="relative w-full max-w-lg bg-background rounded-xl border border-border shadow-xl p-6 max-h-[85vh] overflow-y-auto">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-lg font-bold">{t.title}</h2>
+          <h2 className="text-lg font-semibold">{t.title}</h2>
           <button
             onClick={onClose}
             className="h-8 w-8 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
