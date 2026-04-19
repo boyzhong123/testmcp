@@ -16,7 +16,8 @@
     "title_line1": "Speech Assessment,",
     "title_line2": "Readable to LLMs",
     "description": "One MCP call gives your LLM phoneme-level assessment data — diagnosis, correction and personalized practice, out of the box.",
-    "cta_primary": "Try It Free",
+    "cta_primary": "Live Demo",
+    "cta_primary_hint": "No signup required",
     "cta_secondary": "Read the Docs",
     "trusted": "Already serving over",
     "typewriter_lines": [
@@ -109,12 +110,12 @@
   "About": {
     "title": "About Chivox",
     "description": "Suzhou Chivox Information Technology Co., Ltd. specializes in intelligent speech assessment technology, with years of deep experience in educational technology. We are committed to delivering advanced speech recognition and assessment capabilities through standardized protocols, lowering the technical barrier for education products so that every developer can easily build professional voice-based teaching applications.",
-    "stat1_value": "10+",
-    "stat1_label": "Years of R&D",
-    "stat2_value": "100M+",
-    "stat2_label": "Users Served",
+    "stat1_value": "14",
+    "stat1_label": "Industry-First Technologies",
+    "stat2_value": "13",
+    "stat2_label": "Years of Exam Practice",
     "stat3_value": "100+",
-    "stat3_label": "Enterprise Partners"
+    "stat3_label": "Cities Exam-Adapted"
   },
   "Footer": {
     "copyright": "© {year} Suzhou Chivox Information Technology Co., Ltd. All rights reserved.",

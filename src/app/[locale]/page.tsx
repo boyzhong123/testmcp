@@ -195,10 +195,10 @@ export default async function HomePage() {
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-px bg-border/40 border border-border/40 rounded-lg overflow-hidden">
               {[
-                { value: 10, suffix: isZh ? '+ 年' : '+ yrs', label: zhEn('引擎研发积累', 'Engine R&D Experience') },
-                { value: 1, suffix: isZh ? '亿+' : '00M+', label: zhEn('已服务学习者', 'Learners Served') },
-                { value: 95, suffix: '%+', label: zhEn('与专家评分一致', 'Expert-Level Consistency') },
-                { value: 100, suffix: '+', label: zhEn('接入企业客户', 'Enterprise Integrations') },
+                { value: 20, suffix: isZh ? ' 年' : ' yrs', label: zhEn('深耕 AI 领域', 'Deep in AI') },
+                { value: 10, suffix: isZh ? ' 亿+' : 'B+', label: zhEn('全球累计用户', 'Global Users') },
+                { value: 185, suffix: isZh ? ' 个' : '', label: zhEn('国家和地区', 'Countries & Regions') },
+                { value: 95, suffix: '%+', label: zhEn('与专家评分一致', 'Expert Consistency') },
               ].map((m) => (
                 <div key={m.label} className="bg-background/70 backdrop-blur-sm px-4 py-4 text-center">
                   <div className="text-xl md:text-2xl font-semibold tracking-[-0.015em] tabular-nums">
@@ -223,7 +223,7 @@ export default async function HomePage() {
         <div className="container mx-auto px-6 relative">
           {/* 标题 */}
           <FadeUp className="text-center mb-10">
-            <span className="inline-block text-[11px] tracking-[0.2em] uppercase text-muted-foreground mb-3">Interactive Demo · 零门槛试用</span>
+            <span className="inline-block text-[11px] tracking-[0.2em] uppercase text-muted-foreground mb-3">{zhEn('Interactive Demo · 零门槛试用', 'Interactive Demo · Zero Barrier')}</span>
             <h2 className="text-2xl md:text-3xl font-semibold tracking-[-0.015em] mb-3">
               {zhEn('30 秒看懂 Chivox MCP', 'Understand Chivox MCP in 30s')} <span className="text-muted-foreground font-normal">· {zhEn('评测 → 诊断 → 练习', 'Assess → Diagnose → Practice')}</span>
             </h2>
@@ -371,7 +371,7 @@ export default async function HomePage() {
                   {zhEn('兼容常见大模型', 'Works with common frontier models')}
                 </div>
                 <div className="flex flex-wrap gap-1.5">
-                  {['GPT-5', 'Claude Sonnet 4.6', 'Gemini 2.5', 'Qwen', 'DeepSeek', 'GLM-4.6'].map((m) => (
+                  {['GPT', 'Claude', 'Gemini', 'Qwen', 'DeepSeek', 'GLM'].map((m) => (
                     <span key={m} className="px-2 py-0.5 rounded border border-border/60 bg-muted/40 text-[10px] font-mono text-muted-foreground">
                       {m}
                     </span>
@@ -719,7 +719,7 @@ export default async function HomePage() {
       <section id="use-cases" data-fp-section className="min-h-screen flex flex-col justify-center py-14 md:py-20 border-t border-border/40 bg-muted/20">
         <div className="container mx-auto px-6">
           <FadeUp className="text-center mb-10">
-            <span className="inline-block text-[11px] tracking-[0.2em] uppercase text-muted-foreground mb-3">Scenarios · 01 / 02</span>
+            <span className="inline-block text-[11px] tracking-[0.2em] uppercase text-muted-foreground mb-3">{zhEn('场景 · 01 / 02', 'Scenarios · 01 / 02')}</span>
             <h2 className="text-2xl md:text-3xl font-semibold tracking-[-0.015em] mb-3">{zhEn('AI 原生场景 · 让任意 Agent 都会听会说', 'AI-native Scenarios · Give any agent ears and voice')}</h2>
             <p className="text-muted-foreground max-w-2xl mx-auto leading-relaxed">
               {zhEn('驰声评分引擎与人工专家一致性 95%+，这份考试级能力通过 MCP 走进每个 AI 产品里。LLM 只要调用一次，就多了一只"听得懂人说话"的耳朵。', 'Chivox scoring aligns with human experts at 95%+. Through MCP, this exam-grade ability enters any AI product so one tool call gives your LLM a real listening ear.')}
@@ -802,7 +802,7 @@ export default async function HomePage() {
           <FadeUp delay={0.2} className="mt-10 flex flex-wrap items-center justify-center gap-4 sm:gap-6 text-xs text-muted-foreground">
             <div className="flex items-center gap-2">
               <span className="h-1.5 w-1.5 rounded-full bg-foreground/70" />
-              {zhEn('95%+ 与专家一致性', '95%+ expert consistency')}
+              {zhEn('92 亿次年评测量', '9.2B evaluations / year')}
             </div>
             <span className="h-3 w-px bg-border" />
             <div className="flex items-center gap-2">
@@ -812,7 +812,7 @@ export default async function HomePage() {
             <span className="h-3 w-px bg-border" />
             <div className="flex items-center gap-2">
               <span className="h-1.5 w-1.5 rounded-full bg-foreground/70" />
-              {zhEn('服务学习者 1 亿+', '100M+ learners served')}
+              {zhEn('185 个国家和地区覆盖', '185 countries & regions')}
             </div>
           </FadeUp>
         </div>
@@ -822,7 +822,7 @@ export default async function HomePage() {
       <section id="use-cases-b" data-fp-section className="min-h-screen flex flex-col justify-center py-14 md:py-20 border-t border-border/40">
         <div className="container mx-auto px-6">
           <FadeUp className="text-center mb-10">
-            <span className="inline-block text-[11px] tracking-[0.2em] uppercase text-muted-foreground mb-3">Scenarios · 02 / 02</span>
+            <span className="inline-block text-[11px] tracking-[0.2em] uppercase text-muted-foreground mb-3">{zhEn('场景 · 02 / 02', 'Scenarios · 02 / 02')}</span>
             <h2 className="text-2xl md:text-3xl font-semibold tracking-[-0.015em] mb-3">{zhEn('嵌入你熟悉的载体 · 零改造接入', 'Embed into familiar products · zero rework')}</h2>
             <p className="text-muted-foreground max-w-2xl mx-auto leading-relaxed">
               {zhEn('不用从零搭 App、不用改造现有系统。在 IM、内容生产工具、出海产品里，一条 MCP 调用让"听说能力"融进工作流里，用户零学习成本就能拥有。', 'No need to build from scratch or refactor existing systems. In IM, content tools, and global apps, one MCP call injects listening/speaking capabilities into your workflow.')}
@@ -1058,7 +1058,7 @@ export default async function HomePage() {
                   { icon: Check, text: zhEn('MCP 标准协议接入', 'MCP standard protocol integration') },
                   { icon: Check, text: zhEn('中 / 英双语评测', 'Chinese / English bilingual evaluation') },
                   { icon: Check, text: zhEn('流式 + 文件双模式', 'Streaming + file dual mode') },
-                  { icon: Check, text: zhEn('20+ 细粒度评分维度', '20+ fine-grained scoring dimensions') },
+                  { icon: Check, text: zhEn('8 主维度 + 音素级子维度', '8 main dimensions + phoneme-level sub-metrics') },
                 ].map((item) => (
                   <div key={item.text} className="flex items-center gap-2 text-muted-foreground">
                     <item.icon className="h-3.5 w-3.5 text-foreground shrink-0" />
@@ -1089,13 +1089,13 @@ export default async function HomePage() {
             <StaggerContainer className="grid grid-cols-3 gap-px bg-border/40 border border-border/40 rounded-xl overflow-hidden max-w-3xl mx-auto mb-10" staggerDelay={0.12}>
               <StaggerItem className="bg-background/80 backdrop-blur-sm px-4 py-6 text-center">
                 <div className="text-3xl md:text-4xl font-semibold tracking-[-0.015em]">
-                  <CountUp value={10} suffix="+" />
+                  <CountUp value={14} suffix={isZh ? ' 项' : ''} />
                 </div>
                 <div className="text-xs text-muted-foreground mt-1.5">{tAbout('stat1_label')}</div>
               </StaggerItem>
               <StaggerItem className="bg-background/80 backdrop-blur-sm px-4 py-6 text-center">
                 <div className="text-3xl md:text-4xl font-semibold tracking-[-0.015em]">
-                  <CountUp value={1} suffix={isZh ? '亿+' : '00M+'} />
+                  <CountUp value={13} suffix={isZh ? ' 年' : ' yrs'} />
                 </div>
                 <div className="text-xs text-muted-foreground mt-1.5">{tAbout('stat2_label')}</div>
               </StaggerItem>
@@ -1116,7 +1116,7 @@ export default async function HomePage() {
                   {[
                     { year: '2011', label: zhEn('驰声创立，专注语音评测', 'Chivox founded, focused on speech evaluation') },
                     { year: '2015', label: zhEn('入选教育部考试中心白名单', 'Listed by national education testing center') },
-                    { year: '2019', label: zhEn('全球学习者突破 1 亿', '100M+ global learners served') },
+                    { year: '2019', label: zhEn('全球学习者突破 10 亿', '1B+ global learners served') },
                     { year: '2023', label: zhEn('接入 GPT，启动 LLM 语义分析', 'Integrated GPT for LLM semantic analysis') },
                     { year: '2025', label: zhEn('开源 Chivox MCP Server', 'Open-sourced Chivox MCP Server') },
                     { year: '2026', label: zhEn('MCP v2 · 16 工具全量开放', 'MCP v2 · 16 tools fully open') },

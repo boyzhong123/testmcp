@@ -1,0 +1,993 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>Chivox MCP — Product Introduction</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:#09090b;color:#fff;
+  font-family:-apple-system,"PingFang SC","Helvetica Neue",sans-serif;overflow:hidden}
+
+/* ─── Cover ──────────────────────────────────────── */
+#cover{
+  position:fixed;inset:0;z-index:200;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  background:radial-gradient(ellipse 140% 80% at 50% 0%, #1a1a2e 0%, #09090b 55%);
+  gap:0;
+  transition:opacity .6s ease;
+}
+#cover.hide{opacity:0;pointer-events:none}
+
+.cover-badge{
+  font-size:12px;letter-spacing:.22em;text-transform:uppercase;
+  opacity:.55;margin-bottom:28px;font-weight:500;
+}
+.cover-title{
+  font-size:clamp(52px,8vw,112px);font-weight:900;letter-spacing:-.03em;
+  line-height:1;text-align:center;
+  color:#fff;
+  margin-bottom:8px;
+}
+.cover-title span{
+  background:linear-gradient(90deg,#6366f1,#0ea5e9,#10b981);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+}
+.cover-sub{
+  font-size:clamp(16px,1.8vw,22px);opacity:.65;text-align:center;
+  max-width:560px;line-height:1.6;margin-bottom:52px;font-weight:400;
+}
+.cover-thumb{
+  width:min(780px,82vw);border-radius:16px;overflow:hidden;
+  box-shadow:0 40px 120px rgba(0,0,0,.7),0 0 0 1px rgba(255,255,255,.07);
+  margin-bottom:44px;position:relative;
+}
+.cover-thumb img{width:100%;display:block}
+.cover-thumb::after{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(to top,rgba(9,9,11,.9) 0%,transparent 38%);
+}
+.play-btn{
+  position:relative;z-index:1;
+  display:flex;align-items:center;gap:14px;
+  background:linear-gradient(135deg,#2563eb,#7c3aed);
+  color:#fff;border:none;border-radius:999px;
+  padding:18px 44px;font-size:19px;font-weight:700;cursor:pointer;
+  font-family:inherit;letter-spacing:.03em;
+  box-shadow:0 20px 60px rgba(124,58,237,.55);
+  transition:transform .2s,box-shadow .2s;
+}
+.play-btn:hover{transform:translateY(-3px);box-shadow:0 28px 72px rgba(124,58,237,.65)}
+.play-btn svg{width:22px;height:22px;fill:#fff}
+.cover-hint{margin-top:16px;font-size:13px;opacity:.4;letter-spacing:.06em}
+
+/* ─── Slides ─────────────────────────────────────── */
+.stage{position:fixed;inset:0}
+.slide{
+  position:absolute;inset:0;opacity:0;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:48px 48px 100px;
+  background:radial-gradient(ellipse 120% 80% at 50% 20%,#141418 0%,#09090b 65%);
+  transition:opacity 1.2s ease, transform 1.2s ease;
+  transform:scale(0.96);
+}
+.slide.active{opacity:1;transform:scale(1)}
+
+/* ─── Animations (continuous, SLOW & BIG) ────────── */
+/* 入场动画 - 更慢更大 */
+@keyframes enterScale {
+  from { transform: scale(0.85); opacity: 0; filter: blur(6px); }
+  to { transform: scale(1); opacity: 1; filter: blur(0); }
+}
+@keyframes enterUp {
+  from { transform: translateY(30px); opacity: 0; filter: blur(4px); }
+  to { transform: translateY(0); opacity: 1; filter: blur(0); }
+}
+
+/* 持续呼吸缩放 - 幅度更大，更慢 */
+@keyframes breathe {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.06); }
+}
+/* 持续的缓慢漂浮 - 幅度更大 */
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-12px); }
+}
+/* Ken Burns 缓慢平移 */
+@keyframes kenBurns {
+  0%, 100% { transform: scale(1) translate(0, 0); }
+  25% { transform: scale(1.04) translate(-0.5%, -0.3%); }
+  50% { transform: scale(1.06) translate(0.3%, 0.5%); }
+  75% { transform: scale(1.04) translate(0.5%, -0.3%); }
+}
+/* 光晕脉动 - 更明显 */
+@keyframes pulseGlow {
+  0%, 100% { box-shadow: 0 24px 80px rgba(0,0,0,.6), 0 0 0 1px rgba(255,255,255,.07); }
+  50% { box-shadow: 0 40px 130px rgba(99,102,241,.45), 0 0 0 1px rgba(129,140,248,.25); }
+}
+/* 卡片轻微脉动 - 幅度更大 */
+@keyframes cardPulse {
+  0%, 100% { transform: scale(1); background:rgba(255,255,255,.04); }
+  50% { transform: scale(1.08); background:rgba(255,255,255,.1); }
+}
+/* 标题渐变流动 */
+@keyframes gradientShift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+/* 文字光感 - 更明显 */
+@keyframes textGlow {
+  0%, 100% { text-shadow: 0 0 0 transparent; }
+  50% { text-shadow: 0 0 32px rgba(129,140,248,.5); }
+}
+/* 缓慢旋转 */
+@keyframes slowRotate {
+  0%, 100% { transform: scale(1) rotate(0deg); }
+  25% { transform: scale(1.03) rotate(0.3deg); }
+  50% { transform: scale(1.06) rotate(0deg); }
+  75% { transform: scale(1.03) rotate(-0.3deg); }
+}
+/* 流程步骤连接线动画 */
+@keyframes drawLine {
+  from { width: 0; }
+  to { width: 100%; }
+}
+/* 图标缓慢脉冲 */
+@keyframes iconPulse {
+  0%, 100% { transform: scale(1); opacity: 0.9; }
+  50% { transform: scale(1.15); opacity: 1; }
+}
+
+/* 截图：Ken Burns + 光晕 */
+.slide.active .screenshot-wrap {
+  animation:
+    enterScale 1.5s ease-out,
+    kenBurns 18s ease-in-out 1.5s infinite,
+    pulseGlow 6s ease-in-out 1.5s infinite;
+}
+
+/* 标题：入场后持续漂浮 + 渐变流动 */
+.slide.active .slide-title {
+  animation:
+    enterScale 1.2s ease-out,
+    float 8s ease-in-out 1.2s infinite;
+}
+.slide.active .slide-title.grad {
+  background-size: 200% 200%;
+  animation:
+    enterScale 1.2s ease-out,
+    float 8s ease-in-out 1.2s infinite,
+    gradientShift 10s ease-in-out 1.2s infinite;
+}
+
+/* eyebrow + body */
+.slide.active .slide-eyebrow {
+  animation: enterUp 1s ease-out, textGlow 5s ease-in-out 1s infinite;
+}
+.slide.active .slide-body {
+  animation: enterUp 1.2s ease-out 0.2s both, float 9s ease-in-out 1.4s infinite;
+}
+
+/* caption：入场后轻微漂浮 */
+.slide.active .caption {
+  animation:
+    enterUp 1.2s ease-out 0.3s both,
+    float 7s ease-in-out 1.5s infinite;
+}
+
+/* 对比卡片 */
+.slide.active .compare {
+  animation: enterScale 1.2s ease-out 0.2s both;
+}
+.slide.active .compare-card {
+  animation: breathe 7s ease-in-out 1.4s infinite;
+}
+.slide.active .compare-card.bad { animation-delay: 1.4s; }
+.slide.active .compare-card.good { animation-delay: 2.4s; }
+
+/* 网格 */
+.slide.active .grid-wrap {
+  animation: enterScale 1.2s ease-out 0.2s both;
+}
+.slide.active .grid-card {
+  animation:
+    enterUp 0.8s ease-out both,
+    cardPulse 6s ease-in-out infinite;
+}
+.slide.active .grid-card:nth-child(1) { animation-delay: 0.2s, 1.5s; }
+.slide.active .grid-card:nth-child(2) { animation-delay: 0.3s, 2.0s; }
+.slide.active .grid-card:nth-child(3) { animation-delay: 0.4s, 2.5s; }
+.slide.active .grid-card:nth-child(4) { animation-delay: 0.5s, 1.8s; }
+.slide.active .grid-card:nth-child(5) { animation-delay: 0.6s, 2.3s; }
+.slide.active .grid-card:nth-child(6) { animation-delay: 0.7s, 2.8s; }
+.slide.active .grid-card:nth-child(7) { animation-delay: 0.8s, 2.1s; }
+.slide.active .grid-card:nth-child(8) { animation-delay: 0.9s, 2.6s; }
+.slide.active .grid-card:nth-child(9) { animation-delay: 1.0s, 3.1s; }
+
+/* outro url */
+.slide.active .url-mono {
+  animation: enterUp 1s ease-out 0.4s both, textGlow 4s ease-in-out 1.4s infinite;
+}
+
+/* 流程步骤 */
+.slide.active .flow-steps {
+  animation: enterScale 1.2s ease-out 0.2s both;
+}
+.slide.active .flow-step {
+  animation: enterUp 0.8s ease-out both, breathe 7s ease-in-out infinite;
+}
+.slide.active .flow-step:nth-child(1) { animation-delay: 0.3s, 1.5s; }
+.slide.active .flow-step:nth-child(2) { animation-delay: 0.5s, 1.8s; }
+.slide.active .flow-step:nth-child(3) { animation-delay: 0.7s, 2.1s; }
+.slide.active .flow-step:nth-child(4) { animation-delay: 0.9s, 2.4s; }
+.slide.active .flow-step:nth-child(5) { animation-delay: 1.1s, 2.7s; }
+.slide.active .flow-step:nth-child(6) { animation-delay: 1.3s, 3.0s; }
+
+/* 三大价值卡 */
+.slide.active .value-cards {
+  animation: enterScale 1.2s ease-out 0.2s both;
+}
+.slide.active .value-card {
+  animation: enterUp 1s ease-out both, breathe 8s ease-in-out infinite;
+}
+.slide.active .value-card:nth-child(1) { animation-delay: 0.3s, 1.5s; }
+.slide.active .value-card:nth-child(2) { animation-delay: 0.5s, 2.0s; }
+.slide.active .value-card:nth-child(3) { animation-delay: 0.7s, 2.5s; }
+.slide.active .value-card .value-icon {
+  animation: iconPulse 5s ease-in-out 1.5s infinite;
+}
+
+/* 双模式卡 */
+.slide.active .dual-mode {
+  animation: enterScale 1.2s ease-out 0.2s both;
+}
+.slide.active .mode-card {
+  animation: enterUp 1s ease-out both, breathe 7s ease-in-out infinite;
+}
+.slide.active .mode-card:nth-child(1) { animation-delay: 0.3s, 1.5s; }
+.slide.active .mode-card:nth-child(2) { animation-delay: 0.6s, 2.0s; }
+
+/* LLM 分析演示 */
+.slide.active .analysis-demo {
+  animation: enterScale 1.2s ease-out 0.2s both;
+}
+.slide.active .analysis-step {
+  animation: enterUp 0.8s ease-out both, float 8s ease-in-out infinite;
+}
+.slide.active .analysis-step:nth-child(1) { animation-delay: 0.3s, 1.5s; }
+.slide.active .analysis-step:nth-child(2) { animation-delay: 0.6s, 2.0s; }
+.slide.active .analysis-step:nth-child(3) { animation-delay: 0.9s, 2.5s; }
+
+/* text slides */
+.slide.text-slide{text-align:center}
+.slide-eyebrow{
+  font-size:12px;letter-spacing:.2em;text-transform:uppercase;
+  opacity:.5;margin-bottom:20px;font-weight:500;
+}
+.slide-title{
+  font-size:clamp(36px,5vw,80px);font-weight:900;letter-spacing:-.025em;
+  line-height:1.05;margin-bottom:20px;
+}
+.slide-title.grad{
+  background:linear-gradient(135deg,#fff 0%,#c4b5fd 50%,#60a5fa 100%);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+}
+.slide-body{font-size:clamp(16px,1.6vw,22px);opacity:.72;max-width:680px;line-height:1.75}
+.slide-body b{color:#fff;opacity:1}
+
+/* screenshot slides */
+.screenshot-wrap{
+  width:min(1000px,92vw);border-radius:14px;overflow:hidden;
+  box-shadow:0 24px 80px rgba(0,0,0,.6),0 0 0 1px rgba(255,255,255,.07);
+  flex-shrink:0;margin-bottom:24px;
+  max-height:calc(100vh - 220px);
+}
+.screenshot-wrap img{width:100%;display:block;background:#111}
+
+.caption{text-align:center}
+.caption h2{font-size:clamp(20px,2.4vw,32px);font-weight:700;margin-bottom:8px;letter-spacing:-.01em}
+.caption p{font-size:clamp(12px,1.2vw,16px);opacity:.6;letter-spacing:.05em}
+
+/* grid slide */
+.grid-wrap{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;max-width:900px;width:92%;margin-top:24px}
+.grid-card{
+  padding:18px 16px;border-radius:12px;
+  background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);
+  font-size:clamp(14px,1.4vw,18px);font-weight:600;text-align:center;
+  display:flex;flex-direction:column;gap:4px;
+}
+.grid-card span{font-size:.55em;opacity:.55;font-weight:400}
+
+/* compare slide */
+.compare{display:grid;grid-template-columns:1fr 1fr;gap:24px;max-width:900px;width:88%;margin-top:24px}
+.compare-card{border-radius:16px;padding:28px 24px}
+.compare-card.bad{background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2)}
+.compare-card.good{background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.25)}
+.compare-card h3{font-size:16px;font-weight:700;margin-bottom:16px;opacity:.85;letter-spacing:.04em}
+.compare-card li{list-style:none;font-size:15px;opacity:.72;padding:5px 0;line-height:1.5}
+.compare-card.bad li::before{content:"✕  ";color:#f87171;font-weight:700}
+.compare-card.good li::before{content:"✓  ";color:#34d399;font-weight:700}
+
+/* ─── NEW: Flow Steps (6 步流程) ─────────────────── */
+.flow-steps{
+  display:flex;gap:12px;align-items:center;
+  max-width:1100px;width:94%;margin-top:28px;flex-wrap:wrap;justify-content:center;
+}
+.flow-step{
+  display:flex;flex-direction:column;align-items:center;gap:8px;
+  padding:16px 14px;border-radius:14px;
+  background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);
+  min-width:120px;flex:1;max-width:160px;
+}
+.flow-step .step-num{
+  width:28px;height:28px;border-radius:50%;
+  background:linear-gradient(135deg,#6366f1,#0ea5e9);
+  display:flex;align-items:center;justify-content:center;
+  font-size:13px;font-weight:700;
+}
+.flow-step .step-icon{font-size:24px;margin:4px 0}
+.flow-step .step-label{font-size:13px;font-weight:600;text-align:center;opacity:.9}
+.flow-step .step-desc{font-size:10px;opacity:.5;text-align:center}
+.flow-arrow{font-size:20px;opacity:.3;flex-shrink:0}
+
+/* ─── NEW: Value Cards (三大价值) ────────────────── */
+.value-cards{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:20px;
+  max-width:960px;width:92%;margin-top:28px;
+}
+.value-card{
+  padding:28px 22px;border-radius:16px;
+  background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);
+  display:flex;flex-direction:column;align-items:center;text-align:center;gap:12px;
+}
+.value-card .value-icon{
+  font-size:36px;
+  width:64px;height:64px;
+  display:flex;align-items:center;justify-content:center;
+  border-radius:16px;
+  background:linear-gradient(135deg,rgba(99,102,241,.15),rgba(14,165,233,.15));
+}
+.value-card h3{font-size:18px;font-weight:700;margin:4px 0}
+.value-card p{font-size:13px;opacity:.6;line-height:1.6}
+.value-card .value-tags{
+  display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-top:4px;
+}
+.value-card .value-tags span{
+  font-size:10px;padding:4px 10px;border-radius:99px;
+  background:rgba(99,102,241,.15);color:#a5b4fc;font-weight:500;
+}
+
+/* ─── NEW: Dual Mode (双模式) ────────────────────── */
+.dual-mode{
+  display:grid;grid-template-columns:1fr 1fr;gap:24px;
+  max-width:900px;width:90%;margin-top:28px;
+}
+.mode-card{
+  padding:28px 24px;border-radius:16px;
+  background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.1);
+  display:flex;flex-direction:column;gap:12px;
+}
+.mode-card .mode-header{
+  display:flex;align-items:center;gap:12px;
+}
+.mode-card .mode-icon{
+  font-size:28px;
+  width:52px;height:52px;
+  display:flex;align-items:center;justify-content:center;
+  border-radius:14px;
+  background:linear-gradient(135deg,rgba(99,102,241,.2),rgba(16,185,129,.2));
+}
+.mode-card h3{font-size:18px;font-weight:700}
+.mode-card .mode-stat{font-size:12px;opacity:.5}
+.mode-card ul{margin:8px 0 0;padding-left:0}
+.mode-card li{
+  list-style:none;font-size:14px;opacity:.75;padding:6px 0;
+  display:flex;align-items:center;gap:8px;
+}
+.mode-card li::before{content:"→";color:#60a5fa;font-weight:700}
+
+/* ─── NEW: Analysis Demo (LLM 分析演示) ─────────── */
+.analysis-demo{
+  display:flex;gap:16px;align-items:stretch;
+  max-width:1000px;width:94%;margin-top:24px;
+}
+.analysis-step{
+  flex:1;padding:20px 18px;border-radius:14px;
+  background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);
+  display:flex;flex-direction:column;gap:10px;
+}
+.analysis-step .step-header{
+  display:flex;align-items:center;gap:10px;
+  padding-bottom:10px;border-bottom:1px solid rgba(255,255,255,.08);
+}
+.analysis-step .step-num{
+  width:24px;height:24px;border-radius:50%;
+  background:linear-gradient(135deg,#6366f1,#0ea5e9);
+  display:flex;align-items:center;justify-content:center;
+  font-size:11px;font-weight:700;
+}
+.analysis-step h4{font-size:14px;font-weight:600}
+.analysis-step .code-block{
+  font-family:ui-monospace,SFMono-Regular,monospace;
+  font-size:11px;line-height:1.6;
+  background:rgba(0,0,0,.4);padding:12px;border-radius:8px;
+  color:#a5b4fc;flex:1;overflow:hidden;
+}
+.analysis-step .code-block .dim{opacity:.5}
+.analysis-step .code-block .hi{color:#34d399}
+.analysis-step .code-block .warn{color:#fbbf24}
+
+/* outro */
+.url-mono{
+  font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+  font-size:clamp(13px,1.4vw,18px);opacity:.5;margin-top:20px;
+}
+
+/* ─── HUD ────────────────────────────────────────── */
+.hud-badge{
+  position:fixed;top:24px;left:28px;font-size:15px;font-weight:700;z-index:100;
+}
+.hud-badge span{
+  background:linear-gradient(90deg,#6366f1,#0ea5e9,#10b981);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+}
+.controls{position:fixed;top:20px;right:24px;display:flex;gap:8px;z-index:100}
+.controls button{
+  background:rgba(255,255,255,.07);color:#fff;
+  border:1px solid rgba(255,255,255,.13);border-radius:999px;
+  padding:6px 16px;font-size:13px;cursor:pointer;font-family:inherit;
+  transition:background .15s;
+}
+.controls button:hover{background:rgba(255,255,255,.14)}
+.progress{
+  position:fixed;bottom:0;left:0;height:3px;width:0%;z-index:100;
+  background:linear-gradient(90deg,#818cf8,#60a5fa,#34d399);
+  box-shadow:0 0 14px rgba(129,140,248,.7);
+  transition:width .18s linear;
+}
+.slide-counter{
+  position:fixed;bottom:18px;right:24px;font-size:12px;opacity:.4;
+  font-family:ui-monospace,monospace;z-index:100;letter-spacing:.08em;
+}
+
+/* ─── Subtitles ─────────────────────────────────────── */
+.subtitles{
+  position:fixed;bottom:12px;left:24px;right:24px;
+  z-index:99;text-align:center;
+  pointer-events:none;
+  background:rgba(0,0,0,.8);
+  padding:14px 32px;border-radius:8px;
+  backdrop-filter:blur(6px);
+}
+.subtitle-en{
+  font-size:clamp(14px,1.5vw,17px);color:#fff;opacity:.95;
+  margin-bottom:6px;line-height:1.5;
+}
+.subtitle-zh{
+  font-size:clamp(13px,1.3vw,15px);color:#a5b4fc;opacity:.9;
+  line-height:1.5;
+}
+</style>
+</head>
+<body>
+
+<!-- ① COVER — shown first, click to start -->
+<div id="cover">
+  <div class="cover-badge">Chivox MCP · Speech Assessment for LLMs</div>
+  <div class="cover-title">Chivox <span>MCP</span></div>
+  <div class="cover-sub">让语音评测被大模型读懂<br>Phoneme-level speech assessment, delivered as MCP tools</div>
+  <div class="cover-thumb">
+    <img src="../video-cover.jpg" alt="Chivox MCP product screenshot">
+  </div>
+  <button class="play-btn" id="playbtn">
+    <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+    播放介绍 / Play Introduction
+  </button>
+  <div class="cover-hint">~150 seconds · English voiceover · 中英双语字幕</div>
+</div>
+
+<!-- HUD -->
+<div class="hud-badge">Chivox <span>MCP</span></div>
+<div class="subtitles" id="subtitles">
+  <div class="subtitle-en" id="sub-en"></div>
+  <div class="subtitle-zh" id="sub-zh"></div>
+</div>
+<div class="controls">
+  <button id="mute">🔊</button>
+  <button id="pause">⏸</button>
+  <button id="restart">↺</button>
+</div>
+<div class="progress" id="progress"></div>
+<div class="slide-counter" id="counter"></div>
+
+<!-- ② SLIDES (12 total) -->
+<div class="stage" id="stage">
+
+  <!-- S0: Hook - The Problem -->
+  <section class="slide text-slide">
+    <div class="slide-eyebrow">The Problem</div>
+    <div class="slide-title grad">LLMs Can't<br>Hear Audio</div>
+    <div class="slide-body">
+      Traditional speech APIs return <b>raw numbers</b>.<br>
+      To turn them into learning feedback,<br>
+      engineers must write a translation layer — for every model.
+    </div>
+  </section>
+
+  <!-- S1: Solution -->
+  <section class="slide text-slide">
+    <div class="slide-eyebrow">The Solution</div>
+    <div class="slide-title grad">Structured<br>Diagnosis Out</div>
+    <div class="compare">
+      <div class="compare-card bad">
+        <h3>❌ Without MCP</h3>
+        <ul>
+          <li>Study REST API docs</li>
+          <li>Write auth / upload / polling code</li>
+          <li>Serialize results & rewrite prompts</li>
+          <li>Repeat for every new model</li>
+        </ul>
+      </div>
+      <div class="compare-card good">
+        <h3>✅ With Chivox MCP</h3>
+        <ul>
+          <li>Add one MCP server line</li>
+          <li>LLM auto-discovers tools</li>
+          <li>Phoneme results flow into context</li>
+          <li>Zero wrapper code needed</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- S2: NEW - Workflow 6 Steps -->
+  <section class="slide text-slide">
+    <div class="slide-eyebrow">How It Works</div>
+    <div class="slide-title grad" style="font-size:clamp(32px,4.5vw,64px)">One Audio → Smart Feedback</div>
+    <div class="flow-steps">
+      <div class="flow-step">
+        <div class="step-num">1</div>
+        <div class="step-icon">⚙️</div>
+        <div class="step-label">Configure</div>
+        <div class="step-desc">One-time MCP setup</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">
+        <div class="step-num">2</div>
+        <div class="step-icon">🎤</div>
+        <div class="step-label">User Speaks</div>
+        <div class="step-desc">Record or upload</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">
+        <div class="step-num">3</div>
+        <div class="step-icon">🧠</div>
+        <div class="step-label">LLM Thinks</div>
+        <div class="step-desc">Picks the right tool</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">
+        <div class="step-num">4</div>
+        <div class="step-icon">🔗</div>
+        <div class="step-label">MCP Call</div>
+        <div class="step-desc">Standardized protocol</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">
+        <div class="step-num">5</div>
+        <div class="step-icon">📊</div>
+        <div class="step-label">Chivox Engine</div>
+        <div class="step-desc">Phoneme-level scoring</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">
+        <div class="step-num">6</div>
+        <div class="step-icon">💬</div>
+        <div class="step-label">LLM Feedback</div>
+        <div class="step-desc">Diagnosis + Practice</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- S3: Home screenshot -->
+  <section class="slide">
+    <div class="screenshot-wrap">
+      <img src="../screenshots/home.png" alt="Chivox MCP Home">
+    </div>
+    <div class="caption">
+      <h2>Chivox MCP</h2>
+      <p>10+ years of engines · 100M+ learners served · 95%+ expert alignment</p>
+    </div>
+  </section>
+
+  <!-- S4: Docs screenshot -->
+  <section class="slide">
+    <div class="screenshot-wrap">
+      <img src="../screenshots/docs.png" alt="Developer Docs">
+    </div>
+    <div class="caption">
+      <h2>One Config · Six Steps</h2>
+      <p>Cursor · Claude · Coze · Doubao · Feishu · DingTalk · Dify · n8n</p>
+    </div>
+  </section>
+
+  <!-- S5: NEW - Three Core Values -->
+  <section class="slide text-slide">
+    <div class="slide-eyebrow">Product Value</div>
+    <div class="slide-title grad" style="font-size:clamp(32px,4.5vw,64px)">Three Core Values</div>
+    <div class="value-cards">
+      <div class="value-card">
+        <div class="value-icon">🎯</div>
+        <h3>Rich Data Dimensions</h3>
+        <p>8 main dimensions, 20+ sub-metrics, phoneme-level dp_type for every sound</p>
+        <div class="value-tags">
+          <span>Accuracy</span>
+          <span>Fluency</span>
+          <span>Rhythm</span>
+          <span>Speed</span>
+        </div>
+      </div>
+      <div class="value-card">
+        <div class="value-icon">🧠</div>
+        <h3>LLM Deep Diagnosis</h3>
+        <p>Second-pass analysis turns raw scores into personalized correction advice</p>
+        <div class="value-tags">
+          <span>GPT</span>
+          <span>Claude</span>
+          <span>Gemini</span>
+          <span>Doubao</span>
+        </div>
+      </div>
+      <div class="value-card">
+        <div class="value-icon">⚡</div>
+        <h3>Power Any AI Product</h3>
+        <p>Standard MCP protocol, works with any agent framework out of the box</p>
+        <div class="value-tags">
+          <span>Cursor</span>
+          <span>Coze</span>
+          <span>Dify</span>
+          <span>n8n</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- S6: Demo screenshot -->
+  <section class="slide">
+    <div class="screenshot-wrap">
+      <img src="../screenshots/demo.png" alt="Live Demo">
+    </div>
+    <div class="caption">
+      <h2>Phoneme-level · Instant</h2>
+      <p>Accuracy · Fluency · Rhythm · Speed · Phoneme correction · Practice</p>
+    </div>
+  </section>
+
+  <!-- S7: NEW - Dual Mode -->
+  <section class="slide text-slide">
+    <div class="slide-eyebrow">Dual Mode</div>
+    <div class="slide-title grad" style="font-size:clamp(32px,4.5vw,64px)">Record-and-Evaluate</div>
+    <div class="dual-mode">
+      <div class="mode-card">
+        <div class="mode-header">
+          <div class="mode-icon">🎤</div>
+          <div>
+            <h3>Real-time Streaming</h3>
+            <div class="mode-stat">Latency &lt; 300ms · 7 question types</div>
+          </div>
+        </div>
+        <ul>
+          <li>Evaluate while speaking</li>
+          <li>Instant phoneme feedback</li>
+          <li>Auto-reconnect on network issues</li>
+          <li>Perfect for tutoring apps</li>
+        </ul>
+      </div>
+      <div class="mode-card">
+        <div class="mode-header">
+          <div class="mode-icon">📁</div>
+          <div>
+            <h3>Audio File Upload</h3>
+            <div class="mode-stat">Batch processing · 3 input methods</div>
+          </div>
+        </div>
+        <ul>
+          <li>WAV / MP3 / OGG / WebM</li>
+          <li>URL / Base64 / Binary</li>
+          <li>Batch API for large-scale</li>
+          <li>Perfect for content QC</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- S8: Scenarios grid -->
+  <section class="slide text-slide">
+    <div class="slide-eyebrow">Use Cases</div>
+    <div class="slide-title grad" style="font-size:clamp(36px,5vw,72px)">One MCP<br>Every Scenario</div>
+    <div class="grid-wrap">
+      <div class="grid-card">🎓<br>IELTS<span>Speaking prep</span></div>
+      <div class="grid-card">📚<br>K-12<span>Curriculum</span></div>
+      <div class="grid-card">🇨🇳<br>Mandarin<span>Proficiency test</span></div>
+      <div class="grid-card">🏆<br>Contests<span>Speech · Reading</span></div>
+      <div class="grid-card">🧒<br>Kids Phonics<span>Early learning</span></div>
+      <div class="grid-card">👩‍🏫<br>1:1 Tutoring<span>Real-time</span></div>
+      <div class="grid-card">💬<br>IM Bots<span>Feishu · DingTalk</span></div>
+      <div class="grid-card">🎙️<br>Podcast QC<span>Content check</span></div>
+      <div class="grid-card">🧩<br>Dev Ecosystem<span>Dify · n8n</span></div>
+    </div>
+  </section>
+
+  <!-- S9: NEW - LLM Deep Analysis Demo -->
+  <section class="slide text-slide">
+    <div class="slide-eyebrow">Deep Analysis</div>
+    <div class="slide-title grad" style="font-size:clamp(28px,4vw,56px)">From Scores to Smart Feedback</div>
+    <div class="analysis-demo">
+      <div class="analysis-step">
+        <div class="step-header">
+          <div class="step-num">1</div>
+          <h4>MCP Returns Raw Data</h4>
+        </div>
+        <div class="code-block">
+          <span class="dim">{</span><br>
+          &nbsp;&nbsp;<span class="hi">"overall"</span>: 78,<br>
+          &nbsp;&nbsp;<span class="hi">"fluency"</span>: 82,<br>
+          &nbsp;&nbsp;<span class="hi">"pronunciation"</span>: 71,<br>
+          &nbsp;&nbsp;<span class="warn">"phonemes"</span>: [<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;{ "phone": "θ", "score": 45 },<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;{ "phone": "ð", "score": 52 }<br>
+          &nbsp;&nbsp;]<br>
+          <span class="dim">}</span>
+        </div>
+      </div>
+      <div class="analysis-step">
+        <div class="step-header">
+          <div class="step-num">2</div>
+          <h4>LLM Diagnoses Issues</h4>
+        </div>
+        <div class="code-block">
+          <span class="hi">Analysis:</span><br><br>
+          Your <span class="warn">/θ/</span> sound (as in "think") is<br>
+          being pronounced like /s/.<br><br>
+          <span class="hi">Root cause:</span><br>
+          Tongue not between teeth.<br><br>
+          This is common for Mandarin<br>
+          speakers learning English.
+        </div>
+      </div>
+      <div class="analysis-step">
+        <div class="step-header">
+          <div class="step-num">3</div>
+          <h4>LLM Generates Practice</h4>
+        </div>
+        <div class="code-block">
+          <span class="hi">Today's drill:</span><br><br>
+          1. <span class="warn">think</span> - through - three<br>
+          2. I <span class="warn">think</span> it's Thursday<br>
+          3. The <span class="warn">thesis</span> is thorough<br><br>
+          <span class="dim">Tip: Place tongue tip between</span><br>
+          <span class="dim">your teeth, blow air gently.</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- S10: Plans screenshot -->
+  <section class="slide">
+    <div class="screenshot-wrap">
+      <img src="../screenshots/plans.png" alt="Pricing Plans">
+    </div>
+    <div class="caption">
+      <h2>Free Trial · Production · Enterprise</h2>
+      <p>Starter free · Standard · Growth · Scale · Enterprise 7×24 SLA</p>
+    </div>
+  </section>
+
+  <!-- S11: Outro -->
+  <section class="slide text-slide">
+    <div class="slide-eyebrow">Get Started</div>
+    <div class="slide-title grad">One Config<br>Ship Today</div>
+    <div class="slide-body" style="font-family:ui-monospace,monospace;font-size:clamp(13px,1.4vw,16px);opacity:.55;margin-top:16px;line-height:2">
+      npx -y @chivox/mcp
+    </div>
+    <div class="url-mono">https://chivoxmcp2.netlify.app</div>
+  </section>
+
+</div>
+
+<script>
+const slides = document.querySelectorAll('.slide');
+const cover   = document.getElementById('cover');
+const progress= document.getElementById('progress');
+const counter = document.getElementById('counter');
+const pauseBtn= document.getElementById('pause');
+const muteBtn = document.getElementById('mute');
+const restBtn = document.getElementById('restart');
+const playBtn = document.getElementById('playbtn');
+let idx=0, paused=false, voiceOn=true, startT=0, globalElapsed=0;
+
+// Preloaded audio elements for each slide (Microsoft Edge TTS)
+const audioFiles = [];
+for(let i=0; i<12; i++){
+  const a = new Audio(`audio/slide${i}.mp3`);
+  a.preload = 'auto';
+  audioFiles.push(a);
+}
+
+// Duration per slide (in ms) - 12 slides, ~150s total
+const DURATIONS = [
+  14000,  // S0: Problem
+  14000,  // S1: Solution  
+  15000,  // S2: Workflow
+  12000,  // S3: Home
+  12000,  // S4: Docs
+  14000,  // S5: Three Values
+  11000,  // S6: Demo
+  14000,  // S7: Dual Mode
+  13000,  // S8: Use Cases
+  15000,  // S9: LLM Analysis
+  11000,  // S10: Plans
+  10000   // S11: Outro
+]; // Total: ~145s
+const TOTAL = DURATIONS.reduce((a,b)=>a+b,0);
+
+// Subtitles: [English, Chinese] for each slide
+const SUBTITLES = [
+  // S0: Problem
+  ["Large language models don't understand audio natively. Traditional APIs return raw numbers — engineers must write translation layers for every model.",
+   "大模型天生不懂音频。传统 API 只返回分数，工程师需要为每个模型重写翻译层。"],
+  // S1: Solution
+  ["Chivox MCP wraps phoneme-level assessment into tools your model can call directly. One call, structured diagnosis out. No wrapper code needed.",
+   "驰声 MCP 把音素级评测封装成模型可直接调用的工具。一次调用，结构化诊断直出，无需包装代码。"],
+  // S2: Workflow
+  ["Here's how it works: configure once, then every user recording flows through six steps — from speaking to smart, personalized feedback.",
+   "工作原理：配置一次后，每段用户录音经过六步流程，从说话到智能个性化反馈。"],
+  // S3: Home
+  ["Welcome to Chivox MCP. Ten years of exam-grade speech engines, now open via the Model Context Protocol.",
+   "欢迎使用驰声 MCP。十年考试级语音评测引擎，现通过 MCP 协议开放。"],
+  // S4: Docs
+  ["Developer documentation: six steps to integrate, three paths to choose from. Supports all major MCP clients.",
+   "开发者文档：六步接入，三条路径可选。支持所有主流 MCP 客户端。"],
+  // S5: Three Values
+  ["Three core values: rich data with 20+ dimensions, LLM deep diagnosis that turns scores into advice, and universal compatibility with any AI product.",
+   "三大核心价值：20+ 维度的丰富数据、将分数转化为建议的 LLM 深度诊断、以及与任何 AI 产品的通用兼容性。"],
+  // S6: Demo
+  ["Try our live demo. Speak one sentence — get phoneme-level scoring, fluency analysis, and practice suggestions in seconds.",
+   "在线 Demo：说一句话，立刻获得音素级评分、流利度分析和练习建议。"],
+  // S7: Dual Mode
+  ["Two evaluation modes: real-time streaming with under 300 milliseconds latency, or batch file upload for large-scale content quality control.",
+   "两种评测模式：延迟低于 300 毫秒的实时流式，或用于大规模内容质检的批量文件上传。"],
+  // S8: Use Cases
+  ["One MCP, every scenario: IELTS prep, K-12 curriculum, Mandarin tests, speech contests, kids phonics, tutoring, IM bots, and podcast QC.",
+   "一套 MCP，全场景覆盖：雅思、K12、普通话、赛事、儿童启蒙、辅导、IM 机器人、播客质检。"],
+  // S9: LLM Analysis
+  ["See how LLM deep analysis works: raw phoneme scores go in, the model diagnoses pronunciation issues, and generates personalized drills automatically.",
+   "看 LLM 深度分析如何工作：输入原始音素分数，模型诊断发音问题，并自动生成个性化练习。"],
+  // S10: Plans
+  ["Five pricing tiers: from free starter to enterprise private deployment. Start free, scale when you're ready.",
+   "五档套餐：从免费体验到企业私有化部署。免费开始，按需扩展。"],
+  // S11: Outro
+  ["Get started now. One line of config, instant integration. Visit chivoxmcp2.netlify.app.",
+   "立即开始。一行配置，即刻接入。访问 chivoxmcp2.netlify.app"]
+];
+
+// ── Audio: ambient pad ──────────────────────────────
+let ctx, masterGain, oscs=[];
+function buildAudio(){
+  try{
+    ctx = new (window.AudioContext||window.webkitAudioContext)();
+    masterGain = ctx.createGain(); masterGain.gain.value=0.03;
+    masterGain.connect(ctx.destination);
+    [[220,'sine'],[330,'sine'],[440,'triangle'],[554,'sine']].forEach(([f,t],i)=>{
+      const o=ctx.createOscillator(), g=ctx.createGain();
+      o.type=t; o.frequency.value=f;
+      g.gain.value = [.4,.3,.15,.1][i];
+      o.connect(g); g.connect(masterGain); o.start();
+      oscs.push(o);
+    });
+  }catch(e){}
+}
+function destroyAudio(){ 
+  oscs.forEach(o=>{try{o.stop()}catch(e){}}); oscs=[];
+  if(ctx){try{ctx.close()}catch(e){} ctx=null;} 
+}
+
+// ── Voice (prerecorded mp3) ─────────────────────────
+let currentAudio = null;
+function playVoice(slideIdx){
+  if(!voiceOn) return;
+  stopVoice();
+  currentAudio = audioFiles[slideIdx];
+  if(currentAudio){
+    currentAudio.currentTime = 0;
+    currentAudio.volume = 1;
+    currentAudio.play().catch(()=>{});
+  }
+}
+function stopVoice(){
+  if(currentAudio){
+    currentAudio.pause();
+    currentAudio.currentTime = 0;
+  }
+}
+function pauseVoice(){
+  if(currentAudio) currentAudio.pause();
+}
+function resumeVoice(){
+  if(currentAudio && voiceOn) currentAudio.play().catch(()=>{});
+}
+
+// ── Subtitles ───────────────────────────────────────
+const subEn = document.getElementById('sub-en');
+const subZh = document.getElementById('sub-zh');
+function showSubtitle(i){
+  if(SUBTITLES[i]){
+    subEn.textContent = SUBTITLES[i][0];
+    subZh.textContent = SUBTITLES[i][1];
+  }
+}
+function hideSubtitle(){
+  subEn.textContent = '';
+  subZh.textContent = '';
+}
+
+// ── Slides ──────────────────────────────────────────
+function showSlide(i){
+  slides.forEach((s,j)=>s.classList.toggle('active',j===i));
+  counter.textContent = (i+1)+' / '+slides.length;
+  playVoice(i);
+  showSubtitle(i);
+}
+function tick(){
+  if(paused) return;
+  const seg = performance.now()-startT;
+  const pct = Math.min(100, (globalElapsed+seg)/TOTAL*100);
+  progress.style.width = pct+'%';
+  if(seg >= DURATIONS[idx]){
+    globalElapsed += DURATIONS[idx]; idx++;
+    if(idx>=slides.length){ 
+      progress.style.width='100%'; 
+      destroyAudio();
+      stopVoice();
+      return; 
+    }
+    showSlide(idx); startT=performance.now();
+  }
+  requestAnimationFrame(tick);
+}
+function start(){
+  idx=0; globalElapsed=0; startT=performance.now();
+  showSlide(0); requestAnimationFrame(tick);
+}
+
+// ── Controls ────────────────────────────────────────
+playBtn.onclick = ()=>{
+  cover.classList.add('hide');
+  buildAudio(); start();
+};
+
+// Auto-start if ?play=1 in URL
+if (new URLSearchParams(location.search).get('play') === '1') {
+  setTimeout(()=>{ playBtn.click(); }, 800);
+}
+pauseBtn.onclick = ()=>{
+  paused=!paused; pauseBtn.textContent=paused?'▶':'⏸';
+  if(paused) pauseVoice();
+  else { resumeVoice(); startT=performance.now(); requestAnimationFrame(tick); }
+};
+muteBtn.onclick = ()=>{
+  voiceOn=!voiceOn; muteBtn.textContent=voiceOn?'🔊':'🔇';
+  if(!voiceOn) stopVoice();
+  if(masterGain) masterGain.gain.value=voiceOn?0.03:0;
+};
+restBtn.onclick = ()=>{
+  paused=false; pauseBtn.textContent='⏸';
+  destroyAudio(); stopVoice(); hideSubtitle();
+  cover.classList.remove('hide');
+  slides.forEach(s=>s.classList.remove('active'));
+  progress.style.width='0%'; counter.textContent='';
+};
+</script>
+</body>
+</html>

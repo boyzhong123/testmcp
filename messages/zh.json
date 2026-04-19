@@ -16,7 +16,8 @@
     "title_line1": "让语音评测",
     "title_line2": "被大模型读懂",
     "description": "一条 MCP 调用，让 LLM 直接拿到音素级评测数据，自动输出诊断、纠音与个性化练习。",
-    "cta_primary": "免费试用",
+    "cta_primary": "在线体验",
+    "cta_primary_hint": "无需注册",
     "cta_secondary": "阅读文档",
     "trusted": "已服务超过",
     "typewriter_lines": [
@@ -109,12 +110,12 @@
   "About": {
     "title": "关于驰声",
     "description": "苏州驰声信息科技有限公司专注于智能语音评测技术研发，深耕教育科技领域多年。我们致力于将先进的语音识别与评测能力通过标准化协议输出，降低教育产品的技术门槛，让每一个开发者都能轻松构建专业的语音教学应用。",
-    "stat1_value": "10+",
-    "stat1_label": "年技术积累",
-    "stat2_value": "1亿+",
-    "stat2_label": "累计服务用户",
+    "stat1_value": "14",
+    "stat1_label": "项业界首发技术",
+    "stat2_value": "13",
+    "stat2_label": "年中高考实践",
     "stat3_value": "100+",
-    "stat3_label": "合作企业"
+    "stat3_label": "城市考试适配"
   },
   "Footer": {
     "copyright": "© {year} 苏州驰声信息科技有限公司 版权所有",

@@ -273,19 +273,19 @@ export function WorkflowSteps() {
     dev: {
       title: ['Configure MCP once', 'Write a system prompt', 'Deploy, verify, done'],
       desc: [
-        'Set MCP URL and API key once. Your host auto-discovers tools via MCP.',
-        'Tell the model when to call tools and how to turn scores into feedback.',
-        'Restart host and run one test message. After that, calls are automatic.',
+        'Whether your host is a code framework (LangChain / Mastra / custom agent), a visual platform (Dify / Coze / n8n), or an IDE-native agent (Cursor / Claude Desktop / Windsurf) — set the Chivox MCP URL and API Key once. The host auto-discovers 16 evaluation tools via MCP protocol; no SDK code required.',
+        'Tell the LLM three things: ① When to call speech tools (audio + ref text detected); ② How to interpret structured scores (phoneme dp_type, dimension scores, speed, etc.); ③ What persona and tone to use for feedback. This is the only creative step — and where your product differentiates.',
+        'Trigger a reload: restart the code process, click "Save/Publish" in Dify/Coze/n8n, or restart the IDE session. Send one test message with audio. Once you see the tool auto-called and scores returned — you\'re done. The LLM decides when to call tools from now on; no eval logic to maintain.',
       ],
       role: ['Developer', 'Developer', 'Developer'],
     },
     user: {
       title: ['User sends audio', 'LLM calls Chivox via MCP', 'Chivox returns exam-grade scores', 'LLM outputs friendly feedback'],
       desc: [
-        'Audio can be uploaded file URL/base64 or realtime stream chunks.',
-        'The model selects the right tool and sends a standard tools/call request.',
-        'Chivox returns structured JSON including overall, dimensions and phoneme details.',
-        'The model converts scores into actionable and friendly learning guidance.',
+        'User finishes reading a self-intro and submits. Chivox MCP supports two modes: pre-recorded audio via URL/base64, or real-time streaming from browser/mini-program/app (PCM chunks). Frontend picks one.',
+        'The LLM knows it cannot hear audio, but remembers the "speech evaluation" tools registered during config. It auto-constructs an MCP tools/call request — developers write zero invocation code.',
+        'Chivox evaluation engine scores word-by-word, phoneme-by-phoneme, and returns structured JSON via MCP back to the LLM. Includes overall, accuracy, fluency, rhythm, phoneme details, and dp_type.',
+        'The LLM translates raw scores into "teacher-style" personalized feedback plus targeted drills, ready to display to the user. Encouragement first, then diagnosis, then actionable practice.',
       ],
       role: ['End User', 'LLM → MCP', 'Chivox Service', 'LLM'],
     },
@@ -293,15 +293,15 @@ export function WorkflowSteps() {
 
   const panelFallbackEn: Record<TabKey, string[]> = {
     dev: [
-      `// Configure once, use everywhere\n{\n  "mcpServers": {\n    "chivox_voice_eval": {\n      "type": "streamable-http",\n      "url": "https://speech-eval.site/mcp",\n      "apiKey": "sk-••••••••"\n    }\n  }\n}`,
-      `// System prompt (example)\nYou are a speaking coach.\nWhen user provides audio:\n1) Call chivox tools\n2) Focus on low-score phonemes\n3) Provide actionable correction`,
-      `[mcp] connected\n[mcp] tools discovered: 16\n[mcp] test call passed\nReady.`,
+      `// Same config works for code frameworks, visual platforms, and IDE agents\n{\n  "mcpServers": {\n    "chivox_voice_eval": {\n      "type":   "streamable-http",\n      "url":    "https://speech-eval.site/mcp",\n      "apiKey": "sk-••••••••"\n    }\n  }\n}\n\n// ✓ LangChain / Mastra / Dify / Coze / Cursor / Claude Desktop ...\n// ✓ 16 eval tools auto-registered to LLM, no wrapper needed`,
+      `// Tell LLM: when to call · how to interpret · what tone to use\n\nYou are an English speaking coach.\n\nWhen user uploads audio:\n  1. Call chivox_voice_eval tools for scoring\n  2. Focus on score < 70 words and dp_type anomalies\n  3. Cluster phoneme errors into actionable corrections\n  4. Output encouraging diagnosis + personalized drills\n\n// Style: praise first, then diagnose, end with an actionable drill`,
+      `// After host restart / publish, MCP client auto-connects\n\n[mcp ] connecting https://speech-eval.site/mcp...\n[mcp ] ✓ handshake ok · protocol streamable-http\n[mcp ] ✓ listTools → 16 tools registered\n[mcp ]   · en.word.score  · en.sent.score  · en.pred.score\n[mcp ]   · en.pqan.score  · en.scne.exam  · en.prtl.exam\n[mcp ]   · cn.word.raw    · cn.sent.raw   · cn.pred.raw\n[mcp ]   · ...and 7 more\n\n// Run one test message (works in any host)\nuser  : Evaluate this: hello.mp3 · "Hello world"\nllm   : → tools/call en.sent.score\nchivox: ← { overall: 85, ... }\nllm   : "Overall 85 🎉 Your /θ/ needs work..."\n\nReady. Developer work ends here.`,
     ],
     user: [
-      `// Frontend payload\nuser:\n  Please evaluate this self-intro.\n\naudio:\n  https://cdn.app.com/u123/intro.mp3\n\n// or stream\nstream:\n  audio/pcm · 16k · 16bit · mono\n  -> chunk upload every 200ms`,
-      `{\n  "jsonrpc": "2.0",\n  "method": "tools/call",\n  "params": {\n    "name": "en_sentence_eval",\n    "arguments": {\n      "audio_url": "https://cdn.app.com/u123/intro.mp3",\n      "ref_text": "Hello, my name is Lucy..."\n    }\n  }\n}`,
-      `{\n  "overall": 85,\n  "pron": {\n    "accuracy": 82,\n    "integrity": 95,\n    "fluency": 88\n  },\n  "details": [\n    { "char": "think", "score": 62, "dp_type": "mispron", "phoneme": "/θ/" }\n  ]\n}`,
-      `## Great self-introduction!\n\nOverall score: 85 🎉\nFluency 88, integrity 95.\n\n## One detail to improve\nIn "think", your /θ/ sounds like /s/.\nPlace tongue lightly against upper teeth,\nthen push air through the gap.\nPractice: think · three · thank · path`,
+      `// Frontend → LLM context · Two audio modes supported\n\nuser:\n  Please listen to my self-intro,\n  where do I have pronunciation issues?\n\n// Mode A · Pre-recorded audio (mp3/wav · URL or base64)\naudio:\n  https://cdn.app.com/u123/intro.mp3\n\n// ─── OR ───────────────────────────────────────────\n// Mode B · Real-time streaming (browser MediaRecorder / mini-program / app)\nstream:\n  audio/pcm · 16k · 16bit · mono\n  → 200ms chunks, streaming results back\n\nrefText:\n  "Hello, my name is Lucy..."`,
+      `// LLM auto-constructs this — developers write zero call code\n{\n  "jsonrpc": "2.0",\n  "method":  "tools/call",\n  "params": {\n    "name": "en_sentence_eval",\n    "arguments": {\n      "audio_url": "https://cdn.../intro.mp3",\n      "ref_text":  "Hello, my name is Lucy..."\n    }\n  }\n}\n\n// ↑ This is the core MCP magic`,
+      `// Chivox evaluation engine → standard MCP response\n{\n  "overall": 85,\n  "pron": {\n    "accuracy":  82,\n    "integrity": 95,\n    "fluency":   88\n  },\n  "details": [\n    { "char": "think", "score": 62,\n      "dp_type": "mispron",\n      "phoneme":  "/θ/" }\n  ]\n}`,
+      `// LLM output · ready to render to user\n\n## Great self-introduction!\n\nOverall score: 85 🎉\nFluency 88, integrity 95 — both solid.\n\n## One detail to improve\n"think" has a /θ/ sound,\nbut you pronounced it as /s/.\nTry placing your tongue tip lightly on your upper teeth,\nthen push air through the gap.\n\nLet's practice these words:\n   think · three · thank · path`,
     ],
   };
 
