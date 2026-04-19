@@ -159,8 +159,8 @@ export function DocsShell({ nav, backLabel, title, subtitle, children }: DocsShe
   }, [activeId]);
 
   return (
-    <main className="flex-1">
-      <div className="container mx-auto px-6 py-12 md:py-20">
+    <main className="w-full min-w-0">
+      <div className="container mx-auto px-6 pt-12 md:pt-20 pb-0">
         <Link
           href="/"
           className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors mb-8"
