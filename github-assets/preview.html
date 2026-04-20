@@ -126,11 +126,22 @@
       }
     }
     
-    fetch('README.md')
+    fetch('../README.md?_=' + Date.now())
       .then(r => r.text())
       .then(md => {
         document.getElementById('content').innerHTML = marked.parse(md);
-        // Handle <picture> tags for local preview (GitHub handles them natively)
+        document.querySelectorAll('img').forEach(img => {
+          const src = img.getAttribute('src');
+          if (src && src.startsWith('github-assets/')) {
+            img.setAttribute('src', src.replace(/^github-assets\//, ''));
+          }
+        });
+        document.querySelectorAll('a').forEach(a => {
+          const href = a.getAttribute('href');
+          if (href && href.startsWith('github-assets/')) {
+            a.setAttribute('href', href.replace(/^github-assets\//, ''));
+          }
+        });
         updateLogoForTheme();
       });
     

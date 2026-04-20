@@ -1,73 +1,130 @@
 #!/usr/bin/env python3
 """
-Generate high-quality English voiceover using Microsoft Edge TTS.
+Generate high-quality English voiceover audio using Microsoft Edge TTS.
 Run: python generate-audio.py
-
-12 slides total (~150 seconds)
+Output: audio/slide0.mp3 ~ slide7.mp3
 """
 
 import asyncio
-import edge_tts
 import os
+import edge_tts
 
-# Use Microsoft Edge's high-quality neural voices
-# en-US-GuyNeural (male, professional)
-# en-US-JennyNeural (female, professional)
-# en-US-AriaNeural (female, conversational)
-VOICE = "en-US-GuyNeural"  # Professional male voice
-RATE = "-15%"  # Slower for clarity (was -20%, slightly faster now for 12 slides)
+# Voice: Microsoft Edge TTS - en-US-GuyNeural (male, clear, professional)
+VOICE = "en-US-GuyNeural"
+# Rate: slowed to 85% of the previous -5% setting for better pacing/clarity
+RATE = "-19%"
 
-# English voiceover scripts for each slide (12 total)
+# 8 slides with smooth transitions between each
+# Each script includes a transition phrase to connect to the next slide
 SLIDES = [
-    # S0: Hook - The Problem
-    "Large language models don't understand audio natively. Traditional speech scoring APIs return raw numbers. To turn them into learning feedback, engineers must write a translation layer — for every model.",
-
-    # S1: Solution
-    "Chivox MCP wraps phoneme-level assessment into tools your model can call directly. One call, structured diagnosis out. No wrapper code. No prompt engineering.",
-
-    # S2: NEW - Workflow 6 Steps
-    "Here's how it works: configure once, then every user recording flows through six steps — from speaking to smart, personalized feedback. The LLM picks the right tool, Chivox scores the audio, and the model generates actionable advice.",
-
-    # S3: Home screenshot
-    "Welcome to Chivox MCP. Ten years of exam-grade speech engines, now open via the Model Context Protocol. Trusted by over one hundred million learners worldwide.",
-
-    # S4: Docs screenshot
-    "Developer documentation: six steps to integrate, three paths to choose from. Supports Cursor, Claude, Coze, Doubao, Feishu, and all major MCP clients.",
-
-    # S5: NEW - Three Core Values
-    "Three core values. First: rich data dimensions — eight main metrics, twenty plus sub-metrics, phoneme-level detail for every sound. Second: LLM deep diagnosis — your model turns raw scores into personalized correction advice. Third: universal compatibility — standard MCP protocol works with any agent framework.",
-
-    # S6: Demo screenshot
-    "Try our live demo. Speak one sentence — get phoneme-level scoring, fluency analysis, and personalized practice suggestions in seconds.",
-
-    # S7: NEW - Dual Mode
-    "Two evaluation modes to fit your use case. Real-time streaming with under three hundred milliseconds latency — perfect for tutoring apps. Or batch file upload for large-scale content quality control. Seven question types, three input methods, full flexibility.",
-
-    # S8: Scenarios grid
-    "One MCP, every scenario. IELTS speaking prep, K-12 curriculum, Mandarin proficiency tests, speech contests, kids phonics, one-on-one tutoring, IM bots, and podcast quality control.",
-
-    # S9: NEW - LLM Deep Analysis Demo
-    "See how LLM deep analysis works in three steps. First: the MCP returns raw phoneme data with detailed scores. Second: your LLM diagnoses the specific pronunciation issues — like confusing theta with S. Third: the model automatically generates targeted practice drills. Scores become smart feedback.",
-
-    # S10: Plans screenshot
-    "Five pricing tiers: from free starter to enterprise private deployment. Start free, scale when you're ready. All plans include the full sixteen assessment tools.",
-
-    # S11: Outro
-    "Get started now. One line of config, instant integration. Visit chivox MCP two dot netlify dot app."
+    # S0: ACT 1 - THE PROBLEM
+    # Opening hook, sets up the pain point
+    """Speech assessment APIs have existed for over twenty years. 
+    But here's the problem: they return raw numbers — accuracy 78, fluency 82. 
+    To turn these into useful learning feedback, engineers must write a translation layer... 
+    for every single model, every single time.
+    
+    So, what's the solution?""",
+    
+    # S1: ACT 2 - THE SOLUTION (comparison)
+    # Transition from problem to solution
+    """This is where Chivox MCP comes in. 
+    
+    Instead of studying API docs and writing wrapper code, 
+    you simply add one MCP server config line. 
+    Your LLM auto-discovers sixteen evaluation tools. 
+    Phoneme-level results flow directly into context. 
+    Zero wrapper code needed.
+    
+    Let me show you how it works.""",
+    
+    # S2: ACT 2 - WORKFLOW
+    # Transition to show the flow
+    """Here's the complete workflow in five simple steps.
+    
+    First, you configure once — that's your one-time setup. 
+    Then, the user speaks or uploads audio. 
+    The LLM automatically picks the right evaluation tool. 
+    Chivox scores at phoneme level. 
+    And finally, the LLM generates personalized feedback with diagnosis and drills.
+    
+    Now, let's look at what makes this powerful.""",
+    
+    # S3: ACT 3 - CORE VALUES
+    # Transition to capabilities
+    """Chivox MCP delivers three core values.
+    
+    First: rich data. Eight main dimensions plus phoneme-level error typing for every sound.
+    
+    Second: LLM diagnosis. Your model turns raw scores into actionable correction advice.
+    
+    Third: universal compatibility. Standard MCP protocol works with GPT, Claude, Gemini, and any AI framework.
+    
+    And you get flexibility too.""",
+    
+    # S4: ACT 3 - DUAL MODE
+    # Transition to flexibility
+    """Two evaluation modes fit different use cases.
+    
+    Real-time streaming: under three hundred milliseconds latency, perfect for tutoring apps where users need instant feedback.
+    
+    Or file upload: batch processing for large-scale content quality control. Supports WAV, MP3, and more.
+    
+    Let me show you a concrete example.""",
+    
+    # S5: ACT 4 - DEMO
+    # Transition to demonstration
+    """Here's how it works in practice, in three steps.
+    
+    Step one: MCP returns raw phoneme scores — overall 78, specific phonemes like theta scoring 45.
+    
+    Step two: The LLM diagnoses the issue — your theta sounds like S, tongue not between teeth.
+    
+    Step three: The model generates targeted drills — think, through, three. Practice with these.
+    
+    This works across many scenarios.""",
+    
+    # S6: ACT 5 - USE CASES
+    # Transition to scenarios
+    """One MCP powers every scenario.
+    
+    IELTS speaking prep. K-12 curriculum. Mandarin proficiency tests. 
+    Kids phonics and early learning. One-on-one tutoring. 
+    IM bots in Feishu and DingTalk. Podcast quality checking. 
+    And the entire developer ecosystem with Dify, n8n, and more.
+    
+    Ready to get started?""",
+    
+    # S7: ACT 6 - CTA
+    # Closing call to action
+    """Getting started is simple. One line of config, instant integration.
+    
+    Behind this: twenty years of exam-grade speech engines, 
+    serving one hundred eighty-five countries, 
+    ten billion users, 
+    and ninety-five percent alignment with human experts.
+    
+    Visit chivox M C P two dot netlify dot app. 
+    Ship your voice-enabled AI product today."""
 ]
 
 async def generate_audio():
+    os.makedirs("audio", exist_ok=True)
+    
     for i, text in enumerate(SLIDES):
         output_file = f"audio/slide{i}.mp3"
-        print(f"Generating slide {i}: {text[:50]}...")
+        print(f"Generating {output_file}...")
         
-        communicate = edge_tts.Communicate(text, VOICE, rate=RATE)
+        # Clean up the text - remove extra whitespace but keep natural pauses
+        clean_text = " ".join(text.split())
+        
+        communicate = edge_tts.Communicate(clean_text, VOICE, rate=RATE)
         await communicate.save(output_file)
-        print(f"  -> Saved to {output_file}")
+        
+        print(f"  ✓ {output_file} done")
     
-    print("\nDone! All 12 audio files generated in ./audio/")
+    print("\n✅ All 8 audio files generated!")
+    print("Total slides: 8 (~96 seconds)")
 
 if __name__ == "__main__":
-    import os
-    os.makedirs("audio", exist_ok=True)
     asyncio.run(generate_audio())
