@@ -197,7 +197,7 @@ export default async function HomePage() {
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-px bg-border/40 border border-border/40 rounded-lg overflow-hidden">
               {[
                 { value: 20, suffix: isZh ? ' 年' : ' yrs', label: zhEn('深耕 AI 领域', 'Deep in AI') },
-                { value: 10, suffix: isZh ? ' 亿+' : 'B+', label: zhEn('全球累计用户', 'Global Users') },
+                { value: 100, suffix: '+', label: zhEn('城市考试适配', 'Cities Exam-Adapted') },
                 { value: 185, suffix: isZh ? ' 个' : '', label: zhEn('国家和地区', 'Countries & Regions') },
                 { value: 95, suffix: '%+', label: zhEn('与专家评分一致', 'Expert Consistency') },
               ].map((m) => (
@@ -1095,7 +1095,7 @@ export default async function HomePage() {
                   {[
                     { year: '2011', label: zhEn('驰声创立，专注语音评测', 'Chivox founded, focused on speech evaluation') },
                     { year: '2015', label: zhEn('入选教育部考试中心白名单', 'Listed by national education testing center') },
-                    { year: '2019', label: zhEn('全球学习者突破 10 亿', '1B+ global learners served') },
+                    { year: '2019', label: zhEn('服务全球学习者', 'Serving global learners') },
                     { year: '2023', label: zhEn('接入 GPT，启动 LLM 语义分析', 'Integrated GPT for LLM semantic analysis') },
                     { year: '2025', label: zhEn('开源 Chivox MCP Server', 'Open-sourced Chivox MCP Server') },
                     { year: '2026', label: zhEn('MCP v2 · 16 工具全量开放', 'MCP v2 · 16 tools fully open') },

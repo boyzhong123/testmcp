@@ -40,14 +40,12 @@
 </p>
 
 <p align="center">
-  <b>自 2011 年</b> 深耕 AI 语音 · <b>10 亿+</b> 全球学习者 · <b>185 国</b> 覆盖 · <b>92 亿次/年</b> 评测量 · <b>95%+</b> 与专家评分一致
+  <b>自 2011 年</b> 深耕 AI 语音 · 服务全球学习者 · <b>185 国</b> 覆盖 · <b>92 亿次/年</b> 评测量 · <b>95%+</b> 与专家评分一致
 </p>
 
 ---
 
 ## 📌 这是什么？
-
-本仓库是 **驰声 Chivox MCP 官方网站**（[chivoxmcp2.netlify.app](https://chivoxmcp2.netlify.app)）的源代码，基于 Next.js 16 + Tailwind CSS 4 + next-intl 构建，支持中英双语。
 
 **Chivox MCP** 把驰声深耕十余年的 **考试级语音评测引擎**，封装为标准 [Model Context Protocol](https://modelcontextprotocol.io) 工具集——一条 MCP 调用，LLM 就能直接拿到 **音素级** 评测数据，自动输出诊断、纠音与个性化练习，无需 SDK 封装、无需翻译层。
 

@@ -40,14 +40,12 @@
 </p>
 
 <p align="center">
-  <b>Since 2011</b> in AI speech · <b>1B+</b> global learners · <b>185 countries</b> · <b>9.2B</b> evaluations / year · <b>95%+</b> agreement with human experts
+  <b>Since 2011</b> in AI speech · serving learners worldwide · <b>185 countries</b> · <b>9.2B</b> evaluations / year · <b>95%+</b> agreement with human experts
 </p>
 
 ---
 
 ## 📌 What is this?
-
-This repository is the source code of the **Chivox MCP official website** ([chivoxmcp2.netlify.app](https://chivoxmcp2.netlify.app)), built on Next.js 16 + Tailwind CSS 4 + next-intl, with bilingual support (Chinese / English).
 
 **Chivox MCP** wraps Chivox's decade-hardened **exam-grade speech assessment engines** into a standard [Model Context Protocol](https://modelcontextprotocol.io) toolkit — with one MCP call, your LLM gets **phoneme-level** scoring data directly, auto-generating diagnosis, correction, and personalized practice. No SDK wrapping. No translation layer.
 
