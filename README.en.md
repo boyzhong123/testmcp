@@ -71,29 +71,65 @@ This repository is the source code of the **Chivox MCP official website** ([chiv
 
 ### ① Rich data dimensions (exam-grade granularity)
 
-Four main dimensions (**Accuracy · Integrity · Fluency · Rhythm**) + **phoneme-level alignment** + **error typing (normal / mispron / omit / insert)**, plus 20+ sub-params like speed, prosody, stress, and pauses — **all delivered as structured JSON straight into the LLM**.
+Four main dimensions (**Accuracy · Integrity · Fluency · Rhythm**) + **phoneme-level alignment** + **error typing (normal / mispron / omit / insert / wrong_tone)**, plus 20+ sub-params like stress, liaison, tones, timestamps, and audio-quality probes — **all delivered as structured JSON straight into the LLM**.
+
+**🇬🇧 English sample** (with `stress` / `liaison` / IPA phonemes / millisecond timestamps / accent detection):
 
 ```jsonc
 {
   "overall": 72,
-  "pron": {
-    "accuracy":  65,
-    "integrity": 95,
-    "fluency":   85,
-    "rhythm":    70
-  },
-  "speed": 130,
+  "pron": { "accuracy": 65, "integrity": 95, "fluency": 85, "rhythm": 70 },
+  "fluency": { "overall": 85, "pause": 12, "speed": 132 },   // pauses + WPM
+  "audio_quality": { "snr": 22.0, "clip": 0, "volume": 2514 }, // useful for UGC QA
   "details": [
     {
-      "char": "record", "score": 58, "dp_type": "mispron",
+      "word": "record", "score": 58, "dp_type": "mispron",
+      "start": 1100, "end": 1680,                // ms timestamps — jump-to-playback
+      "stress": { "ref": 2, "score": 45 },       // wrong stress position (noun vs. verb)
+      "accent": "us",                            // detected as US accent
       "phonemes": [
-        { "char": "r", "score": 45, "dp_type": "mispron" },
-        { "char": "ɪ", "score": 78, "dp_type": "normal"  }
+        { "ipa": "ɹ", "score": 45, "dp_type": "mispron" },
+        { "ipa": "ɪ", "score": 78, "dp_type": "normal"  }
+      ]
+    },
+    {
+      "word": "think", "score": 62, "dp_type": "mispron",
+      "start": 2400, "end": 2910,
+      "liaison": "none",                         // no liaison formed
+      "phonemes": [
+        { "ipa": "θ", "score": 42, "dp_type": "mispron" },
+        { "ipa": "ɪ", "score": 80, "dp_type": "normal"  },
+        { "ipa": "ŋk", "score": 78, "dp_type": "normal" }
       ]
     }
   ]
 }
 ```
+
+**🇨🇳 Chinese sample** (with `tone` / tone confidence distribution / Pinyin + Hanzi dual paths):
+
+```jsonc
+{
+  "overall": 82,
+  "pron": { "accuracy": 80, "integrity": 100, "fluency": 86, "tone": 76 },
+  "details": [
+    {
+      "char": "好", "pinyin": "hao3", "score": 62, "dp_type": "wrong_tone",
+      "start": 820, "end": 1240,
+      "tone": {
+        "ref": 3, "detected": 4, "score": 40,
+        "confidence": [2, 5, 10, 28, 55]         // prob over [neutral, 1st, 2nd, 3rd, 4th]
+      },
+      "phonemes": [
+        { "ipa": "x",  "score": 92, "dp_type": "normal" },
+        { "ipa": "au", "score": 70, "dp_type": "normal" }
+      ]
+    }
+  ]
+}
+```
+
+> The real engine also returns `snr / clip / volume` (audio-quality probes), `conn_type` (liaison / failed-release typing), detailed `confidence` distributions, and more. See the [Developer Docs · All Assessment Parameters](https://chivoxmcp2.netlify.app/en/docs#params) for the full field list.
 
 ### ② LLM second-pass diagnosis + third-pass practice (production loop)
 

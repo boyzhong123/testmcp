@@ -1740,16 +1740,16 @@ async def evaluate(audio_id: str, ref_text: str):
           <ToolTable
             locale="en"
             tools={[
-              ['en_word_eval', 'Word scoring', 'Single-word pronunciation'],
-              ['en_word_correction', 'Word correction', 'Detect omissions/extra/wrong phones'],
-              ['en_vocab_eval', 'Vocabulary scoring', 'Multiple words in one clip'],
-              ['en_sentence_eval', 'Sentence scoring', 'Accuracy + fluency'],
-              ['en_sentence_correction', 'Sentence correction', 'Per-word feedback'],
-              ['en_paragraph_eval', 'Paragraph read-aloud', 'Long passage quality'],
-              ['en_phonics_eval', 'Phonics scoring', 'Letter-sound rules'],
-              ['en_choice_eval', 'Oral multiple choice', 'Constrained answers'],
-              ['en_semi_open_eval', 'Semi-open prompt', 'Scenario speaking'],
-              ['en_realtime_eval', 'Realtime read-aloud', 'Streaming feedback'],
+              ['en_word_eval', 'Word scoring', 'Single-word pronunciation', 'https://www.chivox.com/opendoc/#/ChineseDoc/coreEn/en.word.score'],
+              ['en_word_correction', 'Word correction', 'Detect omissions/extra/wrong phones', 'https://www.chivox.com/opendoc/#/ChineseDoc/coreEn/en.word.pron'],
+              ['en_vocab_eval', 'Vocabulary scoring', 'Multiple words in one clip', 'https://www.chivox.com/opendoc/#/ChineseDoc/coreEn/en.vocabs.pron'],
+              ['en_sentence_eval', 'Sentence scoring', 'Accuracy + fluency', 'https://www.chivox.com/opendoc/#/ChineseDoc/coreEn/en.sent.score'],
+              ['en_sentence_correction', 'Sentence correction', 'Per-word feedback', 'https://www.chivox.com/opendoc/#/ChineseDoc/coreEn/en.sent.pron'],
+              ['en_paragraph_eval', 'Paragraph read-aloud', 'Long passage quality', 'https://www.chivox.com/opendoc/#/ChineseDoc/coreEn/en.pred.score'],
+              ['en_phonics_eval', 'Phonics scoring', 'Letter-sound rules', 'https://www.chivox.com/opendoc/#/ChineseDoc/coreEn/en.nsp.score'],
+              ['en_choice_eval', 'Oral multiple choice', 'Constrained answers', 'https://www.chivox.com/opendoc/#/ChineseDoc/coreEn/en.choc.score'],
+              ['en_semi_open_eval', 'Semi-open prompt', 'Scenario speaking', 'https://www.chivox.com/opendoc/#/ChineseDoc/coreEn/en.scne.exam'],
+              ['en_realtime_eval', 'Realtime read-aloud', 'Streaming feedback', 'https://www.chivox.com/opendoc/#/ChineseDoc/coreEn/en.rltm.score'],
             ]}
           />
         </SubDoc>
@@ -1758,12 +1758,12 @@ async def evaluate(audio_id: str, ref_text: str):
           <ToolTable
             locale="en"
             tools={[
-              ['cn_word_raw_eval', 'Character scoring', 'Hanzi pronunciation'],
-              ['cn_word_pinyin_eval', 'Pinyin scoring', 'Syllable-level'],
-              ['cn_sentence_eval', 'Phrase scoring', 'Short utterances'],
-              ['cn_paragraph_eval', 'Paragraph scoring', 'Long text'],
-              ['cn_rec_eval', 'Constrained recognition', 'Pick-one answers'],
-              ['cn_aitalk_eval', 'AI Talk scoring', 'Open dialog evaluation'],
+              ['cn_word_raw_eval', 'Character scoring', 'Hanzi pronunciation', 'https://www.chivox.com/opendoc/#/ChineseDoc/coreCn/Chinese/cn.pred.raw'],
+              ['cn_word_pinyin_eval', 'Pinyin scoring', 'Syllable-level', 'https://www.chivox.com/opendoc/#/ChineseDoc/coreCn/Chinese/cn.pred.pny'],
+              ['cn_sentence_eval', 'Phrase scoring', 'Short utterances', 'https://www.chivox.com/opendoc/#/ChineseDoc/coreCn/Chinese/cn.sent.score'],
+              ['cn_paragraph_eval', 'Paragraph scoring', 'Long text', 'https://www.chivox.com/opendoc/#/ChineseDoc/coreCn/Chinese/cn.para.score'],
+              ['cn_rec_eval', 'Constrained recognition', 'Pick-one answers', 'https://www.chivox.com/opendoc/#/ChineseDoc/coreCn/Chinese/cn.asr.rec'],
+              ['cn_aitalk_eval', 'AI Talk scoring', 'Open dialog evaluation', 'https://www.chivox.com/opendoc/#/ChineseDoc/coreCn/Chinese/cn.aitalk'],
             ]}
           />
         </SubDoc>

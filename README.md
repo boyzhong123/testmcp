@@ -71,29 +71,65 @@
 
 ### ① 丰富的数据维度（考试级颗粒度）
 
-四大主维度（**Accuracy · Integrity · Fluency · Rhythm**）+ **音素级对齐** + **错误类型分类（normal / mispron / omit / insert）**，外加语速、韵律、重音、停顿等 20+ 子参数，**全部以结构化 JSON 直送 LLM**。
+四大主维度（**Accuracy · Integrity · Fluency · Rhythm**）+ **音素级对齐** + **错误类型分类（normal / mispron / omit / insert / wrong_tone）**，外加重音、连读、声调、时间戳、音质探针等 20+ 子参数，**全部以结构化 JSON 直送 LLM**。
+
+**🇬🇧 英文示例**（含重音 `stress` / 连读 `liaison` / 音素 IPA / 毫秒级时间戳 / 英美音识别）：
 
 ```jsonc
 {
   "overall": 72,
-  "pron": {
-    "accuracy":  65,    // 准确度
-    "integrity": 95,    // 完整度
-    "fluency":   85,    // 流利度
-    "rhythm":    70     // 韵律度
-  },
-  "speed": 130,         // WPM
+  "pron": { "accuracy": 65, "integrity": 95, "fluency": 85, "rhythm": 70 },
+  "fluency": { "overall": 85, "pause": 12, "speed": 132 },   // 停顿次数 + WPM
+  "audio_quality": { "snr": 22.0, "clip": 0, "volume": 2514 }, // UGC 质检可用
   "details": [
     {
-      "char": "record", "score": 58, "dp_type": "mispron",
+      "word": "record", "score": 58, "dp_type": "mispron",
+      "start": 1100, "end": 1680,                // 毫秒时间戳，可直接回放定位
+      "stress": { "ref": 2, "score": 45 },       // 重音错位（名→动词重音判断）
+      "accent": "us",                            // 识别到美音发音倾向
       "phonemes": [
-        { "char": "r", "score": 45, "dp_type": "mispron" },
-        { "char": "ɪ", "score": 78, "dp_type": "normal"  }
+        { "ipa": "ɹ", "score": 45, "dp_type": "mispron" },
+        { "ipa": "ɪ", "score": 78, "dp_type": "normal"  }
+      ]
+    },
+    {
+      "word": "think", "score": 62, "dp_type": "mispron",
+      "start": 2400, "end": 2910,
+      "liaison": "none",                         // 未形成连读
+      "phonemes": [
+        { "ipa": "θ", "score": 42, "dp_type": "mispron" },
+        { "ipa": "ɪ", "score": 80, "dp_type": "normal"  },
+        { "ipa": "ŋk", "score": 78, "dp_type": "normal" }
       ]
     }
   ]
 }
 ```
+
+**🇨🇳 中文示例**（含声调 `tone` / 声调置信度分布 / 拼音 + 汉字双路径）：
+
+```jsonc
+{
+  "overall": 82,
+  "pron": { "accuracy": 80, "integrity": 100, "fluency": 86, "tone": 76 },
+  "details": [
+    {
+      "char": "好", "pinyin": "hao3", "score": 62, "dp_type": "wrong_tone",
+      "start": 820, "end": 1240,
+      "tone": {
+        "ref": 3, "detected": 4, "score": 40,
+        "confidence": [2, 5, 10, 28, 55]         // [轻声, 1声, 2声, 3声, 4声] 概率分布
+      },
+      "phonemes": [
+        { "ipa": "x",  "score": 92, "dp_type": "normal" },
+        { "ipa": "au", "score": 70, "dp_type": "normal" }
+      ]
+    }
+  ]
+}
+```
+
+> 真实引擎还会返回 `snr / clip / volume`（录音质量探针）、`conn_type`（失爆 / 连读类型）、`confidence` 分布等更多字段，完整字段见 [开发者文档 · 全部评测参数](https://chivoxmcp2.netlify.app/zh/docs#params)。
 
 ### ② LLM 二次诊断 + 三次练习生成（生产级闭环）
 
@@ -605,7 +641,7 @@ netlify deploy --prod --build
 
 ### ⭐ Star History
 
-[![Star History Chart](https://api.star-history.com/svg?repos=chivox/chivox-mcp&type=Date)](https://star-history.com/#chivox/chivox-mcp&Date)
+[![Star History Chart](./github-assets/star-history.svg)](https://star-history.com/#chivox/chivox-mcp&Date)
 
 ### 🤝 参与贡献
 

@@ -7,6 +7,7 @@ import {
   Globe,
   AlertTriangle,
   Lightbulb,
+  ExternalLink,
 } from 'lucide-react';
 
 export function CopyButton({ text }: { text: string }) {
@@ -178,13 +179,14 @@ export function ToolTable({
   tools,
   locale = 'zh',
 }: {
-  tools: [string, string, string][];
+  tools: [string, string, string, string?][];
   locale?: 'zh' | 'en';
 }) {
   const h =
     locale === 'en'
-      ? { a: 'Tool', b: 'What it does', c: 'Typical use' }
-      : { a: '工具名', b: '功能', c: '典型场景' };
+      ? { a: 'Tool', b: 'What it does', c: 'Typical use', d: 'Details' }
+      : { a: '工具名', b: '功能', c: '典型场景', d: '详情' };
+  const hasLinks = tools.some(([, , , link]) => link);
   return (
     <div className="overflow-x-auto rounded-lg border border-border/60">
       <table className="w-full min-w-[680px] text-xs sm:text-sm">
@@ -193,14 +195,32 @@ export function ToolTable({
             <th className="text-left py-2 px-3 font-medium">{h.a}</th>
             <th className="text-left py-2 px-3 font-medium">{h.b}</th>
             <th className="text-left py-2 px-3 font-medium">{h.c}</th>
+            {hasLinks && <th className="text-left py-2 px-3 font-medium">{h.d}</th>}
           </tr>
         </thead>
         <tbody className="divide-y divide-border/30">
-          {tools.map(([name, desc, scene]) => (
+          {tools.map(([name, desc, scene, link]) => (
             <tr key={name}>
               <td className="py-2 px-3 font-mono text-xs">{name}</td>
               <td className="py-2 px-3">{desc}</td>
               <td className="py-2 px-3 text-muted-foreground">{scene}</td>
+              {hasLinks && (
+                <td className="py-2 px-3">
+                  {link ? (
+                    <a
+                      href={link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 text-primary hover:text-primary/80 transition-colors"
+                    >
+                      <ExternalLink className="h-3.5 w-3.5" />
+                      <span className="text-xs">{locale === 'en' ? 'Docs' : '文档'}</span>
+                    </a>
+                  ) : (
+                    <span className="text-muted-foreground">—</span>
+                  )}
+                </td>
+              )}
             </tr>
           ))}
         </tbody>

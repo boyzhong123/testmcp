@@ -10,6 +10,7 @@ import { FadeUp, StaggerContainer, StaggerItem, CountUp, HoverCard, IconWrap } f
 import { FullPageScroll } from '@/components/fullpage-scroll';
 import { ParamsShowcase } from '@/components/params-showcase';
 import { DemoPreview } from '@/components/demo-preview';
+import { JsonSampleTabs } from '@/components/json-sample-tabs';
 import { cn } from '@/lib/utils';
 import { SALES_CHAT_URL } from '@/lib/links';
 
@@ -654,60 +655,38 @@ export default async function HomePage() {
             </div>
 
             <div className="lg:col-span-3 space-y-2.5 md:space-y-3 min-w-0">
-              <div className="rounded-lg border border-white/[0.08] bg-white/[0.03] p-4 md:p-5">
-                <div className="flex items-center justify-between mb-3">
-                  <div className="text-xs text-zinc-500 font-mono">{tValue('demo_card_1_title')}</div>
-                  <div className="text-[10px] text-zinc-600 font-mono">structured_json</div>
-                </div>
-                <pre className="text-[10.5px] sm:text-xs font-mono text-zinc-300 leading-relaxed whitespace-pre-wrap break-words overflow-x-auto max-w-full">
-{`{
-  "overall": 72,
-  "pron": {
-    "accuracy": 65,
-    "integrity": 95,
-    "fluency": 85,
-    "rhythm": 70
-  },
-  "details": [
-    { "char": "record", "score": 58, "dp_type": "mispron",
-      "phonemes": [{ "char": "r", "score": 45, "dp_type": "mispron" }] }
-  ]
-}`}
-                </pre>
-              </div>
+              <JsonSampleTabs isZh={isZh} cardTitle={tValue('demo_card_1_title')} />
 
               <div className="flex items-center justify-center py-0.5">
                 <div className="h-3 w-px bg-white/10" />
               </div>
 
-              <div className="rounded-lg border border-emerald-500/20 bg-emerald-500/[0.04] p-4 md:p-5">
-                <div className="flex items-center justify-between mb-3">
-                  <div className="text-xs text-emerald-400 font-mono">{tValue('demo_card_2_title')}</div>
-                  <div className="text-[10px] text-emerald-500/60 font-mono">natural_language</div>
+              <div className="grid md:grid-cols-2 gap-2.5 md:gap-3">
+                <div className="rounded-lg border border-emerald-500/20 bg-emerald-500/[0.04] p-4 md:p-5 flex flex-col">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="text-xs text-emerald-400 font-mono">{tValue('demo_card_2_title')}</div>
+                    <div className="text-[10px] text-emerald-500/60 font-mono">natural_language</div>
+                  </div>
+                  <p className="text-sm text-zinc-200 leading-relaxed">
+                    {tValue('demo_llm_response')}
+                  </p>
                 </div>
-                <p className="text-sm text-zinc-200 leading-relaxed">
-                  {tValue('demo_llm_response')}
-                </p>
-              </div>
 
-              <div className="flex items-center justify-center py-0.5">
-                <div className="h-3 w-px bg-white/10" />
-              </div>
-
-              <div className="rounded-lg border border-violet-400/20 bg-violet-400/[0.04] p-4 md:p-5">
-                <div className="flex items-center justify-between mb-3">
-                  <div className="text-xs text-violet-300 font-mono">{tValue('demo_card_3_title')}</div>
-                  <div className="text-[10px] text-violet-300/60 font-mono">practice_loop</div>
-                </div>
-                <div className="text-sm text-zinc-200 font-medium mb-2 leading-relaxed">
-                  {tValue('demo_exercise_body')}
-                </div>
-                <div className="flex flex-wrap items-center gap-2 text-[11px]">
-                  <span className="inline-flex items-center gap-1 bg-white/[0.04] border border-white/10 rounded px-2 py-0.5 text-zinc-400">🎯 /θ/ × 6</span>
-                  <span className="inline-flex items-center gap-1 bg-white/[0.04] border border-white/10 rounded px-2 py-0.5 text-zinc-400">🎯 /r/ × 3</span>
-                  <span className="inline-flex items-center gap-1 bg-white/[0.04] border border-white/10 rounded px-2 py-0.5 text-zinc-400">
-                    ⏱ {tValue('demo_exercise_est')}
-                  </span>
+                <div className="rounded-lg border border-violet-400/20 bg-violet-400/[0.04] p-4 md:p-5 flex flex-col">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="text-xs text-violet-300 font-mono">{tValue('demo_card_3_title')}</div>
+                    <div className="text-[10px] text-violet-300/60 font-mono">practice_loop</div>
+                  </div>
+                  <div className="text-sm text-zinc-200 font-medium mb-2 leading-relaxed flex-1">
+                    {tValue('demo_exercise_body')}
+                  </div>
+                  <div className="flex flex-wrap items-center gap-2 text-[11px]">
+                    <span className="inline-flex items-center gap-1 bg-white/[0.04] border border-white/10 rounded px-2 py-0.5 text-zinc-400">🎯 /θ/ × 6</span>
+                    <span className="inline-flex items-center gap-1 bg-white/[0.04] border border-white/10 rounded px-2 py-0.5 text-zinc-400">🎯 /r/ × 3</span>
+                    <span className="inline-flex items-center gap-1 bg-white/[0.04] border border-white/10 rounded px-2 py-0.5 text-zinc-400">
+                      ⏱ {tValue('demo_exercise_est')}
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>

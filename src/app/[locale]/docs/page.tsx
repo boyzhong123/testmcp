@@ -2107,16 +2107,16 @@ async def evaluate(audio_id: str, ref_text: str):
 
               <SubDoc id="tools-en" title="英文评测工具（10 种）">
                 <ToolTable tools={[
-                  ['en_word_eval', '单词评测', '评测 "Hello" 的发音准确度'],
-                  ['en_word_correction', '单词纠音', '检测多读/漏读/错读并给出纠正建议'],
-                  ['en_vocab_eval', '词语评测', '同时评测多个单词的发音'],
-                  ['en_sentence_eval', '句子评测', '评测整句朗读的准确度与流利度'],
-                  ['en_sentence_correction', '句子纠音', '逐词检测发音问题并给出修正建议'],
-                  ['en_paragraph_eval', '段落朗读评测', '评测整段英文课文的朗读质量'],
-                  ['en_phonics_eval', '自然拼读评测', '评测 Phonics 拼读规则掌握程度'],
-                  ['en_choice_eval', '口语选择题', '从预设选项中识别口语回答'],
-                  ['en_semi_open_eval', '半开放题评测', '场景对话等半开放口语题型'],
-                  ['en_realtime_eval', '实时朗读评测', '实时反馈朗读质量，逐句评分'],
+                  ['en_word_eval', '单词评测', '评测 "Hello" 的发音准确度', 'https://www.chivox.com/opendoc/#/ChineseDoc/coreEn/en.word.score'],
+                  ['en_word_correction', '单词纠音', '检测多读/漏读/错读并给出纠正建议', 'https://www.chivox.com/opendoc/#/ChineseDoc/coreEn/en.word.pron'],
+                  ['en_vocab_eval', '词语评测', '同时评测多个单词的发音', 'https://www.chivox.com/opendoc/#/ChineseDoc/coreEn/en.vocabs.pron'],
+                  ['en_sentence_eval', '句子评测', '评测整句朗读的准确度与流利度', 'https://www.chivox.com/opendoc/#/ChineseDoc/coreEn/en.sent.score'],
+                  ['en_sentence_correction', '句子纠音', '逐词检测发音问题并给出修正建议', 'https://www.chivox.com/opendoc/#/ChineseDoc/coreEn/en.sent.pron'],
+                  ['en_paragraph_eval', '段落朗读评测', '评测整段英文课文的朗读质量', 'https://www.chivox.com/opendoc/#/ChineseDoc/coreEn/en.pred.score'],
+                  ['en_phonics_eval', '自然拼读评测', '评测 Phonics 拼读规则掌握程度', 'https://www.chivox.com/opendoc/#/ChineseDoc/coreEn/en.nsp.score'],
+                  ['en_choice_eval', '口语选择题', '从预设选项中识别口语回答', 'https://www.chivox.com/opendoc/#/ChineseDoc/coreEn/en.choc.score'],
+                  ['en_semi_open_eval', '半开放题评测', '场景对话等半开放口语题型', 'https://www.chivox.com/opendoc/#/ChineseDoc/coreEn/en.scne.exam'],
+                  ['en_realtime_eval', '实时朗读评测', '实时反馈朗读质量，逐句评分', 'https://www.chivox.com/opendoc/#/ChineseDoc/coreEn/en.rltm.score'],
                 ]} />
 
                 <p className="mt-4"><strong>通用参数：</strong>所有英文评测工具均支持以下参数。</p>
@@ -2131,12 +2131,12 @@ async def evaluate(audio_id: str, ref_text: str):
 
               <SubDoc id="tools-cn" title="中文评测工具（6 种）">
                 <ToolTable tools={[
-                  ['cn_word_raw_eval', '单字评测（汉字）', '评测 "中" 的发音'],
-                  ['cn_word_pinyin_eval', '单字评测（拼音）', '评测 "zhōng" 的发音'],
-                  ['cn_sentence_eval', '词句评测', '评测 "你好世界" 的朗读'],
-                  ['cn_paragraph_eval', '段落朗读评测', '评测一段中文课文的朗读质量'],
-                  ['cn_rec_eval', '有限分支识别评测', '从预设选项中识别用户发音'],
-                  ['cn_aitalk_eval', 'AI Talk 口语评测', '中文口语对话能力评测'],
+                  ['cn_word_raw_eval', '单字评测（汉字）', '评测 "中" 的发音', 'https://www.chivox.com/opendoc/#/ChineseDoc/coreCn/Chinese/cn.pred.raw'],
+                  ['cn_word_pinyin_eval', '单字评测（拼音）', '评测 "zhōng" 的发音', 'https://www.chivox.com/opendoc/#/ChineseDoc/coreCn/Chinese/cn.pred.pny'],
+                  ['cn_sentence_eval', '词句评测', '评测 "你好世界" 的朗读', 'https://www.chivox.com/opendoc/#/ChineseDoc/coreCn/Chinese/cn.sent.score'],
+                  ['cn_paragraph_eval', '段落朗读评测', '评测一段中文课文的朗读质量', 'https://www.chivox.com/opendoc/#/ChineseDoc/coreCn/Chinese/cn.para.score'],
+                  ['cn_rec_eval', '有限分支识别评测', '从预设选项中识别用户发音', 'https://www.chivox.com/opendoc/#/ChineseDoc/coreCn/Chinese/cn.asr.rec'],
+                  ['cn_aitalk_eval', 'AI Talk 口语评测', '中文口语对话能力评测', 'https://www.chivox.com/opendoc/#/ChineseDoc/coreCn/Chinese/cn.aitalk'],
                 ]} />
 
                 <p className="mt-4"><strong>通用参数：</strong></p>
