@@ -135,6 +135,11 @@ Four main dimensions (**Accuracy · Integrity · Fluency · Rhythm**) + **phonem
 
 Chivox ships a **Prompt Skill template** that runs the same assessment JSON through the LLM **twice**, turning cold data into warm feedback and then into executable drills.
 
+<p align="center">
+  <img src="github-assets/gifs/llm-3-stage.gif" alt="One MCP assessment → LLM second-pass diagnosis → third-pass practice generation — live data-flow demo" width="80%" />
+  <br><sub>🎞️ JSON → natural-language feedback → personalized drills, three stages streaming live</sub>
+</p>
+
 ```
     audio
       │
@@ -189,6 +194,11 @@ Compatible with **GPT · Claude · Gemini · Doubao · DeepSeek · Qwen · GLM**
 ## 🎬 From one recording to warm feedback (4-step loop)
 
 Example: an "AI IELTS speaking coach". **The developer configures once**; every time the user speaks, assessment + feedback fire automatically.
+
+<p align="center">
+  <img src="github-assets/gifs/loop-4-steps.gif" alt="Four-step MCP loop from user recording to personalized feedback" width="90%" />
+  <br><sub>🎞️ User speaks → LLM calls MCP → engine scores → warm feedback, end-to-end in &lt; 3 seconds</sub>
+</p>
 
 ```
    User reads 1-min intro            LLM auto-invokes Chivox
@@ -450,6 +460,34 @@ asyncio.run(main())
 
 👉 [Full developer docs + sample code](https://chivoxmcp2.netlify.app/en/docs#config-code)
 
+#### 🅵 Path 6: Non-MCP native REST · cvx_fc (OpenAI function-calling style)
+
+For environments that **cannot host an MCP SDK** — native Android / iOS / Flutter, WeChat / Alipay mini-programs, legacy Java / PHP / Go backends. Chivox also exposes an **OpenAI-compatible Function-calling REST API** (internal codename `cvx_fc`). It hits the **same scoring engine** as MCP mode with equivalent capabilities — it just speaks pure HTTP + WebSocket with **zero MCP dependencies**.
+
+```bash
+# One-shot file evaluation: single request, score in response
+curl -X POST http://your-host:8080/v1/call \
+  -H "Authorization: Bearer your_api_key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "en_word_eval",
+    "arguments": {
+      "ref_text": "hello",
+      "audio_url": "https://example.com/hello.mp3",
+      "accent": 2,
+      "rank": 100
+    }
+  }'
+```
+
+- `GET /v1/functions` — equivalent to MCP `tools/list`; returns every function your API key is entitled to
+- `POST /v1/call` — equivalent to MCP `tools/call`; also used to create streaming sessions / fallback-fetch streaming results
+- `WS /ws/eval/{session_id}` — push PCM audio frames; receive `intermediate` / `result` / `backpressure`; 60-second `resume_token` reconnects
+
+> **Rule of thumb**: always prefer MCP; fall back to cvx_fc only when your client stack genuinely cannot host an MCP SDK. Both paths share the **exact same 16 + 2 function names and parameter schemas**.
+
+👉 [cvx_fc full integration guide](https://chivoxmcp2.netlify.app/en/docs#config-rest) · [Function catalog · GET /v1/functions](https://chivoxmcp2.netlify.app/en/docs#rest-catalog)
+
 ---
 
 ### 📋 Pick the right integration at a glance
@@ -461,6 +499,7 @@ asyncio.run(main())
 | Devs using Cursor / Claude Desktop daily | 🅰️ IDE client `mcp.json` | ❌ No |
 | Building AI apps with agent frameworks | 🅳 LangChain / Mastra MCP plugin | ✅ A little |
 | High-concurrency backends calling LLM APIs directly | 🅴 MCP client + Function Calling | ✅ Production |
+| Native app / mini-program / legacy backend that cannot host an MCP SDK | 🅵 cvx_fc REST + WebSocket | ✅ Production |
 
 ---
 

@@ -38,6 +38,7 @@ import {
   Notebook,
   Gauge,
   ListChecks,
+  Network,
 } from 'lucide-react';
 
 /* ─── Navigation Structure ─── */
@@ -50,8 +51,10 @@ const NAV = [
     { id: 'integration-paths', label: '三种接入姿势' },
   ]},
   { id: 'architecture', icon: Terminal, label: '架构说明', children: [
-    { id: 'arch-diagram', label: '架构图' },
-    { id: 'transport', label: '传输协议' },
+    { id: 'arch-overview', label: '两种接入模式总览' },
+    { id: 'arch-mcp', label: 'MCP 模式架构' },
+    { id: 'arch-rest', label: 'functioncalling 模式架构' },
+    { id: 'transport', label: '传输协议对比' },
   ]},
   { id: 'quick-start', icon: Zap, label: '快速开始', children: [
     { id: 'overview', label: '概述' },
@@ -70,10 +73,11 @@ const NAV = [
     { id: 'config-workflow-platforms', label: 'Dify / n8n / Flowise' },
     { id: 'config-other', label: '其他 MCP 客户端' },
   ]},
-  { id: 'config-code', icon: Code2, label: '接入 · 编程用（SDK / 代码）', children: [
-    { id: 'code-mcp-sdk', label: '官方 MCP 客户端库' },
-    { id: 'code-agent-frameworks', label: 'LangChain / Mastra / Agents SDK' },
-    { id: 'code-function-calling', label: '直调 chat.completions · 上传与动态 tools' },
+  { id: 'config-code', icon: Code2, label: '接入 · 编程用 MCP（SDK / 代码）', children: [
+    { id: 'code-mcp-sdk', label: '① 官方 MCP 客户端库' },
+    { id: 'code-agent-frameworks', label: '② LangChain / Mastra / Agents SDK' },
+    { id: 'code-function-calling', label: '③ 直调 chat.completions · 动态 tools' },
+    { id: 'code-selfhosted-agent', label: '④ 自研后端 Agent' },
     { id: 'llm-deepseek', label: 'DeepSeek' },
     { id: 'llm-glm', label: 'GLM（智谱）' },
     { id: 'llm-kimi', label: 'KIMI（Moonshot）' },
@@ -82,7 +86,14 @@ const NAV = [
     { id: 'llm-claude', label: 'Claude（Anthropic）' },
     { id: 'llm-gemini', label: 'Gemini（Google）' },
     { id: 'llm-comparison', label: '模型对比速查' },
-    { id: 'code-selfhosted-agent', label: '自研后端 Agent' },
+  ]},
+  { id: 'config-rest', icon: Network, label: '接入 · 非 MCP 原生 REST（cvx_fc）', children: [
+    { id: 'rest-overview', label: 'functioncalling 模式总览' },
+    { id: 'rest-catalog', label: '函数目录 · GET /v1/functions' },
+    { id: 'rest-oneshot', label: '一次性文件评测' },
+    { id: 'rest-streaming', label: '流式评测 · 三步骤' },
+    { id: 'rest-examples', label: 'JS / Android 完整示例' },
+    { id: 'rest-resume', label: '断线恢复 · 兜底拉取' },
   ]},
   { id: 'eval-modes', icon: Radio, label: '评测模式', children: [
     { id: 'stream-eval', label: '实时录音评测' },
@@ -115,8 +126,10 @@ const NAV_EN: NavGroup[] = [
     { id: 'integration-paths', label: 'Three integration styles' },
   ]},
   { id: 'architecture', icon: Terminal, label: 'Architecture', children: [
-    { id: 'arch-diagram', label: 'Diagram' },
-    { id: 'transport', label: 'Transports' },
+    { id: 'arch-overview', label: 'Two integration modes' },
+    { id: 'arch-mcp', label: 'MCP mode architecture' },
+    { id: 'arch-rest', label: 'Function-calling architecture' },
+    { id: 'transport', label: 'Transport comparison' },
   ]},
   { id: 'quick-start', icon: Zap, label: 'Quick start', children: [
     { id: 'overview', label: 'Overview' },
@@ -135,10 +148,11 @@ const NAV_EN: NavGroup[] = [
     { id: 'config-workflow-platforms', label: 'Dify / n8n / Flowise' },
     { id: 'config-other', label: 'Other MCP clients' },
   ]},
-  { id: 'config-code', icon: Code2, label: 'SDK / code integration', children: [
-    { id: 'code-mcp-sdk', label: 'Official MCP SDK' },
-    { id: 'code-agent-frameworks', label: 'Agent frameworks' },
-    { id: 'code-function-calling', label: 'chat.completions · upload & tools' },
+  { id: 'config-code', icon: Code2, label: 'MCP · SDK / code integration', children: [
+    { id: 'code-mcp-sdk', label: '① Official MCP SDK' },
+    { id: 'code-agent-frameworks', label: '② Agent frameworks' },
+    { id: 'code-function-calling', label: '③ chat.completions · dynamic tools' },
+    { id: 'code-selfhosted-agent', label: '④ Custom backend agent' },
     { id: 'llm-deepseek', label: 'DeepSeek' },
     { id: 'llm-glm', label: 'GLM (Zhipu)' },
     { id: 'llm-kimi', label: 'KIMI (Moonshot)' },
@@ -148,7 +162,14 @@ const NAV_EN: NavGroup[] = [
     { id: 'llm-claude', label: 'Claude (Anthropic)' },
     { id: 'llm-gemini', label: 'Gemini (Google)' },
     { id: 'llm-comparison', label: 'Model comparison' },
-    { id: 'code-selfhosted-agent', label: 'Custom backend' },
+  ]},
+  { id: 'config-rest', icon: Network, label: 'Non-MCP REST (cvx_fc)', children: [
+    { id: 'rest-overview', label: 'Function-calling overview' },
+    { id: 'rest-catalog', label: 'Function catalog · GET /v1/functions' },
+    { id: 'rest-oneshot', label: 'One-shot file eval' },
+    { id: 'rest-streaming', label: 'Streaming · 3 steps' },
+    { id: 'rest-examples', label: 'JS / Android samples' },
+    { id: 'rest-resume', label: 'Resume & fallback' },
   ]},
   { id: 'eval-modes', icon: Radio, label: 'Evaluation modes', children: [
     { id: 'stream-eval', label: 'Streaming mic' },
@@ -522,46 +543,238 @@ asyncio.run(main())`}</CodeBlock>
             {/* ══════ 架构说明 ══════ */}
             <DocSection id="architecture" icon={Terminal} title="架构说明">
 
-              <SubDoc id="arch-diagram" title="系统架构">
-                <div className="flex flex-wrap items-center justify-center gap-4 my-6">
-                  <div className="rounded-xl border-2 border-foreground/30 px-6 py-4 text-center min-w-[140px]">
-                    <p className="text-xs font-semibold mb-1">AI 客户端</p>
-                    <p className="text-[11px] text-muted-foreground">Claude Desktop<br/>Claude Code<br/>Cursor</p>
+              <SubDoc id="arch-overview" title="两种接入模式总览">
+                <p>驰声语音评测对外提供<strong>两条并行入口</strong>，底层指向同一个评测引擎，但面向不同的客户端环境，按能力选其一即可：</p>
+
+                <div className="grid md:grid-cols-2 gap-4 my-5">
+                  <div className="rounded-xl border-2 border-emerald-500/40 bg-emerald-500/5 p-5">
+                    <p className="font-semibold mb-2 flex items-center gap-2">
+                      <Plug className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                      MCP 模式（推荐首选）
+                    </p>
+                    <ul className="text-xs space-y-1.5 text-muted-foreground">
+                      <li>• JSON-RPC 2.0 · Streamable HTTP / stdio</li>
+                      <li>• 所有支持 MCP 的 IDE / 桌面 AI / Agent 框架 <strong className="text-foreground">零代码即用</strong></li>
+                      <li>• 工具列表自动注入，新增题型<strong className="text-foreground">业务侧不用改</strong></li>
+                      <li>• 本地代理 <code className="bg-muted px-1 rounded text-[10px] font-mono">chivox-local-mcp</code> 支持麦克风实时录音</li>
+                    </ul>
+                    <p className="text-xs mt-2"><strong>典型客户端</strong>：Cursor / Claude Desktop / Coze / Dify / LangChain / 自研后端 Agent</p>
+                  </div>
+                  <div className="rounded-xl border-2 border-sky-500/40 bg-sky-500/5 p-5">
+                    <p className="font-semibold mb-2 flex items-center gap-2">
+                      <Network className="h-4 w-4 text-sky-600 dark:text-sky-400" />
+                      functioncalling 模式（非 MCP · cvx_fc）
+                    </p>
+                    <ul className="text-xs space-y-1.5 text-muted-foreground">
+                      <li>• OpenAI function-calling 风格 · 纯 REST + WebSocket</li>
+                      <li>• <strong className="text-foreground">不依赖任何 MCP SDK</strong>，普通 HTTP 客户端即可打</li>
+                      <li>• 内置 <code className="bg-muted px-1 rounded text-[10px] font-mono">resume_token</code> 断线续播、<code className="bg-muted px-1 rounded text-[10px] font-mono">intermediate</code> 中间结果、<code className="bg-muted px-1 rounded text-[10px] font-mono">backpressure</code> 反压</li>
+                      <li>• 为不能 / 不想引入 MCP 的客户端环境保留兜底通道</li>
+                    </ul>
+                    <p className="text-xs mt-2"><strong>典型客户端</strong>：原生 Android / iOS / Flutter、微信 / 支付宝小程序、老版本 Java / PHP 后端</p>
+                  </div>
+                </div>
+
+                <p className="font-semibold mt-5">怎么选？</p>
+                <div className="overflow-x-auto rounded-lg border border-border/60 my-3">
+                  <table className="w-full text-xs">
+                    <thead><tr className="border-b border-border/40 bg-muted/30">
+                      <th className="text-left py-2 px-3 font-medium">你的客户端环境</th>
+                      <th className="text-left py-2 px-3 font-medium">建议</th>
+                    </tr></thead>
+                    <tbody className="divide-y divide-border/30">
+                      <tr><td className="py-2 px-3">Cursor / Claude Desktop / 各类 AI IDE 能装 MCP</td><td className="py-2 px-3 text-emerald-600 dark:text-emerald-400">MCP 模式</td></tr>
+                      <tr><td className="py-2 px-3">Python / Node / Java 后端能引入 MCP SDK</td><td className="py-2 px-3 text-emerald-600 dark:text-emerald-400">MCP 模式</td></tr>
+                      <tr><td className="py-2 px-3">Coze / Dify / n8n 等可视化平台</td><td className="py-2 px-3 text-emerald-600 dark:text-emerald-400">MCP 模式</td></tr>
+                      <tr><td className="py-2 px-3">原生 Android / iOS App，想直接打 HTTP + WS</td><td className="py-2 px-3 text-sky-600 dark:text-sky-400">functioncalling 模式</td></tr>
+                      <tr><td className="py-2 px-3">微信 / 支付宝 / 抖音小程序</td><td className="py-2 px-3 text-sky-600 dark:text-sky-400">functioncalling 模式</td></tr>
+                      <tr><td className="py-2 px-3">老系统 / 封闭运行时，不想引入 MCP 依赖</td><td className="py-2 px-3 text-sky-600 dark:text-sky-400">functioncalling 模式</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+                <Callout type="warning">
+                  同一个会话<strong>二选一、不要混用</strong>：MCP 的 <code className="bg-white/40 dark:bg-black/30 px-1 rounded text-xs">/ws/audio/</code> 和 functioncalling 的 <code className="bg-white/40 dark:bg-black/30 px-1 rounded text-xs">/ws/eval/</code> 属于不同的会话 ID 空间。
+                </Callout>
+              </SubDoc>
+
+              <SubDoc id="arch-mcp" title="MCP 模式 · 数据流与组件">
+                <p>MCP 模式下有两种部署形态，底层均走 JSON-RPC 2.0，区别只在客户端离服务端有没有一层本地代理：</p>
+
+                <p className="font-semibold mt-4">形态 A · 远程直连（零代码）</p>
+                <p className="text-sm text-muted-foreground">适合 Cursor / Coze / Dify / n8n 等支持 Streamable HTTP 的客户端，<strong>无本地依赖</strong>。</p>
+                <div className="flex flex-wrap items-center justify-center gap-4 my-4">
+                  <div className="rounded-xl border-2 border-foreground/30 px-5 py-3 text-center min-w-[130px]">
+                    <p className="text-xs font-semibold mb-0.5">AI 客户端</p>
+                    <p className="text-[11px] text-muted-foreground">Cursor / Coze /<br/>Dify / n8n …</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-lg font-semibold text-muted-foreground">⇄</p>
+                    <p className="text-[10px] text-muted-foreground">Streamable HTTP<br/>JSON-RPC 2.0</p>
+                  </div>
+                  <div className="rounded-xl border-2 border-emerald-500/50 bg-emerald-500/5 px-5 py-3 text-center min-w-[130px]">
+                    <p className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 mb-0.5">驰声 MCP Server</p>
+                    <p className="text-[11px] text-muted-foreground">/mcp · /ws/audio<br/>评测引擎</p>
+                  </div>
+                </div>
+
+                <p className="font-semibold mt-5">形态 B · 本地代理（支持麦克风实时录音）</p>
+                <p className="text-sm text-muted-foreground">适合 Claude Desktop / Claude Code 等以 stdio 挂载 MCP 的客户端，需要本地实时录音时走这条路径。</p>
+                <div className="flex flex-wrap items-center justify-center gap-3 my-4">
+                  <div className="rounded-xl border-2 border-foreground/30 px-4 py-3 text-center min-w-[120px]">
+                    <p className="text-xs font-semibold mb-0.5">AI 客户端</p>
+                    <p className="text-[11px] text-muted-foreground">Claude Desktop /<br/>Claude Code</p>
                   </div>
                   <div className="text-center">
                     <p className="text-lg font-semibold text-muted-foreground">⇄</p>
                     <p className="text-[10px] text-muted-foreground">stdio</p>
                   </div>
-                  <div className="rounded-xl border-2 border-emerald-500/50 bg-emerald-500/5 px-6 py-4 text-center min-w-[140px]">
-                    <p className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 mb-1">chivox-local-mcp</p>
-                    <p className="text-[11px] text-muted-foreground">本地代理<br/>SoX 录音</p>
+                  <div className="rounded-xl border-2 border-emerald-500/50 bg-emerald-500/5 px-4 py-3 text-center min-w-[120px]">
+                    <p className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 mb-0.5">chivox-local-mcp</p>
+                    <p className="text-[11px] text-muted-foreground">本地代理 · SoX 录音</p>
                   </div>
                   <div className="text-center">
                     <p className="text-lg font-semibold text-muted-foreground">⇄</p>
                     <p className="text-[10px] text-muted-foreground">HTTP / WS</p>
                   </div>
-                  <div className="rounded-xl border-2 border-foreground/30 px-6 py-4 text-center min-w-[140px]">
-                    <p className="text-xs font-semibold mb-1">Remote Chivox</p>
+                  <div className="rounded-xl border-2 border-foreground/30 px-4 py-3 text-center min-w-[120px]">
+                    <p className="text-xs font-semibold mb-0.5">Remote Chivox</p>
                     <p className="text-[11px] text-muted-foreground">MCP Server<br/>评测引擎</p>
                   </div>
                 </div>
+
+                <p className="font-semibold mt-5">标准数据流</p>
+                <ol className="list-decimal list-inside space-y-1.5 text-sm ml-1">
+                  <li><code className="bg-muted px-1 rounded text-xs">initialize</code> → 协商协议版本与能力</li>
+                  <li><code className="bg-muted px-1 rounded text-xs">tools/list</code> → 拉取 16 个评测工具的 JSON Schema</li>
+                  <li><strong>文件模式</strong>：<code className="bg-muted px-1 rounded text-xs">tools/call</code> → 服务端执行评测 → 返回 JSON-RPC 响应</li>
+                  <li><strong>实时模式</strong>：<code className="bg-muted px-1 rounded text-xs">create_stream_session</code> → 走 <code className="bg-muted px-1 rounded text-xs">/ws/audio/{'{session_id}'}</code> 推流 → <code className="bg-muted px-1 rounded text-xs">stream_eval_result</code> 收结构化评分</li>
+                </ol>
+
+                <p className="font-semibold mt-6">原始 JSON-RPC 请求示例（自建客户端可直接抄）</p>
+                <p className="text-xs text-muted-foreground mb-3">
+                  如果你不使用官方 MCP SDK 而是直接通过 <code className="bg-muted px-1 rounded">POST /mcp</code> 自己拼 JSON-RPC 2.0 报文，最小可用的三条请求如下。所有请求均需携带 <code className="bg-muted px-1 rounded text-xs">Authorization: Bearer &lt;your_api_key&gt;</code>。
+                </p>
+
+                <p className="text-sm font-semibold mt-4">① 初始化 · <code>initialize</code></p>
+                <CodeBlock filename="initialize.json" lang="json">{`{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "initialize",
+  "params": {
+    "protocolVersion": "2024-11-05",
+    "capabilities": {},
+    "clientInfo": { "name": "my-client", "version": "1.0.0" }
+  }
+}`}</CodeBlock>
+                <p className="text-xs text-muted-foreground">成功后服务端返回协议版本、服务端能力、服务端信息，此后方可调用其他方法。</p>
+
+                <p className="text-sm font-semibold mt-4">② 拉取工具清单 · <code>tools/list</code></p>
+                <CodeBlock filename="tools-list.json" lang="json">{`{
+  "jsonrpc": "2.0",
+  "id": 2,
+  "method": "tools/list",
+  "params": {}
+}`}</CodeBlock>
+                <p className="text-xs text-muted-foreground">返回全部 16 个评测工具（英 10 + 中 6）+ 2 个流式工具，含名字、描述、参数 JSON Schema。客户端应缓存此响应，后续按需展示 / 桥接给 LLM。</p>
+
+                <p className="text-sm font-semibold mt-4">③ 调用工具 · <code>tools/call</code></p>
+                <CodeBlock filename="tools-call.json" lang="json">{`{
+  "jsonrpc": "2.0",
+  "id": 3,
+  "method": "tools/call",
+  "params": {
+    "name": "en_word_eval",
+    "arguments": {
+      "ref_text": "hello",
+      "audio_base64": "<base64 encoded audio>",
+      "accent": 2,
+      "rank": 100
+    }
+  }
+}`}</CodeBlock>
+                <p className="text-xs text-muted-foreground">
+                  成功响应放在 <code className="bg-muted px-1 rounded">result.content[0].text</code>（JSON 字符串形式，内部就是评测结果结构）；失败则返回 <code className="bg-muted px-1 rounded">error.code</code> + <code className="bg-muted px-1 rounded">error.message</code>。
+                </p>
+
+                <Callout type="tip">
+                  用 Python / TypeScript 官方 MCP SDK 的用户<strong>不需要关心以上 JSON-RPC 细节</strong>——SDK 已经封装好 <code className="bg-white/40 dark:bg-black/30 px-1 rounded text-xs">session.initialize()</code> / <code className="bg-white/40 dark:bg-black/30 px-1 rounded text-xs">session.list_tools()</code> / <code className="bg-white/40 dark:bg-black/30 px-1 rounded text-xs">session.call_tool()</code>。这里仅供裸协议实现或排障时参考。
+                </Callout>
               </SubDoc>
 
-              <SubDoc id="transport" title="传输协议">
-                <ul className="space-y-3">
-                  <li className="flex items-start gap-2">
-                    <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-foreground shrink-0" />
-                    <span><strong>stdio</strong> — AI 客户端通过标准输入输出与本地代理通信，这是 MCP 的标准传输方式</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-foreground shrink-0" />
-                    <span><strong>HTTP</strong> — 音频文件评测工具通过 HTTP 代理到远程服务，适用于非流式场景</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-foreground shrink-0" />
-                    <span><strong>WebSocket</strong> — 实时录音音频通过 WebSocket 流式推送，支持断线自动重连</span>
-                  </li>
+              <SubDoc id="arch-rest" title="functioncalling 模式 · 数据流与组件">
+                <p>没有代理、没有 SDK，客户端 ↔ 服务端只有两条链路：一条 REST 管会话 / 文件评测，一条 WebSocket 推音频帧。</p>
+
+                <div className="flex flex-wrap items-center justify-center gap-3 my-5">
+                  <div className="rounded-xl border-2 border-foreground/30 px-4 py-3 text-center min-w-[140px]">
+                    <p className="text-xs font-semibold mb-0.5">客户端</p>
+                    <p className="text-[11px] text-muted-foreground">原生 App / 小程序 /<br/>老版后端 / 纯前端</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-lg font-semibold text-muted-foreground">⇄</p>
+                    <p className="text-[10px] text-muted-foreground">HTTP REST<br/>/v1/call · /v1/functions</p>
+                  </div>
+                  <div className="rounded-xl border-2 border-sky-500/50 bg-sky-500/5 px-4 py-3 text-center min-w-[140px]">
+                    <p className="text-xs font-semibold text-sky-600 dark:text-sky-400 mb-0.5">cvx_fc 服务</p>
+                    <p className="text-[11px] text-muted-foreground">function-calling 网关<br/>评测引擎</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-lg font-semibold text-muted-foreground">⇄</p>
+                    <p className="text-[10px] text-muted-foreground">WebSocket<br/>/ws/eval/&#123;id&#125;</p>
+                  </div>
+                  <div className="rounded-xl border-2 border-foreground/30 px-4 py-3 text-center min-w-[140px]">
+                    <p className="text-xs font-semibold mb-0.5">客户端推流</p>
+                    <p className="text-[11px] text-muted-foreground">麦克风 / 分片缓冲</p>
+                  </div>
+                </div>
+
+                <p className="font-semibold mt-5">三条典型数据流</p>
+                <div className="space-y-3 my-3">
+                  <div className="rounded-lg border border-border/60 p-4">
+                    <p className="text-sm font-semibold mb-1.5">a. 一次性文件评测</p>
+                    <p className="text-xs text-muted-foreground">POST <code className="bg-muted px-1 rounded">/v1/call</code>（<code className="bg-muted px-1 rounded">audio_url</code> 或 <code className="bg-muted px-1 rounded">audio_base64</code>） → 同步返回评分</p>
+                  </div>
+                  <div className="rounded-lg border border-border/60 p-4">
+                    <p className="text-sm font-semibold mb-1.5">b. 流式实时评测</p>
+                    <p className="text-xs text-muted-foreground">POST <code className="bg-muted px-1 rounded">/v1/call</code> → <code className="bg-muted px-1 rounded">start_stream_eval</code> → 拿 <code className="bg-muted px-1 rounded">ws_url</code> → 连 <code className="bg-muted px-1 rounded">/ws/eval/&#123;id&#125;</code> → 推 PCM → 收 <code className="bg-muted px-1 rounded">intermediate</code> / <code className="bg-muted px-1 rounded">backpressure</code> → 发 <code className="bg-muted px-1 rounded">stop</code> → 收 <code className="bg-muted px-1 rounded">result</code></p>
+                  </div>
+                  <div className="rounded-lg border border-border/60 p-4">
+                    <p className="text-sm font-semibold mb-1.5">c. 断线恢复 + 兜底拉取</p>
+                    <p className="text-xs text-muted-foreground">网络断开 60 秒内 → 用 <code className="bg-muted px-1 rounded">resume_token</code> 重连续播；彻底失败 → POST <code className="bg-muted px-1 rounded">/v1/call</code> → <code className="bg-muted px-1 rounded">get_stream_result</code> 兜底</p>
+                  </div>
+                </div>
+
+                <p className="font-semibold mt-5">特色能力</p>
+                <ul className="list-disc list-inside space-y-1 text-sm ml-1">
+                  <li><strong>resume_token</strong> — 网络抖动 60 秒内可无缝续播，服务端挂起会话状态</li>
+                  <li><strong>intermediate 帧</strong> — 边推边吐部分结果，前端可做实时波形 / 分数涂色</li>
+                  <li><strong>backpressure 反馈</strong> — 服务端主动下发 <code className="bg-muted px-1 rounded text-xs">suggested_interval_ms</code>，客户端按建议降速</li>
+                  <li><strong>结构化错误码</strong> — <code className="bg-muted px-1 rounded text-xs">SESSION_EXPIRED</code> / <code className="bg-muted px-1 rounded text-xs">INVALID_STATE</code> / … 便于客户端写重试逻辑</li>
                 </ul>
+                <p className="text-xs text-muted-foreground mt-3">详细的接入示例见下文 <a href="#config-rest" className="text-blue-600 dark:text-blue-400 hover:underline">「接入 · 非 MCP 原生 REST」</a> 大节。</p>
+              </SubDoc>
+
+              <SubDoc id="transport" title="传输协议对比">
+                <div className="overflow-x-auto rounded-lg border border-border/60">
+                  <table className="w-full text-sm">
+                    <thead><tr className="border-b border-border/40 bg-muted/30">
+                      <th className="text-left py-2 px-3 font-medium">维度</th>
+                      <th className="text-left py-2 px-3 font-medium">MCP 模式</th>
+                      <th className="text-left py-2 px-3 font-medium">functioncalling（cvx_fc）</th>
+                    </tr></thead>
+                    <tbody className="divide-y divide-border/30">
+                      <tr><td className="py-2 px-3 font-medium">协议</td><td className="py-2 px-3">JSON-RPC 2.0</td><td className="py-2 px-3">REST + WebSocket</td></tr>
+                      <tr><td className="py-2 px-3 font-medium">入口路径</td><td className="py-2 px-3 font-mono text-xs">POST /mcp</td><td className="py-2 px-3 font-mono text-xs">POST /v1/call</td></tr>
+                      <tr><td className="py-2 px-3 font-medium">列出工具</td><td className="py-2 px-3 font-mono text-xs">tools/list</td><td className="py-2 px-3 font-mono text-xs">GET /v1/functions</td></tr>
+                      <tr><td className="py-2 px-3 font-medium">调用工具</td><td className="py-2 px-3 font-mono text-xs">tools/call</td><td className="py-2 px-3 font-mono text-xs">POST /v1/call + name</td></tr>
+                      <tr><td className="py-2 px-3 font-medium">流式音频 WS</td><td className="py-2 px-3 font-mono text-xs">{'/ws/audio/{session_id}'}</td><td className="py-2 px-3 font-mono text-xs">{'/ws/eval/{session_id}'}</td></tr>
+                      <tr><td className="py-2 px-3 font-medium">本地 stdio 代理</td><td className="py-2 px-3">支持（<code className="bg-muted px-1 rounded text-[10px]">chivox-local-mcp</code>）</td><td className="py-2 px-3 text-muted-foreground">不适用</td></tr>
+                      <tr><td className="py-2 px-3 font-medium">断线重连</td><td className="py-2 px-3">客户端 SDK 自动重连</td><td className="py-2 px-3">resume_token（60s 挂起）</td></tr>
+                      <tr><td className="py-2 px-3 font-medium">中间结果</td><td className="py-2 px-3">stream_eval 回调</td><td className="py-2 px-3">intermediate 帧</td></tr>
+                      <tr><td className="py-2 px-3 font-medium">背压反馈</td><td className="py-2 px-3 text-muted-foreground">—</td><td className="py-2 px-3">backpressure 帧</td></tr>
+                      <tr><td className="py-2 px-3 font-medium">客户端依赖</td><td className="py-2 px-3">MCP SDK（官方 / 框架）</td><td className="py-2 px-3">仅 HTTP + WS 客户端</td></tr>
+                    </tbody>
+                  </table>
+                </div>
               </SubDoc>
             </DocSection>
 
@@ -934,7 +1147,8 @@ claude mcp add chivox -- env MCP_REMOTE_URL=http://your-server:8080 node /path/t
                 <ul className="list-disc list-inside space-y-1 text-muted-foreground">
                   <li>你在写一段<strong className="text-foreground">真正的后端服务</strong>：一个 Agent Worker、一个 API、一个自动化脚本</li>
                   <li>业务里的「语音评测」是其中一个步骤，需要由代码 <strong className="text-foreground">决定何时调用</strong>、<strong className="text-foreground">如何解析结果</strong></li>
-                  <li>三种主流写法：① 官方 MCP 客户端库 → ② Agent 框架自动桥接 → ③ 退化到 chat.completions + tools 参数</li>
+                  <li>四种主流写法：① 官方 MCP 客户端库 → ② Agent 框架自动桥接 → ③ 直调 chat.completions + tools → ④ 把 MCP Client 嵌进业务后端</li>
+                  <li>如果客户端环境<strong className="text-foreground">不能引入 MCP SDK</strong>（原生 App / 小程序 / 老系统），请跳转下一大节 <a href="#config-rest" className="text-blue-600 dark:text-blue-400 hover:underline">「接入 · 非 MCP 原生 REST（cvx_fc）」</a></li>
                 </ul>
                 <p className="mt-2 text-xs text-muted-foreground">💡 强烈推荐①或②：驰声有 16 个评测工具，<strong className="text-foreground">让 MCP 自动注入 tool schema</strong>，每新增一个题型不用改一行业务代码。</p>
               </div>
@@ -1168,6 +1382,58 @@ async with streamablehttp_client("https://speech-eval.site/mcp") as (r, w, _):
             print(final.choices[0].message.content)`}</CodeBlock>
                 <Callout type="warning"><strong>千万别手写 tool schema！</strong>驰声共 <strong>16 个评测工具</strong>（英文 10 + 中文 6），每个工具参数较多，手写既容易错也难维护。一定用 MCP <code className="bg-black/5 dark:bg-white/10 px-1 rounded text-xs font-mono">list_tools()</code> 动态拿。</Callout>
               </SubDoc>
+
+              <SubDoc id="code-selfhosted-agent" title="④ 自研后端 Agent（FastAPI / NestJS / Spring）">
+                <p>大部分落地场景其实是：<strong>你已有一个业务后端</strong>（教育 SaaS / 培训系统 / 客服平台），只需要新增一个「语音评测」能力。推荐架构：</p>
+
+                <div className="rounded-lg bg-muted/30 p-5 my-4">
+                  <div className="flex flex-wrap items-center gap-2 text-xs">
+                    <span className="px-3 py-1.5 rounded-md bg-background border border-border/60 font-medium">前端录音 / 上传</span>
+                    <span className="text-muted-foreground">→</span>
+                    <span className="px-3 py-1.5 rounded-md bg-background border border-border/60 font-medium">业务后端</span>
+                    <span className="text-muted-foreground">→</span>
+                    <span className="px-3 py-1.5 rounded-md bg-primary/10 border border-primary/30 font-medium">MCP Client（常驻连接）</span>
+                    <span className="text-muted-foreground">→</span>
+                    <span className="px-3 py-1.5 rounded-md bg-background border border-border/60 font-medium">驰声 MCP</span>
+                    <span className="text-muted-foreground">↘</span>
+                    <span className="px-3 py-1.5 rounded-md bg-background border border-border/60 font-medium">LLM（诊断 / 出题）</span>
+                  </div>
+                </div>
+
+                <p className="font-semibold mt-2">FastAPI 示例（生产最小骨架）</p>
+                <CodeBlock filename="app.py" lang="python">{`from fastapi import FastAPI
+from mcp.client.streamable_http import streamablehttp_client
+from mcp import ClientSession
+from contextlib import asynccontextmanager
+
+mcp_session: ClientSession | None = None
+
+@asynccontextmanager
+async def lifespan(app):
+    global mcp_session
+    async with streamablehttp_client("https://speech-eval.site/mcp") as (r, w, _):
+        async with ClientSession(r, w) as s:
+            await s.initialize()
+            mcp_session = s
+            yield
+    mcp_session = None
+
+app = FastAPI(lifespan=lifespan)
+
+@app.post("/api/evaluate")
+async def evaluate(audio_id: str, ref_text: str):
+    # 直接选一个最合适的工具执行（不经 LLM，延迟最低）
+    r = await mcp_session.call_tool("evaluate_english_sentence",
+                                    {"audioId": audio_id, "sentence": ref_text})
+    return {"result": r.content[0].text}`}</CodeBlock>
+
+                <Callout type="tip"><strong>关键优化</strong>：① MCP 连接在 lifespan 里做成长连接，不要每次请求都重连；② 对延迟敏感的场景可以「跳过 LLM 直接调 tool」，把 LLM 放到「生成诊断报告」那一步。</Callout>
+              </SubDoc>
+
+              <div className="rounded-lg border border-border/60 bg-muted/20 p-4 my-5 text-xs">
+                <p className="font-semibold text-sm mb-1.5 flex items-center gap-2"><Sparkles className="h-4 w-4 text-muted-foreground" /> 下面是 ① ～ ④ 中<strong className="text-foreground">第③种「直调 chat.completions」</strong>按主流 LLM 厂商的细化写法</p>
+                <p className="text-muted-foreground">各家 SDK / base_url / 鉴权写法略有差别，挑你当前用的那一家看即可；驰声 MCP 侧代码不用改。</p>
+              </div>
 
               <SubDoc id="llm-deepseek" title="DeepSeek">
                 <p>
@@ -1953,53 +2219,6 @@ print(f"call: {fc.name}({dict(fc.args)})  id={fc.id}")`}</CodeBlock>
                 </Callout>
               </SubDoc>
 
-              <SubDoc id="code-selfhosted-agent" title="④ 自研后端 Agent（FastAPI / NestJS / Spring）">
-                <p>大部分落地场景其实是：<strong>你已有一个业务后端</strong>（教育 SaaS / 培训系统 / 客服平台），只需要新增一个「语音评测」能力。推荐架构：</p>
-
-                <div className="rounded-lg bg-muted/30 p-5 my-4">
-                  <div className="flex flex-wrap items-center gap-2 text-xs">
-                    <span className="px-3 py-1.5 rounded-md bg-background border border-border/60 font-medium">前端录音 / 上传</span>
-                    <span className="text-muted-foreground">→</span>
-                    <span className="px-3 py-1.5 rounded-md bg-background border border-border/60 font-medium">业务后端</span>
-                    <span className="text-muted-foreground">→</span>
-                    <span className="px-3 py-1.5 rounded-md bg-primary/10 border border-primary/30 font-medium">MCP Client（常驻连接）</span>
-                    <span className="text-muted-foreground">→</span>
-                    <span className="px-3 py-1.5 rounded-md bg-background border border-border/60 font-medium">驰声 MCP</span>
-                    <span className="text-muted-foreground">↘</span>
-                    <span className="px-3 py-1.5 rounded-md bg-background border border-border/60 font-medium">LLM（诊断 / 出题）</span>
-                  </div>
-                </div>
-
-                <p className="font-semibold mt-2">FastAPI 示例（生产最小骨架）</p>
-                <CodeBlock filename="app.py" lang="python">{`from fastapi import FastAPI
-from mcp.client.streamable_http import streamablehttp_client
-from mcp import ClientSession
-from contextlib import asynccontextmanager
-
-mcp_session: ClientSession | None = None
-
-@asynccontextmanager
-async def lifespan(app):
-    global mcp_session
-    async with streamablehttp_client("https://speech-eval.site/mcp") as (r, w, _):
-        async with ClientSession(r, w) as s:
-            await s.initialize()
-            mcp_session = s
-            yield
-    mcp_session = None
-
-app = FastAPI(lifespan=lifespan)
-
-@app.post("/api/evaluate")
-async def evaluate(audio_id: str, ref_text: str):
-    # 直接选一个最合适的工具执行（不经 LLM，延迟最低）
-    r = await mcp_session.call_tool("evaluate_english_sentence",
-                                    {"audioId": audio_id, "sentence": ref_text})
-    return {"result": r.content[0].text}`}</CodeBlock>
-
-                <Callout type="tip"><strong>关键优化</strong>：① MCP 连接在 lifespan 里做成长连接，不要每次请求都重连；② 对延迟敏感的场景可以「跳过 LLM 直接调 tool」，把 LLM 放到「生成诊断报告」那一步。</Callout>
-              </SubDoc>
-
               <div className="rounded-lg border border-border/60 bg-muted/30 p-4 mt-6 text-sm">
                 <p className="font-semibold mb-2">方案选型速查</p>
                 <div className="overflow-x-auto">
@@ -2013,10 +2232,368 @@ async def evaluate(audio_id: str, ref_text: str):
                       <tr><td className="py-2">已有 LangChain / Mastra / Agents SDK 技术栈</td><td className="py-2">② Agent 框架 + adapter</td></tr>
                       <tr><td className="py-2">火山方舟 / 千帆控制台直连，最小侵入</td><td className="py-2">③ chat.completions + tools</td></tr>
                       <tr><td className="py-2">教育 SaaS / 培训 / 客服等业务后端集成</td><td className="py-2">④ 自研后端 Agent</td></tr>
+                      <tr><td className="py-2">原生 Android / iOS / 小程序 / 不装 MCP SDK 的老系统</td><td className="py-2"><a href="#config-rest" className="text-blue-600 dark:text-blue-400 hover:underline">→ 走下一大节「非 MCP REST」</a></td></tr>
                     </tbody>
                   </table>
                 </div>
               </div>
+            </DocSection>
+
+            {/* ══════ 接入 · 非 MCP 原生 REST（cvx_fc） ══════ */}
+            <DocSection id="config-rest" icon={Network} title="接入 · 非 MCP 原生 REST（cvx_fc）">
+
+              <div className="rounded-lg border border-sky-500/30 bg-sky-500/5 p-4 mb-5 text-sm">
+                <p className="font-semibold mb-1.5 flex items-center gap-2"><Network className="h-4 w-4 text-sky-600" /> 这一类接入的共同特征</p>
+                <ul className="list-disc list-inside space-y-1 text-muted-foreground">
+                  <li>客户端环境<strong className="text-foreground">不能 / 不想引入 MCP SDK</strong>：原生 Android / iOS / Flutter、微信 / 支付宝小程序、老版本 Java / PHP / Go 后端</li>
+                  <li>希望把驰声当作<strong className="text-foreground">普通 REST + WebSocket</strong>调，不经过 JSON-RPC、不走 stdio 代理</li>
+                  <li>内部代号 <code className="bg-muted px-1 rounded text-xs font-mono">cvx_fc</code>（OpenAI function-calling 风格），与 MCP 模式<strong className="text-foreground">指向同一个评测引擎</strong>，两者为并行入口</li>
+                </ul>
+                <p className="mt-2 text-xs text-muted-foreground">💡 能走 MCP 的一律优先 MCP；仅当客户端限制无法装 SDK 时走本大节。</p>
+              </div>
+
+              <SubDoc id="rest-overview" title="functioncalling 模式总览 · 端点与认证">
+                <p>
+                  驰声在 MCP 之外提供一套 <strong>OpenAI 兼容的 Function Calling 风格 REST API</strong>（内部代号 <code className="bg-muted px-1 rounded text-xs">cvx_fc</code>）。它和 MCP 模式指向<strong>同一个评测引擎</strong>，但协议层走纯 HTTP / WebSocket，<strong>不依赖任何 MCP SDK</strong>。
+                </p>
+
+                <Callout type="info">
+                  <strong>与 MCP 模式的关系</strong>：MCP 模式（<code className="bg-white/40 dark:bg-black/30 px-1 rounded text-xs font-mono">POST /mcp</code>，JSON-RPC 2.0）和 functioncalling 模式（<code className="bg-white/40 dark:bg-black/30 px-1 rounded text-xs font-mono">POST /v1/call</code>，REST）是<strong>两个并行入口</strong>，功能等价、工具/函数列表基本一致。
+                </Callout>
+
+                <p className="font-semibold mt-6">API 端点</p>
+                <div className="overflow-x-auto rounded-lg border border-border/60">
+                  <table className="w-full text-sm">
+                    <thead><tr className="border-b border-border/40 bg-muted/30">
+                      <th className="text-left py-2 px-3 font-medium">方法</th>
+                      <th className="text-left py-2 px-3 font-medium">路径</th>
+                      <th className="text-left py-2 px-3 font-medium">说明</th>
+                    </tr></thead>
+                    <tbody className="divide-y divide-border/30">
+                      <tr><td className="py-2 px-3 font-mono text-xs">GET</td><td className="py-2 px-3 font-mono text-xs">/v1/functions</td><td className="py-2 px-3">列出全部可用评测函数（等价 MCP <code className="bg-muted px-1 rounded text-xs">tools/list</code>）</td></tr>
+                      <tr><td className="py-2 px-3 font-mono text-xs">POST</td><td className="py-2 px-3 font-mono text-xs">/v1/call</td><td className="py-2 px-3">调用一个评测函数（等价 MCP <code className="bg-muted px-1 rounded text-xs">tools/call</code>）· 同时用于<strong>创建流式会话</strong>和<strong>拉取流式结果</strong></td></tr>
+                      <tr><td className="py-2 px-3 font-mono text-xs">WS</td><td className="py-2 px-3 font-mono text-xs">{'/ws/eval/{session_id}'}</td><td className="py-2 px-3">流式评测音频传输</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+
+                <p className="font-semibold mt-6">认证</p>
+                <p>所有请求在 HTTP Header 中携带 API Key：</p>
+                <CodeBlock filename="Header" lang="http">{`Authorization: Bearer <your_api_key>`}</CodeBlock>
+                <p className="text-xs text-muted-foreground">认证失败返回 <code className="bg-muted px-1 rounded text-xs">401</code>（缺少 Authorization）或 <code className="bg-muted px-1 rounded text-xs">403</code>（Key 无效 / 无权使用该评测类型）。结构化错误码见 <a href="#error-codes" className="text-blue-600 dark:text-blue-400 hover:underline">API 参考 · 错误码</a>。</p>
+              </SubDoc>
+
+              <SubDoc id="rest-catalog" title="函数目录 · GET /v1/functions">
+                <p>
+                  调用 <code className="bg-muted px-1 rounded text-xs">GET /v1/functions</code> 拿到<strong>当前 API Key 已授权</strong>的全部评测函数列表，响应格式与 OpenAI function-calling 的工具清单一致，可以直接喂给大模型作为 <code className="bg-muted px-1 rounded text-xs">tools</code>：
+                </p>
+                <CodeBlock filename="request" lang="http">{`GET /v1/functions
+Authorization: Bearer <api_key>`}</CodeBlock>
+                <CodeBlock filename="response.json" lang="json">{`{
+  "object": "list",
+  "data": [
+    {
+      "type": "function",
+      "function": {
+        "name": "en_word_eval",
+        "description": "英文单词发音评测，返回总分和每个音标得分。",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "ref_text":     { "type": "string", "description": "参考文本" },
+            "audio_base64": { "type": "string", "description": "Base64 编码音频（与 audio_url 二选一）" },
+            "audio_url":    { "type": "string", "description": "音频 HTTP(S) URL（与 audio_base64 二选一）" },
+            "accent":       { "type": "number", "description": "1=英式 / 2=美式 / 3=不区分（默认）" },
+            "rank":         { "type": "number", "description": "评分制：4 或 100（默认）" }
+          },
+          "required": ["ref_text"]
+        }
+      }
+    }
+    /* … 其它函数依此类推 … */
+  ]
+}`}</CodeBlock>
+                <Callout type="tip">
+                  这个端点语义等价于 MCP 的 <code className="bg-white/40 dark:bg-black/30 px-1 rounded text-xs">tools/list</code>，<strong>每个 API Key 可见的函数集合由后台权限决定</strong>——客户端应以实际返回为准，不要在本地硬编码全量 19 个。
+                </Callout>
+
+                <p className="font-semibold mt-6">英文评测函数（10 个）</p>
+                <div className="overflow-x-auto rounded-lg border border-border/60">
+                  <table className="w-full text-sm">
+                    <thead><tr className="border-b border-border/40 bg-muted/30">
+                      <th className="text-left py-2 px-3 font-medium">函数名</th>
+                      <th className="text-left py-2 px-3 font-medium">core_type</th>
+                      <th className="text-left py-2 px-3 font-medium">说明</th>
+                    </tr></thead>
+                    <tbody className="divide-y divide-border/30">
+                      {[
+                        ['en_word_eval',           'en.word.score',  '单词发音评测'],
+                        ['en_word_correction',     'en.word.pron',   '单词发音纠错'],
+                        ['en_phonics_eval',        'en.nsp.score',   '自然拼读评测'],
+                        ['en_sentence_eval',       'en.sent.score',  '句子朗读评测'],
+                        ['en_sentence_correction', 'en.sent.pron',   '句子发音纠错'],
+                        ['en_vocab_eval',          'en.vocabs.pron', '词汇批量评测'],
+                        ['en_paragraph_eval',      'en.pred.score',  '段落朗读评测'],
+                        ['en_realtime_eval',       'en.rltm.score',  '实时朗读评测'],
+                        ['en_choice_eval',         'en.choc.score',  '口语选择题'],
+                        ['en_semi_open_eval',      'en.scne.exam',   '半开放题（情景对话等）'],
+                      ].map(([fn, ct, desc]) => (
+                        <tr key={fn}>
+                          <td className="py-2 px-3 font-mono text-xs">{fn}</td>
+                          <td className="py-2 px-3 font-mono text-xs text-muted-foreground">{ct}</td>
+                          <td className="py-2 px-3">{desc}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                <p className="font-semibold mt-6">中文评测函数（6 个）</p>
+                <div className="overflow-x-auto rounded-lg border border-border/60">
+                  <table className="w-full text-sm">
+                    <thead><tr className="border-b border-border/40 bg-muted/30">
+                      <th className="text-left py-2 px-3 font-medium">函数名</th>
+                      <th className="text-left py-2 px-3 font-medium">core_type</th>
+                      <th className="text-left py-2 px-3 font-medium">说明</th>
+                    </tr></thead>
+                    <tbody className="divide-y divide-border/30">
+                      {[
+                        ['cn_word_pinyin_eval', 'cn.word.score',     '拼音 / 汉字发音评测'],
+                        ['cn_word_raw_eval',    'cn.word.raw',       '汉字发音评测'],
+                        ['cn_sentence_eval',    'cn.sent.raw',       '句子朗读评测'],
+                        ['cn_paragraph_eval',   'cn.pred.raw',       '段落朗读评测'],
+                        ['cn_rec_eval',         'cn.rec.raw',        '有限分支识别'],
+                        ['cn_aitalk_eval',      'cn.recscore.raw',   '口语表达评测（AI Talk）'],
+                      ].map(([fn, ct, desc]) => (
+                        <tr key={fn}>
+                          <td className="py-2 px-3 font-mono text-xs">{fn}</td>
+                          <td className="py-2 px-3 font-mono text-xs text-muted-foreground">{ct}</td>
+                          <td className="py-2 px-3">{desc}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                <p className="font-semibold mt-6">流式评测函数（3 个）</p>
+                <div className="overflow-x-auto rounded-lg border border-border/60">
+                  <table className="w-full text-sm">
+                    <thead><tr className="border-b border-border/40 bg-muted/30">
+                      <th className="text-left py-2 px-3 font-medium">函数名</th>
+                      <th className="text-left py-2 px-3 font-medium">作用</th>
+                    </tr></thead>
+                    <tbody className="divide-y divide-border/30">
+                      <tr>
+                        <td className="py-2 px-3 font-mono text-xs">start_stream_eval</td>
+                        <td className="py-2 px-3">创建流式评测会话，返回 <code className="bg-muted px-1 rounded text-xs">session_id</code> / <code className="bg-muted px-1 rounded text-xs">ws_url</code> / <code className="bg-muted px-1 rounded text-xs">resume_token</code></td>
+                      </tr>
+                      <tr>
+                        <td className="py-2 px-3 font-mono text-xs">get_stream_result</td>
+                        <td className="py-2 px-3">兜底拉取：WS 没拿到 <code className="bg-muted px-1 rounded text-xs">result</code> 时，通过 HTTP 把最终评分捞回来</td>
+                      </tr>
+                      <tr>
+                        <td className="py-2 px-3 font-mono text-xs">stream_eval_result</td>
+                        <td className="py-2 px-3 text-muted-foreground">（MCP 模式的别名；cvx_fc 模式统一用 <code className="bg-muted px-1 rounded text-xs">get_stream_result</code>）</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+
+                <p className="text-xs text-muted-foreground mt-4">
+                  📘 每个函数的<strong>业务语义 / 参数 / 返回字段</strong>与 MCP 模式下的同名工具完全一致，可直接参考下文 <a href="#tools-en" className="text-blue-600 dark:text-blue-400 hover:underline">API 参考 · 英文评测工具</a> 与 <a href="#tools-cn" className="text-blue-600 dark:text-blue-400 hover:underline">中文评测工具</a>。
+                </p>
+              </SubDoc>
+
+              <SubDoc id="rest-oneshot" title="一次性文件评测">
+                <p>把完整音频通过 <code className="bg-muted px-1 rounded text-xs">audio_base64</code> 或 <code className="bg-muted px-1 rounded text-xs">audio_url</code> 二选一传给 <code className="bg-muted px-1 rounded text-xs">/v1/call</code>，同步返回评分（与 MCP 模式的 <code className="bg-muted px-1 rounded text-xs">evaluate_english_word</code> 等工具语义等价）：</p>
+                <CodeBlock filename="curl · 英文单词" lang="bash">{`curl -X POST http://your-host:8080/v1/call \\
+  -H "Authorization: Bearer your_api_key" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "name": "en_word_eval",
+    "arguments": {
+      "ref_text": "hello",
+      "audio_url": "https://example.com/hello.mp3",
+      "accent": 2,
+      "rank": 100
+    }
+  }'`}</CodeBlock>
+                <p><strong>成功响应：</strong></p>
+                <CodeBlock filename="response.json" lang="json">{`{
+  "name": "en_word_eval",
+  "result": {
+    "overall": 85.5,
+    "details": { /* 音素 / 韵律 / 流利度等结构与 MCP 模式完全一致 */ }
+  }
+}`}</CodeBlock>
+                <p><strong>失败响应：</strong></p>
+                <CodeBlock filename="error.json" lang="json">{`{
+  "name": "en_word_eval",
+  "error": { "message": "错误描述" }
+}`}</CodeBlock>
+                <p className="text-xs text-muted-foreground">单次音频 ≤ 50MB，推荐 16 kHz / 单声道 / 16bit。</p>
+              </SubDoc>
+
+              <SubDoc id="rest-streaming" title="流式评测 · 三步骤">
+                <div className="rounded-lg border border-border/60 bg-muted/10 p-5 space-y-5 my-3">
+                  <FlowStep title="1">
+                    <p><strong>创建会话</strong>：<code className="bg-muted px-1 rounded text-xs">POST /v1/call</code> 调用 <code className="bg-muted px-1 rounded text-xs">start_stream_eval</code></p>
+                    <p className="text-muted-foreground mt-1">响应中拿到 <code className="bg-muted px-1 rounded text-xs">session_id</code> / <code className="bg-muted px-1 rounded text-xs">ws_url</code> / <code className="bg-muted px-1 rounded text-xs">resume_token</code>。</p>
+                  </FlowStep>
+                  <FlowStep title="2">
+                    <p><strong>WebSocket 推送</strong>：连接 <code className="bg-muted px-1 rounded text-xs">ws_url</code>，收到 <code className="bg-muted px-1 rounded text-xs">{`{"type":"ready"}`}</code> 即可开始发<strong>二进制音频帧</strong>。</p>
+                    <p className="text-muted-foreground mt-1">边推边收 <code className="bg-muted px-1 rounded text-xs">intermediate</code> 中间结果；结束时发 <code className="bg-muted px-1 rounded text-xs">{`{"type":"stop"}`}</code>，收到 <code className="bg-muted px-1 rounded text-xs">result</code> 即为最终评分。</p>
+                  </FlowStep>
+                  <FlowStep title="3">
+                    <p><strong>兜底拉取（可选）</strong>：如 WS 断开未收到最终 <code className="bg-muted px-1 rounded text-xs">result</code>，可再次 <code className="bg-muted px-1 rounded text-xs">POST /v1/call</code> 调用 <code className="bg-muted px-1 rounded text-xs">get_stream_result</code> 兜底。</p>
+                  </FlowStep>
+                </div>
+
+                <p className="font-semibold mt-4"><code>start_stream_eval</code> 参数</p>
+                <ParamTable params={[
+                  { name: 'core_type', type: 'string', required: true, desc: '评测类型，如 en.sent.score / cn.sent.raw（参考上方中英评测工具表）' },
+                  { name: 'ref_text', type: 'string', required: true, desc: '参考文本' },
+                  { name: 'audio_type', type: 'string', required: false, desc: '音频格式：pcm / wav / mp3（默认 mp3；流式推荐 pcm 省编解码）' },
+                  { name: 'sample_rate', type: 'number', required: false, desc: '采样率，默认 16000' },
+                  { name: 'channel', type: 'number', required: false, desc: '声道：1=单声道（默认）/ 2=立体声' },
+                  { name: 'sample_bytes', type: 'number', required: false, desc: '采样位深，默认 2（16bit）' },
+                  { name: 'accent', type: 'number', required: false, desc: '英文口音：1=英式 / 2=美式 / 3=不区分（默认）' },
+                  { name: 'age_group', type: 'string', required: false, desc: '中文人群：adult（默认）/ child' },
+                  { name: 'rank', type: 'number', required: false, desc: '评分制：4 或 100（默认）' },
+                ]} />
+
+                <p className="font-semibold mt-4">WebSocket 帧协议</p>
+                <div className="grid sm:grid-cols-2 gap-3 my-3">
+                  <div className="rounded-lg border border-border/60 p-4">
+                    <p className="text-xs font-semibold mb-2">客户端 → 服务端</p>
+                    <ul className="text-xs space-y-1.5 text-muted-foreground leading-relaxed list-none pl-0">
+                      <li>• <code className="bg-muted px-1 rounded">Binary</code> — 原始音频帧，连上即可直接发送，无需握手</li>
+                      <li>• <code className="bg-muted px-1 rounded">{`{"type":"stop"}`}</code> — 结束录音</li>
+                      <li>• <code className="bg-muted px-1 rounded">{`{"type":"ping"}`}</code> — 心跳</li>
+                    </ul>
+                  </div>
+                  <div className="rounded-lg border border-border/60 p-4">
+                    <p className="text-xs font-semibold mb-2">服务端 → 客户端</p>
+                    <ul className="text-xs space-y-1.5 text-muted-foreground leading-relaxed list-none pl-0">
+                      <li>• <code className="bg-muted px-1 rounded">ready</code> — 连接就绪，可开始发送音频</li>
+                      <li>• <code className="bg-muted px-1 rounded">intermediate</code> — 实时中间结果</li>
+                      <li>• <code className="bg-muted px-1 rounded">result</code> — 最终评测结果</li>
+                      <li>• <code className="bg-muted px-1 rounded">backpressure</code> — 背压，含 <code className="bg-muted px-1 rounded">suggested_interval_ms</code>，建议降低发送频率</li>
+                      <li>• <code className="bg-muted px-1 rounded">error</code> — 错误（含结构化 <code className="bg-muted px-1 rounded">code</code> + <code className="bg-muted px-1 rounded">message</code>，见<a href="#error-codes" className="underline underline-offset-2">错误码</a>一节）</li>
+                      <li>• <code className="bg-muted px-1 rounded">pong</code> — 心跳响应</li>
+                    </ul>
+                  </div>
+                </div>
+              </SubDoc>
+
+              <SubDoc id="rest-examples" title="JS / Android 完整示例">
+                <p className="font-semibold">JavaScript（浏览器 / Node.js）</p>
+                <CodeBlock filename="browser-or-node.js" lang="javascript">{`// ① 创建会话
+const resp = await fetch('http://your-host:8080/v1/call', {
+  method: 'POST',
+  headers: {
+    'Authorization': 'Bearer your_api_key',
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({
+    name: 'start_stream_eval',
+    arguments: {
+      core_type: 'en.sent.score',
+      ref_text: 'Hello world',
+      audio_type: 'pcm',
+      sample_rate: 16000,
+    },
+  }),
+});
+const { result } = await resp.json();
+
+// ② WebSocket 推送音频
+const ws = new WebSocket(result.ws_url);
+ws.onmessage = (ev) => {
+  const msg = JSON.parse(ev.data);
+  switch (msg.type) {
+    case 'ready':        startRecording(); break;
+    case 'intermediate': console.log('部分结果', msg.data); break;
+    case 'result':       console.log('最终结果', msg.data); ws.close(); break;
+    case 'backpressure': console.warn('降速 ~', msg.suggested_interval_ms, 'ms'); break;
+    case 'error':        console.error(msg.code, msg.message); break;
+  }
+};
+
+function onAudioChunk(pcm) {
+  if (ws.readyState === WebSocket.OPEN) ws.send(pcm); // 直接发二进制
+}
+
+function stopRecording() {
+  ws.send(JSON.stringify({ type: 'stop' }));
+}`}</CodeBlock>
+
+                <p className="font-semibold mt-6">Android（OkHttp · Kotlin）</p>
+                <CodeBlock filename="AudioEvalClient.kt" lang="kotlin">{`val wsUrl  = "ws://your-host:8080/ws/eval/$sessionId"
+val client = OkHttpClient()
+val req    = Request.Builder()
+    .url(wsUrl)
+    .addHeader("Authorization", "Bearer \${apiKey}")
+    .build()
+
+val ws = client.newWebSocket(req, object : WebSocketListener() {
+    override fun onMessage(ws: WebSocket, text: String) {
+        val msg = JSONObject(text)
+        when (msg.getString("type")) {
+            "ready"        -> startRecording()
+            "intermediate" -> updateUI(msg.getJSONObject("data"))
+            "result"       -> handleFinalResult(msg.getJSONObject("data"))
+            "error"        -> handleError(msg.getString("code"), msg.getString("message"))
+        }
+    }
+})
+
+// 录音回调中发送 PCM 字节
+fun onAudioData(pcm: ByteArray) {
+    ws.send(ByteString.of(*pcm))
+}
+
+fun stop() {
+    ws.send("""{"type":"stop"}""")
+}`}</CodeBlock>
+                <Callout type="tip">iOS / Flutter / 小程序同理，只要平台提供 WebSocket 客户端即可：连接 <code className="bg-white/40 dark:bg-black/30 px-1 rounded text-xs">ws_url</code>、把 PCM bytes 发出去、按 <code className="bg-white/40 dark:bg-black/30 px-1 rounded text-xs">type</code> 字段解析服务端消息就行。</Callout>
+              </SubDoc>
+
+              <SubDoc id="rest-resume" title="断线恢复 · 兜底拉取">
+                <p className="font-semibold">resume_token · 60 秒续播</p>
+                <p>
+                  客户端意外断开时，会话在服务端<strong>挂起 60 秒</strong>；用创建会话拿到的 <code className="bg-muted px-1 rounded text-xs">resume_token</code> 续播即可：
+                </p>
+                <CodeBlock filename="reconnect" lang="http">{`GET ws://your-host:8080/ws/eval/{session_id}?resume={resume_token}
+Authorization: Bearer <your_api_key>`}</CodeBlock>
+                <Callout type="tip">
+                  重连成功后会收到新的 <code className="bg-white/40 dark:bg-black/30 px-1 rounded text-xs">ready</code>，继续推送音频即可；服务端会颁发<strong>新的 resume_token</strong>，原 token 立即作废。
+                </Callout>
+
+                <p className="font-semibold mt-6">兜底拉取 · get_stream_result</p>
+                <p>如果 WS 没能收到最终 <code className="bg-muted px-1 rounded text-xs">result</code>，可主动通过 HTTP 拉取：</p>
+                <CodeBlock filename="fallback-result.sh" lang="bash">{`curl -X POST http://your-host:8080/v1/call \\
+  -H "Authorization: Bearer your_api_key" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "name": "get_stream_result",
+    "arguments": {
+      "session_id": "stream-1713340800-a1b2c3",
+      "auto_stop": true,
+      "timeout": 30
+    }
+  }'`}</CodeBlock>
+                <ParamTable params={[
+                  { name: 'session_id', type: 'string', required: true, desc: '由 start_stream_eval 返回的会话 ID' },
+                  { name: 'auto_stop', type: 'bool', required: false, desc: '是否自动发送 stop 并等待结果，默认 true' },
+                  { name: 'timeout', type: 'number', required: false, desc: '等待秒数，默认 30' },
+                ]} />
+
+                <Callout type="warning">
+                  functioncalling 模式与 MCP 模式<strong>二选一、不要混用</strong>：同一个会话不要同时走 MCP 的 <code className="bg-white/40 dark:bg-black/30 px-1 rounded text-xs">/ws/audio/</code> 和 cvx_fc 的 <code className="bg-white/40 dark:bg-black/30 px-1 rounded text-xs">/ws/eval/</code>，两条链路的会话 ID 空间是分开的。
+                </Callout>
+              </SubDoc>
+
             </DocSection>
 
             {/* ══════ 评测模式 ══════ */}
@@ -2204,6 +2781,7 @@ async def evaluate(audio_id: str, ref_text: str):
               </SubDoc>
 
               <SubDoc id="error-codes" title="错误码">
+                <p className="font-semibold mb-2">常见业务场景</p>
                 <div className="overflow-x-auto rounded-lg border border-border/60">
                   <table className="w-full text-sm">
                     <thead><tr className="border-b border-border/40 bg-muted/30">
@@ -2223,6 +2801,64 @@ async def evaluate(audio_id: str, ref_text: str):
                         <tr key={scene}>
                           <td className="py-2 px-3 font-medium">{scene}</td>
                           <td className="py-2 px-3 text-muted-foreground">{reason}</td>
+                          <td className="py-2 px-3">{fix}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                <p className="font-semibold mt-6 mb-2">HTTP 状态码（functioncalling 模式）</p>
+                <div className="overflow-x-auto rounded-lg border border-border/60">
+                  <table className="w-full text-sm">
+                    <thead><tr className="border-b border-border/40 bg-muted/30">
+                      <th className="text-left py-2 px-3 font-medium">状态码</th>
+                      <th className="text-left py-2 px-3 font-medium">含义</th>
+                    </tr></thead>
+                    <tbody className="divide-y divide-border/30">
+                      {[
+                        ['400', '请求格式错误（JSON 缺字段 / 类型错）'],
+                        ['401', '未认证（缺少 Authorization 头）'],
+                        ['403', '权限不足（API Key 无效或无权使用该评测类型）'],
+                        ['404', '会话不存在（session_id 错误或已回收）'],
+                        ['409', '会话状态不允许当前操作（如已 stop 后又发音频）'],
+                      ].map(([code, desc]) => (
+                        <tr key={code}>
+                          <td className="py-2 px-3 font-mono text-xs">{code}</td>
+                          <td className="py-2 px-3 text-muted-foreground">{desc}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                <p className="font-semibold mt-6 mb-2">流式评测结构化错误码</p>
+                <p className="text-xs text-muted-foreground mb-2">
+                  WebSocket 的 <code className="bg-muted px-1 rounded">error</code> 帧与 <code className="bg-muted px-1 rounded">get_stream_result</code> 的 HTTP 错误体统一使用以下错误码，便于客户端差错分流：
+                </p>
+                <div className="overflow-x-auto rounded-lg border border-border/60">
+                  <table className="w-full text-sm">
+                    <thead><tr className="border-b border-border/40 bg-muted/30">
+                      <th className="text-left py-2 px-3 font-medium">错误码</th>
+                      <th className="text-left py-2 px-3 font-medium">说明</th>
+                      <th className="text-left py-2 px-3 font-medium">建议处理</th>
+                    </tr></thead>
+                    <tbody className="divide-y divide-border/30">
+                      {[
+                        ['SESSION_NOT_FOUND', '会话不存在', '重新调用 start_stream_eval / create_stream_session 创建'],
+                        ['SESSION_EXPIRED', '会话已过期（60s 未续流）', '重新创建会话'],
+                        ['INVALID_STATE', '当前状态不允许该操作', '检查调用顺序（例如已 stop 后又发音频）'],
+                        ['INVALID_PARAMS', '参数无效', '核对 core_type / ref_text / 采样率等'],
+                        ['RESUME_INVALID', 'resume_token 无效或已过期', '重新创建会话（每次重连会颁发新 token）'],
+                        ['AUDIO_TOO_LARGE', '单次音频超过 50MB', '压缩或切片后重传'],
+                        ['UPSTREAM_CONNECT', '评测引擎连接失败', '稍后重试；持续发生请联系驰声'],
+                        ['UPSTREAM_TIMEOUT', '评测超时', '缩短音频 / 检查网络'],
+                        ['UPSTREAM_EVAL_ERROR', '评测引擎返回错误', '查看 message 字段细节'],
+                        ['CAPACITY_FULL', '并发会话已满', '退避重试或升级配额'],
+                      ].map(([code, desc, fix]) => (
+                        <tr key={code}>
+                          <td className="py-2 px-3 font-mono text-xs">{code}</td>
+                          <td className="py-2 px-3 text-muted-foreground">{desc}</td>
                           <td className="py-2 px-3">{fix}</td>
                         </tr>
                       ))}
@@ -2591,8 +3227,12 @@ Markdown 子标题：**总览 / 儿化 / 轻声 / 变调 / 节奏 / 学习优先
                       <th className="text-left py-2 px-3 font-medium">说明</th>
                     </tr></thead>
                     <tbody className="divide-y divide-border/30">
-                      <tr><td className="py-2 px-3 font-mono text-xs">/upload</td><td className="py-2 px-3">POST</td><td className="py-2 px-3">音频文件上传</td></tr>
-                      <tr><td className="py-2 px-3 font-mono text-xs">/mcp</td><td className="py-2 px-3">POST</td><td className="py-2 px-3">MCP JSON-RPC 接口（Streamable HTTP）</td></tr>
+                      <tr><td className="py-2 px-3 font-mono text-xs">/upload</td><td className="py-2 px-3">POST</td><td className="py-2 px-3">音频文件上传（MCP 模式文件评测使用）</td></tr>
+                      <tr><td className="py-2 px-3 font-mono text-xs">/mcp</td><td className="py-2 px-3">POST</td><td className="py-2 px-3">MCP 模式 · JSON-RPC（Streamable HTTP）</td></tr>
+                      <tr><td className="py-2 px-3 font-mono text-xs">{'/ws/audio/{session_id}'}</td><td className="py-2 px-3">WS</td><td className="py-2 px-3">MCP 模式 · 流式音频 WebSocket</td></tr>
+                      <tr><td className="py-2 px-3 font-mono text-xs">/v1/functions</td><td className="py-2 px-3">GET</td><td className="py-2 px-3">functioncalling 模式 · 列出全部评测函数</td></tr>
+                      <tr><td className="py-2 px-3 font-mono text-xs">/v1/call</td><td className="py-2 px-3">POST</td><td className="py-2 px-3">functioncalling 模式 · 一次性评测 / 创建流式会话 / 拉取流式结果</td></tr>
+                      <tr><td className="py-2 px-3 font-mono text-xs">{'/ws/eval/{session_id}'}</td><td className="py-2 px-3">WS</td><td className="py-2 px-3">functioncalling 模式 · 流式音频 WebSocket</td></tr>
                       <tr><td className="py-2 px-3 font-mono text-xs">/health</td><td className="py-2 px-3">GET</td><td className="py-2 px-3">健康检查</td></tr>
                     </tbody>
                   </table>

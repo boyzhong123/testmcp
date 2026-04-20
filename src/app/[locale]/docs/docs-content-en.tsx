@@ -27,6 +27,7 @@ import {
   Notebook,
   Gauge,
   ListChecks,
+  Network,
 } from 'lucide-react';
 
 import {
@@ -51,71 +52,241 @@ export function DocsEnglishBody() {
 }
 
 function ArchitectureSection({ L }: { L: 'en' }) {
+  void L;
   return (
     <DocSection id="architecture" icon={Terminal} title="Architecture">
-      <SubDoc id="arch-diagram" title="System diagram">
-        <p className="text-sm text-muted-foreground mb-4">
-          Desktop assistants talk to a <strong>local proxy</strong> over stdio; the proxy bridges HTTP/WebSocket to the hosted MCP + scoring engine. Remote-only IDEs use Streamable HTTP directly to{' '}
-          <code className="bg-muted px-1 rounded text-xs font-mono">/mcp</code> without the local binary.
-        </p>
-        <div className="flex flex-wrap items-center justify-center gap-4 my-6">
-          <div className="rounded-xl border-2 border-foreground/30 px-6 py-4 text-center min-w-[140px]">
-            <p className="text-xs font-semibold mb-1">AI client</p>
-            <p className="text-[11px] text-muted-foreground">
-              Claude Desktop
-              <br />
-              Claude Code
-              <br />
-              Cursor
+      <SubDoc id="arch-overview" title="Two integration modes at a glance">
+        <p>Chivox exposes <strong>two parallel front doors</strong> to the same scoring engine, so pick whichever fits your client runtime:</p>
+
+        <div className="grid md:grid-cols-2 gap-4 my-5">
+          <div className="rounded-xl border-2 border-emerald-500/40 bg-emerald-500/5 p-5">
+            <p className="font-semibold mb-2 flex items-center gap-2">
+              <Plug className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+              MCP mode (preferred)
             </p>
+            <ul className="text-xs space-y-1.5 text-muted-foreground">
+              <li>• JSON-RPC 2.0 over Streamable HTTP / stdio</li>
+              <li>• <strong className="text-foreground">Zero-code</strong> drop-in for any MCP-aware IDE / desktop AI / agent framework</li>
+              <li>• Tool list auto-injected — adding new eval types requires no business-side change</li>
+              <li>• Local proxy <code className="bg-muted px-1 rounded text-[10px] font-mono">chivox-local-mcp</code> enables microphone streaming</li>
+            </ul>
+            <p className="text-xs mt-2"><strong>Typical clients</strong>: Cursor / Claude Desktop / Coze / Dify / LangChain / custom backend agents</p>
+          </div>
+          <div className="rounded-xl border-2 border-sky-500/40 bg-sky-500/5 p-5">
+            <p className="font-semibold mb-2 flex items-center gap-2">
+              <Network className="h-4 w-4 text-sky-600 dark:text-sky-400" />
+              Function-calling mode (non-MCP · cvx_fc)
+            </p>
+            <ul className="text-xs space-y-1.5 text-muted-foreground">
+              <li>• OpenAI function-calling style — plain REST + WebSocket</li>
+              <li>• <strong className="text-foreground">No MCP SDK required</strong>, any HTTP/WS client works</li>
+              <li>• Built-in <code className="bg-muted px-1 rounded text-[10px] font-mono">resume_token</code>, <code className="bg-muted px-1 rounded text-[10px] font-mono">intermediate</code> results, <code className="bg-muted px-1 rounded text-[10px] font-mono">backpressure</code> frames</li>
+              <li>• Fallback channel for runtimes that can't load MCP libraries</li>
+            </ul>
+            <p className="text-xs mt-2"><strong>Typical clients</strong>: native Android / iOS / Flutter, WeChat / Alipay mini-programs, legacy Java / PHP backends</p>
+          </div>
+        </div>
+
+        <p className="font-semibold mt-5">Which one should I pick?</p>
+        <div className="overflow-x-auto rounded-lg border border-border/60 my-3">
+          <table className="w-full text-xs">
+            <thead><tr className="border-b border-border/40 bg-muted/30">
+              <th className="text-left py-2 px-3 font-medium">Your client environment</th>
+              <th className="text-left py-2 px-3 font-medium">Recommendation</th>
+            </tr></thead>
+            <tbody className="divide-y divide-border/30">
+              <tr><td className="py-2 px-3">Cursor / Claude Desktop / AI IDE that accepts MCP</td><td className="py-2 px-3 text-emerald-600 dark:text-emerald-400">MCP mode</td></tr>
+              <tr><td className="py-2 px-3">Python / Node / Java backend able to pull MCP SDK</td><td className="py-2 px-3 text-emerald-600 dark:text-emerald-400">MCP mode</td></tr>
+              <tr><td className="py-2 px-3">Coze / Dify / n8n visual platforms</td><td className="py-2 px-3 text-emerald-600 dark:text-emerald-400">MCP mode</td></tr>
+              <tr><td className="py-2 px-3">Native Android / iOS app that wants raw HTTP + WS</td><td className="py-2 px-3 text-sky-600 dark:text-sky-400">Function-calling mode</td></tr>
+              <tr><td className="py-2 px-3">WeChat / Alipay / Douyin mini-programs</td><td className="py-2 px-3 text-sky-600 dark:text-sky-400">Function-calling mode</td></tr>
+              <tr><td className="py-2 px-3">Legacy / sandboxed runtime that can't add MCP deps</td><td className="py-2 px-3 text-sky-600 dark:text-sky-400">Function-calling mode</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <Callout type="warning">
+          Pick <strong>exactly one</strong> per session — the MCP <code className="bg-white/40 dark:bg-black/30 px-1 rounded text-xs">/ws/audio/</code> and function-calling <code className="bg-white/40 dark:bg-black/30 px-1 rounded text-xs">/ws/eval/</code> endpoints live in different session-ID namespaces.
+        </Callout>
+      </SubDoc>
+
+      <SubDoc id="arch-mcp" title="MCP mode · components & data flow">
+        <p>MCP mode has two deployment shapes — both speak JSON-RPC 2.0, the only difference is whether there's a local proxy between client and server:</p>
+
+        <p className="font-semibold mt-4">Shape A · Remote direct (zero-code)</p>
+        <p className="text-sm text-muted-foreground">For Cursor / Coze / Dify / n8n and any other Streamable HTTP-aware client. <strong>No local dependency.</strong></p>
+        <div className="flex flex-wrap items-center justify-center gap-4 my-4">
+          <div className="rounded-xl border-2 border-foreground/30 px-5 py-3 text-center min-w-[130px]">
+            <p className="text-xs font-semibold mb-0.5">AI client</p>
+            <p className="text-[11px] text-muted-foreground">Cursor / Coze /<br/>Dify / n8n …</p>
+          </div>
+          <div className="text-center">
+            <p className="text-lg font-semibold text-muted-foreground">⇄</p>
+            <p className="text-[10px] text-muted-foreground">Streamable HTTP<br/>JSON-RPC 2.0</p>
+          </div>
+          <div className="rounded-xl border-2 border-emerald-500/50 bg-emerald-500/5 px-5 py-3 text-center min-w-[130px]">
+            <p className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 mb-0.5">Chivox MCP server</p>
+            <p className="text-[11px] text-muted-foreground">/mcp · /ws/audio<br/>scoring engine</p>
+          </div>
+        </div>
+
+        <p className="font-semibold mt-5">Shape B · Local proxy (microphone streaming)</p>
+        <p className="text-sm text-muted-foreground">For Claude Desktop / Claude Code and any stdio-based MCP host that needs live mic capture.</p>
+        <div className="flex flex-wrap items-center justify-center gap-3 my-4">
+          <div className="rounded-xl border-2 border-foreground/30 px-4 py-3 text-center min-w-[120px]">
+            <p className="text-xs font-semibold mb-0.5">AI client</p>
+            <p className="text-[11px] text-muted-foreground">Claude Desktop /<br/>Claude Code</p>
           </div>
           <div className="text-center">
             <p className="text-lg font-semibold text-muted-foreground">⇄</p>
             <p className="text-[10px] text-muted-foreground">stdio</p>
           </div>
-          <div className="rounded-xl border-2 border-emerald-500/50 bg-emerald-500/5 px-6 py-4 text-center min-w-[140px]">
-            <p className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 mb-1">chivox-local-mcp</p>
-            <p className="text-[11px] text-muted-foreground">
-              Local proxy
-              <br />
-              SoX capture
-            </p>
+          <div className="rounded-xl border-2 border-emerald-500/50 bg-emerald-500/5 px-4 py-3 text-center min-w-[120px]">
+            <p className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 mb-0.5">chivox-local-mcp</p>
+            <p className="text-[11px] text-muted-foreground">local proxy · SoX capture</p>
           </div>
           <div className="text-center">
             <p className="text-lg font-semibold text-muted-foreground">⇄</p>
             <p className="text-[10px] text-muted-foreground">HTTP / WS</p>
           </div>
-          <div className="rounded-xl border-2 border-foreground/30 px-6 py-4 text-center min-w-[140px]">
-            <p className="text-xs font-semibold mb-1">Remote Chivox</p>
-            <p className="text-[11px] text-muted-foreground">
-              MCP server
-              <br />
-              Scoring engine
-            </p>
+          <div className="rounded-xl border-2 border-foreground/30 px-4 py-3 text-center min-w-[120px]">
+            <p className="text-xs font-semibold mb-0.5">Remote Chivox</p>
+            <p className="text-[11px] text-muted-foreground">MCP server<br/>scoring engine</p>
           </div>
         </div>
+
+        <p className="font-semibold mt-5">Standard data flow</p>
+        <ol className="list-decimal list-inside space-y-1.5 text-sm ml-1">
+          <li><code className="bg-muted px-1 rounded text-xs">initialize</code> → negotiate protocol version &amp; capabilities</li>
+          <li><code className="bg-muted px-1 rounded text-xs">tools/list</code> → fetch the JSON Schema of all 16 evaluation tools</li>
+          <li><strong>File mode</strong>: <code className="bg-muted px-1 rounded text-xs">tools/call</code> → server runs evaluation → JSON-RPC response</li>
+          <li><strong>Streaming mode</strong>: <code className="bg-muted px-1 rounded text-xs">create_stream_session</code> → push PCM over <code className="bg-muted px-1 rounded text-xs">/ws/audio/{'{session_id}'}</code> → receive <code className="bg-muted px-1 rounded text-xs">stream_eval_result</code></li>
+        </ol>
+
+        <p className="font-semibold mt-6">Raw JSON-RPC requests (copy-paste for custom clients)</p>
+        <p className="text-xs text-muted-foreground mb-3">
+          If you don&apos;t use the official MCP SDK and instead hand-craft JSON-RPC 2.0 frames against <code className="bg-muted px-1 rounded">POST /mcp</code>, here&apos;s the minimal three-step handshake. Every request must carry <code className="bg-muted px-1 rounded text-xs">Authorization: Bearer &lt;your_api_key&gt;</code>.
+        </p>
+
+        <p className="text-sm font-semibold mt-4">① Initialize · <code>initialize</code></p>
+        <CodeBlock filename="initialize.json" lang="json" locale={L}>{`{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "initialize",
+  "params": {
+    "protocolVersion": "2024-11-05",
+    "capabilities": {},
+    "clientInfo": { "name": "my-client", "version": "1.0.0" }
+  }
+}`}</CodeBlock>
+        <p className="text-xs text-muted-foreground">On success the server returns its protocol version, server capabilities, and server info; only then may you call other methods.</p>
+
+        <p className="text-sm font-semibold mt-4">② Fetch the tool catalog · <code>tools/list</code></p>
+        <CodeBlock filename="tools-list.json" lang="json" locale={L}>{`{
+  "jsonrpc": "2.0",
+  "id": 2,
+  "method": "tools/list",
+  "params": {}
+}`}</CodeBlock>
+        <p className="text-xs text-muted-foreground">Returns all 16 evaluation tools (EN 10 + CN 6) plus the 2 streaming tools, each with a name, description, and parameter JSON Schema. Cache the response on the client, then render / bridge it to your LLM as needed.</p>
+
+        <p className="text-sm font-semibold mt-4">③ Invoke a tool · <code>tools/call</code></p>
+        <CodeBlock filename="tools-call.json" lang="json" locale={L}>{`{
+  "jsonrpc": "2.0",
+  "id": 3,
+  "method": "tools/call",
+  "params": {
+    "name": "en_word_eval",
+    "arguments": {
+      "ref_text": "hello",
+      "audio_base64": "<base64 encoded audio>",
+      "accent": 2,
+      "rank": 100
+    }
+  }
+}`}</CodeBlock>
+        <p className="text-xs text-muted-foreground">
+          Success payload lives in <code className="bg-muted px-1 rounded">result.content[0].text</code> (a JSON string whose contents match the evaluation-result schema); failures surface as <code className="bg-muted px-1 rounded">error.code</code> + <code className="bg-muted px-1 rounded">error.message</code>.
+        </p>
+
+        <Callout type="tip">
+          Users of the official Python / TypeScript MCP SDK <strong>do not need to touch any of this</strong> — the SDK wraps <code className="bg-white/40 dark:bg-black/30 px-1 rounded text-xs">session.initialize()</code> / <code className="bg-white/40 dark:bg-black/30 px-1 rounded text-xs">session.list_tools()</code> / <code className="bg-white/40 dark:bg-black/30 px-1 rounded text-xs">session.call_tool()</code>. This section is only for bare-protocol implementors and debugging.
+        </Callout>
       </SubDoc>
-      <SubDoc id="transport" title="Transports">
-        <ul className="space-y-3">
-          <li className="flex items-start gap-2">
-            <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-foreground shrink-0" />
-            <span>
-              <strong>stdio</strong> — default for Claude Desktop / local proxies; MCP messages framed over stdin/stdout.
-            </span>
-          </li>
-          <li className="flex items-start gap-2">
-            <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-foreground shrink-0" />
-            <span>
-              <strong>HTTP</strong> — file uploads and MCP JSON-RPC over Streamable HTTP for IDE and workflow hosts.
-            </span>
-          </li>
-          <li className="flex items-start gap-2">
-            <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-foreground shrink-0" />
-            <span>
-              <strong>WebSocket</strong> — streaming microphone audio with automatic reconnect for live sessions.
-            </span>
-          </li>
+
+      <SubDoc id="arch-rest" title="Function-calling mode · components & data flow">
+        <p>No proxy, no SDK — just two links between client and server: REST for session/file control, WebSocket for audio frames.</p>
+
+        <div className="flex flex-wrap items-center justify-center gap-3 my-5">
+          <div className="rounded-xl border-2 border-foreground/30 px-4 py-3 text-center min-w-[140px]">
+            <p className="text-xs font-semibold mb-0.5">Client</p>
+            <p className="text-[11px] text-muted-foreground">Native app / mini-program /<br/>legacy backend / pure web</p>
+          </div>
+          <div className="text-center">
+            <p className="text-lg font-semibold text-muted-foreground">⇄</p>
+            <p className="text-[10px] text-muted-foreground">HTTP REST<br/>/v1/call · /v1/functions</p>
+          </div>
+          <div className="rounded-xl border-2 border-sky-500/50 bg-sky-500/5 px-4 py-3 text-center min-w-[140px]">
+            <p className="text-xs font-semibold text-sky-600 dark:text-sky-400 mb-0.5">cvx_fc gateway</p>
+            <p className="text-[11px] text-muted-foreground">function-calling API<br/>scoring engine</p>
+          </div>
+          <div className="text-center">
+            <p className="text-lg font-semibold text-muted-foreground">⇄</p>
+            <p className="text-[10px] text-muted-foreground">WebSocket<br/>/ws/eval/&#123;id&#125;</p>
+          </div>
+          <div className="rounded-xl border-2 border-foreground/30 px-4 py-3 text-center min-w-[140px]">
+            <p className="text-xs font-semibold mb-0.5">Client (streaming)</p>
+            <p className="text-[11px] text-muted-foreground">microphone / chunk buffer</p>
+          </div>
+        </div>
+
+        <p className="font-semibold mt-5">Three typical flows</p>
+        <div className="space-y-3 my-3">
+          <div className="rounded-lg border border-border/60 p-4">
+            <p className="text-sm font-semibold mb-1.5">a. One-shot file eval</p>
+            <p className="text-xs text-muted-foreground">POST <code className="bg-muted px-1 rounded">/v1/call</code> (<code className="bg-muted px-1 rounded">audio_url</code> or <code className="bg-muted px-1 rounded">audio_base64</code>) → synchronous score</p>
+          </div>
+          <div className="rounded-lg border border-border/60 p-4">
+            <p className="text-sm font-semibold mb-1.5">b. Streaming eval</p>
+            <p className="text-xs text-muted-foreground">POST <code className="bg-muted px-1 rounded">/v1/call</code> → <code className="bg-muted px-1 rounded">start_stream_eval</code> → open <code className="bg-muted px-1 rounded">/ws/eval/&#123;id&#125;</code> → push PCM → receive <code className="bg-muted px-1 rounded">intermediate</code> / <code className="bg-muted px-1 rounded">backpressure</code> → send <code className="bg-muted px-1 rounded">stop</code> → receive <code className="bg-muted px-1 rounded">result</code></p>
+          </div>
+          <div className="rounded-lg border border-border/60 p-4">
+            <p className="text-sm font-semibold mb-1.5">c. Resume &amp; fallback</p>
+            <p className="text-xs text-muted-foreground">Network glitch within 60s → reconnect with <code className="bg-muted px-1 rounded">resume_token</code>; unrecoverable → POST <code className="bg-muted px-1 rounded">/v1/call</code> → <code className="bg-muted px-1 rounded">get_stream_result</code></p>
+          </div>
+        </div>
+
+        <p className="font-semibold mt-5">Distinctive capabilities</p>
+        <ul className="list-disc list-inside space-y-1 text-sm ml-1">
+          <li><strong>resume_token</strong> — seamless resume within 60s; server keeps session state warm</li>
+          <li><strong>intermediate frames</strong> — partial results streamed as audio flows, great for live waveform / score colouring</li>
+          <li><strong>backpressure feedback</strong> — server broadcasts <code className="bg-muted px-1 rounded text-xs">suggested_interval_ms</code> and the client slows down accordingly</li>
+          <li><strong>structured error codes</strong> — <code className="bg-muted px-1 rounded text-xs">SESSION_EXPIRED</code> / <code className="bg-muted px-1 rounded text-xs">INVALID_STATE</code> / … for deterministic retry logic</li>
         </ul>
+        <p className="text-xs text-muted-foreground mt-3">Full usage examples live in the <a href="#config-rest" className="text-blue-600 dark:text-blue-400 hover:underline">Non-MCP REST (cvx_fc)</a> section below.</p>
+      </SubDoc>
+
+      <SubDoc id="transport" title="Transport comparison">
+        <div className="overflow-x-auto rounded-lg border border-border/60">
+          <table className="w-full text-sm">
+            <thead><tr className="border-b border-border/40 bg-muted/30">
+              <th className="text-left py-2 px-3 font-medium">Dimension</th>
+              <th className="text-left py-2 px-3 font-medium">MCP mode</th>
+              <th className="text-left py-2 px-3 font-medium">Function-calling (cvx_fc)</th>
+            </tr></thead>
+            <tbody className="divide-y divide-border/30">
+              <tr><td className="py-2 px-3 font-medium">Protocol</td><td className="py-2 px-3">JSON-RPC 2.0</td><td className="py-2 px-3">REST + WebSocket</td></tr>
+              <tr><td className="py-2 px-3 font-medium">Entry path</td><td className="py-2 px-3 font-mono text-xs">POST /mcp</td><td className="py-2 px-3 font-mono text-xs">POST /v1/call</td></tr>
+              <tr><td className="py-2 px-3 font-medium">List tools</td><td className="py-2 px-3 font-mono text-xs">tools/list</td><td className="py-2 px-3 font-mono text-xs">GET /v1/functions</td></tr>
+              <tr><td className="py-2 px-3 font-medium">Call tool</td><td className="py-2 px-3 font-mono text-xs">tools/call</td><td className="py-2 px-3 font-mono text-xs">POST /v1/call + name</td></tr>
+              <tr><td className="py-2 px-3 font-medium">Streaming WS</td><td className="py-2 px-3 font-mono text-xs">{'/ws/audio/{session_id}'}</td><td className="py-2 px-3 font-mono text-xs">{'/ws/eval/{session_id}'}</td></tr>
+              <tr><td className="py-2 px-3 font-medium">Local stdio proxy</td><td className="py-2 px-3">yes (<code className="bg-muted px-1 rounded text-[10px]">chivox-local-mcp</code>)</td><td className="py-2 px-3 text-muted-foreground">n/a</td></tr>
+              <tr><td className="py-2 px-3 font-medium">Reconnect</td><td className="py-2 px-3">SDK auto-reconnect</td><td className="py-2 px-3">resume_token (60s suspend)</td></tr>
+              <tr><td className="py-2 px-3 font-medium">Intermediate results</td><td className="py-2 px-3">stream_eval callback</td><td className="py-2 px-3">intermediate frames</td></tr>
+              <tr><td className="py-2 px-3 font-medium">Backpressure feedback</td><td className="py-2 px-3 text-muted-foreground">—</td><td className="py-2 px-3">backpressure frames</td></tr>
+              <tr><td className="py-2 px-3 font-medium">Client dependency</td><td className="py-2 px-3">MCP SDK (official / framework)</td><td className="py-2 px-3">any HTTP + WS client</td></tr>
+            </tbody>
+          </table>
+        </div>
       </SubDoc>
     </DocSection>
   );
@@ -662,7 +833,8 @@ bash scripts/build.sh`}</CodeBlock>
           <ul className="list-disc list-inside space-y-1 text-muted-foreground">
             <li>You own a backend service, worker, or script.</li>
             <li>Your code decides when to call scoring and how to interpret JSON.</li>
-            <li>Preferred paths: official MCP SDK → agent adapters → raw chat.completions with dynamic tools.</li>
+            <li>Four main paths: ① official MCP SDK → ② agent adapters → ③ raw chat.completions with dynamic tools → ④ embedding an MCP client inside your service.</li>
+            <li>If your runtime cannot load an MCP SDK (native apps, mini-programs, sandboxed legacy stacks), skip ahead to the <a href="#config-rest" className="text-blue-600 dark:text-blue-400 hover:underline">Non-MCP REST (cvx_fc)</a> section.</li>
             <li>
               The catalog exposes <strong className="text-foreground">16 tools</strong> total — always hydrate definitions via{' '}
               <code className="bg-muted px-1 rounded text-xs font-mono">list_tools</code>, never copy-paste sixteen schemas by hand.
@@ -857,6 +1029,59 @@ async with streamablehttp_client("https://speech-eval.site/mcp") as (r, w, _):
             <code className="bg-muted px-1 rounded text-xs font-mono">list_tools()</code>.
           </Callout>
         </SubDoc>
+
+        <SubDoc id="code-selfhosted-agent" title="④ Custom backend (FastAPI / Nest / Spring)">
+          <p>
+            Most production setups already have an app server — add a <strong>long-lived</strong> MCP session in the process lifespan, call tools directly when latency matters, and only then involve an LLM for natural-language coaching.
+          </p>
+          <div className="rounded-lg bg-muted/30 p-5 my-4">
+            <div className="flex flex-wrap items-center gap-2 text-xs">
+              <span className="px-3 py-1.5 rounded-md bg-background border border-border/60 font-medium">Client upload</span>
+              <span className="text-muted-foreground">→</span>
+              <span className="px-3 py-1.5 rounded-md bg-background border border-border/60 font-medium">Your API</span>
+              <span className="text-muted-foreground">→</span>
+              <span className="px-3 py-1.5 rounded-md bg-primary/10 border border-primary/30 font-medium">MCP session</span>
+              <span className="text-muted-foreground">→</span>
+              <span className="px-3 py-1.5 rounded-md bg-background border border-border/60 font-medium">Chivox</span>
+              <span className="text-muted-foreground">↘</span>
+              <span className="px-3 py-1.5 rounded-md bg-background border border-border/60 font-medium">LLM (optional)</span>
+            </div>
+          </div>
+          <CodeBlock filename="app.py" lang="python" locale={L}>{`from fastapi import FastAPI
+from mcp.client.streamable_http import streamablehttp_client
+from mcp import ClientSession
+from contextlib import asynccontextmanager
+
+mcp_session: ClientSession | None = None
+
+@asynccontextmanager
+async def lifespan(app):
+    global mcp_session
+    async with streamablehttp_client("https://speech-eval.site/mcp") as (r, w, _):
+        async with ClientSession(r, w) as s:
+            await s.initialize()
+            mcp_session = s
+            yield
+    mcp_session = None
+
+app = FastAPI(lifespan=lifespan)
+
+@app.post("/api/evaluate")
+async def evaluate(audio_id: str, ref_text: str):
+    r = await mcp_session.call_tool(
+        "evaluate_english_sentence",
+        {"audioId": audio_id, "sentence": ref_text},
+    )
+    return {"result": r.content[0].text}`}</CodeBlock>
+          <Callout type="tip">
+            Reuse one MCP connection per worker — do not reconnect per request. Skip the LLM entirely for raw scoring APIs if you only need JSON.
+          </Callout>
+        </SubDoc>
+
+        <div className="rounded-lg border border-border/60 bg-muted/20 p-4 my-5 text-xs">
+          <p className="font-semibold text-sm mb-1.5 flex items-center gap-2"><Sparkles className="h-4 w-4 text-muted-foreground" /> The sections below drill into path <strong className="text-foreground">③ (chat.completions)</strong> per LLM vendor</p>
+          <p className="text-muted-foreground">Pick the vendor you use today — SDK / base_url / auth differ slightly, but the Chivox MCP side stays identical.</p>
+        </div>
 
         <SubDoc id="llm-deepseek" title="DeepSeek">
           <p>
@@ -1625,62 +1850,362 @@ print(f"call: {fc.name}({dict(fc.args)})  id={fc.id}")`}</CodeBlock>
           </Callout>
         </SubDoc>
 
-        <SubDoc id="code-selfhosted-agent" title="Custom backend (FastAPI / Nest / Spring)">
+      </DocSection>
+
+      <DocSection id="config-rest" icon={Network} title="Non-MCP REST (cvx_fc)">
+
+        <div className="rounded-lg border border-sky-500/30 bg-sky-500/5 p-4 mb-5 text-sm">
+          <p className="font-semibold mb-1.5 flex items-center gap-2"><Network className="h-4 w-4 text-sky-600" /> When this section applies</p>
+          <ul className="list-disc list-inside space-y-1 text-muted-foreground">
+            <li>Your client <strong className="text-foreground">cannot (or will not) pull in an MCP SDK</strong>: native Android / iOS / Flutter, WeChat / Alipay mini-programs, legacy Java / PHP / Go backends</li>
+            <li>You want to treat Chivox as a <strong className="text-foreground">plain REST + WebSocket</strong> service — no JSON-RPC, no stdio proxy</li>
+            <li>Internal codename <code className="bg-muted px-1 rounded text-xs font-mono">cvx_fc</code> (OpenAI function-calling style). It targets the <strong className="text-foreground">same evaluation engine</strong> as MCP — they are two parallel entry points</li>
+          </ul>
+          <p className="mt-2 text-xs text-muted-foreground">Rule of thumb: always prefer MCP; drop down to this section only when your client genuinely cannot host an MCP SDK.</p>
+        </div>
+
+        <SubDoc id="rest-overview" title="Function-calling overview · endpoints & auth">
           <p>
-            Most production setups already have an app server — add a <strong>long-lived</strong> MCP session in the process lifespan, call tools directly when latency matters, and only then involve an LLM for natural-language coaching.
+            Alongside MCP, Chivox exposes an <strong>OpenAI-compatible Function-calling REST API</strong> (internal name <code className="bg-muted px-1 rounded text-xs">cvx_fc</code>). It hits the <strong>same scoring engine</strong> as MCP mode, but speaks pure HTTP / WebSocket with <strong>zero MCP dependencies</strong>.
           </p>
-          <div className="rounded-lg bg-muted/30 p-5 my-4">
-            <div className="flex flex-wrap items-center gap-2 text-xs">
-              <span className="px-3 py-1.5 rounded-md bg-background border border-border/60 font-medium">Client upload</span>
-              <span className="text-muted-foreground">→</span>
-              <span className="px-3 py-1.5 rounded-md bg-background border border-border/60 font-medium">Your API</span>
-              <span className="text-muted-foreground">→</span>
-              <span className="px-3 py-1.5 rounded-md bg-primary/10 border border-primary/30 font-medium">MCP session</span>
-              <span className="text-muted-foreground">→</span>
-              <span className="px-3 py-1.5 rounded-md bg-background border border-border/60 font-medium">Chivox</span>
-              <span className="text-muted-foreground">↘</span>
-              <span className="px-3 py-1.5 rounded-md bg-background border border-border/60 font-medium">LLM (optional)</span>
+
+          <Callout type="info">
+            <strong>Relationship to MCP mode:</strong> MCP (<code className="bg-white/40 dark:bg-black/30 px-1 rounded text-xs font-mono">POST /mcp</code>, JSON-RPC 2.0) and function-calling (<code className="bg-white/40 dark:bg-black/30 px-1 rounded text-xs font-mono">POST /v1/call</code>, REST) are <strong>two parallel entry points</strong> with equivalent capabilities and essentially identical tool/function catalogs.
+          </Callout>
+
+          <p className="font-semibold mt-6">API endpoints</p>
+          <div className="overflow-x-auto rounded-lg border border-border/60">
+            <table className="w-full text-sm">
+              <thead><tr className="border-b border-border/40 bg-muted/30">
+                <th className="text-left py-2 px-3 font-medium">Method</th>
+                <th className="text-left py-2 px-3 font-medium">Path</th>
+                <th className="text-left py-2 px-3 font-medium">Purpose</th>
+              </tr></thead>
+              <tbody className="divide-y divide-border/30">
+                <tr><td className="py-2 px-3 font-mono text-xs">GET</td><td className="py-2 px-3 font-mono text-xs">/v1/functions</td><td className="py-2 px-3">List all available evaluation functions (equivalent to MCP <code className="bg-muted px-1 rounded text-xs">tools/list</code>)</td></tr>
+                <tr><td className="py-2 px-3 font-mono text-xs">POST</td><td className="py-2 px-3 font-mono text-xs">/v1/call</td><td className="py-2 px-3">Invoke a function (equivalent to MCP <code className="bg-muted px-1 rounded text-xs">tools/call</code>) · also used to <strong>create streaming sessions</strong> and <strong>fetch streaming results</strong></td></tr>
+                <tr><td className="py-2 px-3 font-mono text-xs">WS</td><td className="py-2 px-3 font-mono text-xs">{'/ws/eval/{session_id}'}</td><td className="py-2 px-3">Streaming audio WebSocket</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <p className="font-semibold mt-6">Authentication</p>
+          <p>Every request carries the API key via the HTTP header:</p>
+          <CodeBlock filename="Header" lang="http" locale={L}>{`Authorization: Bearer <your_api_key>`}</CodeBlock>
+          <p className="text-xs text-muted-foreground">Auth failures return <code className="bg-muted px-1 rounded text-xs">401</code> (missing header) or <code className="bg-muted px-1 rounded text-xs">403</code> (invalid key / not entitled). Structured error codes: see <a href="#error-codes" className="text-blue-600 dark:text-blue-400 hover:underline">API reference · error codes</a>.</p>
+        </SubDoc>
+
+        <SubDoc id="rest-catalog" title="Function catalog · GET /v1/functions">
+          <p>
+            Hit <code className="bg-muted px-1 rounded text-xs">GET /v1/functions</code> to fetch every evaluation function <strong>your API key is entitled to</strong>. The response is shaped like an OpenAI function-calling tools catalog, so you can feed it directly into an LLM&apos;s <code className="bg-muted px-1 rounded text-xs">tools</code> argument:
+          </p>
+          <CodeBlock filename="request" lang="http" locale={L}>{`GET /v1/functions
+Authorization: Bearer <api_key>`}</CodeBlock>
+          <CodeBlock filename="response.json" lang="json" locale={L}>{`{
+  "object": "list",
+  "data": [
+    {
+      "type": "function",
+      "function": {
+        "name": "en_word_eval",
+        "description": "English word pronunciation eval; returns overall score and per-phoneme scores.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "ref_text":     { "type": "string", "description": "Reference text" },
+            "audio_base64": { "type": "string", "description": "Base64-encoded audio (either this or audio_url)" },
+            "audio_url":    { "type": "string", "description": "HTTP(S) URL of audio (either this or audio_base64)" },
+            "accent":       { "type": "number", "description": "1 = British / 2 = American / 3 = any (default)" },
+            "rank":         { "type": "number", "description": "Scoring scale: 4 or 100 (default)" }
+          },
+          "required": ["ref_text"]
+        }
+      }
+    }
+    /* … more functions … */
+  ]
+}`}</CodeBlock>
+          <Callout type="tip">
+            This endpoint is semantically equivalent to MCP&apos;s <code className="bg-white/40 dark:bg-black/30 px-1 rounded text-xs">tools/list</code>. <strong>Each API key sees only the functions it&apos;s entitled to</strong> — rely on the live response rather than hard-coding all 19 functions on the client.
+          </Callout>
+
+          <p className="font-semibold mt-6">English evaluation functions (10)</p>
+          <div className="overflow-x-auto rounded-lg border border-border/60">
+            <table className="w-full text-sm">
+              <thead><tr className="border-b border-border/40 bg-muted/30">
+                <th className="text-left py-2 px-3 font-medium">Function</th>
+                <th className="text-left py-2 px-3 font-medium">core_type</th>
+                <th className="text-left py-2 px-3 font-medium">Purpose</th>
+              </tr></thead>
+              <tbody className="divide-y divide-border/30">
+                {[
+                  ['en_word_eval',           'en.word.score',  'Word pronunciation'],
+                  ['en_word_correction',     'en.word.pron',   'Word-level pronunciation correction'],
+                  ['en_phonics_eval',        'en.nsp.score',   'Phonics evaluation'],
+                  ['en_sentence_eval',       'en.sent.score',  'Sentence reading'],
+                  ['en_sentence_correction', 'en.sent.pron',   'Sentence-level pronunciation correction'],
+                  ['en_vocab_eval',          'en.vocabs.pron', 'Batch vocabulary'],
+                  ['en_paragraph_eval',      'en.pred.score',  'Paragraph reading'],
+                  ['en_realtime_eval',       'en.rltm.score',  'Real-time reading'],
+                  ['en_choice_eval',         'en.choc.score',  'Spoken multiple-choice'],
+                  ['en_semi_open_eval',      'en.scne.exam',   'Semi-open (scenario dialogue, etc.)'],
+                ].map(([fn, ct, desc]) => (
+                  <tr key={fn}>
+                    <td className="py-2 px-3 font-mono text-xs">{fn}</td>
+                    <td className="py-2 px-3 font-mono text-xs text-muted-foreground">{ct}</td>
+                    <td className="py-2 px-3">{desc}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          <p className="font-semibold mt-6">Chinese evaluation functions (6)</p>
+          <div className="overflow-x-auto rounded-lg border border-border/60">
+            <table className="w-full text-sm">
+              <thead><tr className="border-b border-border/40 bg-muted/30">
+                <th className="text-left py-2 px-3 font-medium">Function</th>
+                <th className="text-left py-2 px-3 font-medium">core_type</th>
+                <th className="text-left py-2 px-3 font-medium">Purpose</th>
+              </tr></thead>
+              <tbody className="divide-y divide-border/30">
+                {[
+                  ['cn_word_pinyin_eval', 'cn.word.score',   'Pinyin / character pronunciation'],
+                  ['cn_word_raw_eval',    'cn.word.raw',     'Character pronunciation'],
+                  ['cn_sentence_eval',    'cn.sent.raw',     'Sentence reading'],
+                  ['cn_paragraph_eval',   'cn.pred.raw',     'Paragraph reading'],
+                  ['cn_rec_eval',         'cn.rec.raw',      'Bounded-branch recognition'],
+                  ['cn_aitalk_eval',      'cn.recscore.raw', 'Spoken expression (AI Talk)'],
+                ].map(([fn, ct, desc]) => (
+                  <tr key={fn}>
+                    <td className="py-2 px-3 font-mono text-xs">{fn}</td>
+                    <td className="py-2 px-3 font-mono text-xs text-muted-foreground">{ct}</td>
+                    <td className="py-2 px-3">{desc}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          <p className="font-semibold mt-6">Streaming functions (3)</p>
+          <div className="overflow-x-auto rounded-lg border border-border/60">
+            <table className="w-full text-sm">
+              <thead><tr className="border-b border-border/40 bg-muted/30">
+                <th className="text-left py-2 px-3 font-medium">Function</th>
+                <th className="text-left py-2 px-3 font-medium">Role</th>
+              </tr></thead>
+              <tbody className="divide-y divide-border/30">
+                <tr>
+                  <td className="py-2 px-3 font-mono text-xs">start_stream_eval</td>
+                  <td className="py-2 px-3">Create a streaming session; returns <code className="bg-muted px-1 rounded text-xs">session_id</code> / <code className="bg-muted px-1 rounded text-xs">ws_url</code> / <code className="bg-muted px-1 rounded text-xs">resume_token</code></td>
+                </tr>
+                <tr>
+                  <td className="py-2 px-3 font-mono text-xs">get_stream_result</td>
+                  <td className="py-2 px-3">Fallback fetch: when the WS didn&apos;t deliver <code className="bg-muted px-1 rounded text-xs">result</code>, pull the final score via HTTP</td>
+                </tr>
+                <tr>
+                  <td className="py-2 px-3 font-mono text-xs">stream_eval_result</td>
+                  <td className="py-2 px-3 text-muted-foreground">(MCP-side alias; cvx_fc clients use <code className="bg-muted px-1 rounded text-xs">get_stream_result</code>)</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <p className="text-xs text-muted-foreground mt-4">
+            Each function&apos;s <strong>business semantics / parameters / response fields</strong> are identical to its same-named MCP tool — refer to <a href="#tools-en" className="text-blue-600 dark:text-blue-400 hover:underline">API reference · English tools</a> and <a href="#tools-cn" className="text-blue-600 dark:text-blue-400 hover:underline">Chinese tools</a> below.
+          </p>
+        </SubDoc>
+
+        <SubDoc id="rest-oneshot" title="One-shot file evaluation">
+          <p>Pass the complete audio via <code className="bg-muted px-1 rounded text-xs">audio_base64</code> or <code className="bg-muted px-1 rounded text-xs">audio_url</code> (either/or) to <code className="bg-muted px-1 rounded text-xs">/v1/call</code>, and the score returns synchronously (semantically equivalent to MCP tools such as <code className="bg-muted px-1 rounded text-xs">evaluate_english_word</code>):</p>
+          <CodeBlock filename="curl · English word" lang="bash" locale={L}>{`curl -X POST http://your-host:8080/v1/call \\
+  -H "Authorization: Bearer your_api_key" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "name": "en_word_eval",
+    "arguments": {
+      "ref_text": "hello",
+      "audio_url": "https://example.com/hello.mp3",
+      "accent": 2,
+      "rank": 100
+    }
+  }'`}</CodeBlock>
+          <p><strong>Success:</strong></p>
+          <CodeBlock filename="response.json" lang="json" locale={L}>{`{
+  "name": "en_word_eval",
+  "result": {
+    "overall": 85.5,
+    "details": { /* phonemes / prosody / fluency — identical schema to MCP mode */ }
+  }
+}`}</CodeBlock>
+          <p><strong>Failure:</strong></p>
+          <CodeBlock filename="error.json" lang="json" locale={L}>{`{
+  "name": "en_word_eval",
+  "error": { "message": "human-readable description" }
+}`}</CodeBlock>
+          <p className="text-xs text-muted-foreground">Single audio payload ≤ 50MB. Recommended: 16 kHz / mono / 16-bit.</p>
+        </SubDoc>
+
+        <SubDoc id="rest-streaming" title="Streaming evaluation · 3 steps">
+          <div className="rounded-lg border border-border/60 bg-muted/10 p-5 space-y-5 my-3">
+            <FlowStep title="1">
+              <p><strong>Create session:</strong> <code className="bg-muted px-1 rounded text-xs">POST /v1/call</code> with function name <code className="bg-muted px-1 rounded text-xs">start_stream_eval</code></p>
+              <p className="text-muted-foreground mt-1">Response returns <code className="bg-muted px-1 rounded text-xs">session_id</code> / <code className="bg-muted px-1 rounded text-xs">ws_url</code> / <code className="bg-muted px-1 rounded text-xs">resume_token</code>.</p>
+            </FlowStep>
+            <FlowStep title="2">
+              <p><strong>WebSocket push:</strong> connect <code className="bg-muted px-1 rounded text-xs">ws_url</code>, wait for <code className="bg-muted px-1 rounded text-xs">{`{"type":"ready"}`}</code>, then push <strong>binary audio frames</strong>.</p>
+              <p className="text-muted-foreground mt-1">You receive <code className="bg-muted px-1 rounded text-xs">intermediate</code> partials while streaming; send <code className="bg-muted px-1 rounded text-xs">{`{"type":"stop"}`}</code> at the end and catch the final <code className="bg-muted px-1 rounded text-xs">result</code>.</p>
+            </FlowStep>
+            <FlowStep title="3">
+              <p><strong>Fallback fetch (optional):</strong> if the WS dropped before the <code className="bg-muted px-1 rounded text-xs">result</code> arrived, call <code className="bg-muted px-1 rounded text-xs">POST /v1/call</code> again with <code className="bg-muted px-1 rounded text-xs">get_stream_result</code>.</p>
+            </FlowStep>
+          </div>
+
+          <p className="font-semibold mt-4"><code>start_stream_eval</code> parameters</p>
+          <ParamTable locale="en" params={[
+            { name: 'core_type', type: 'string', required: true, desc: 'Scoring type, e.g. en.sent.score / cn.sent.raw (see English & Chinese tool tables above)' },
+            { name: 'ref_text', type: 'string', required: true, desc: 'Reference text' },
+            { name: 'audio_type', type: 'string', required: false, desc: 'Audio format: pcm / wav / mp3 (default mp3; pcm recommended for streaming to skip codec overhead)' },
+            { name: 'sample_rate', type: 'number', required: false, desc: 'Sample rate, default 16000' },
+            { name: 'channel', type: 'number', required: false, desc: '1 = mono (default) / 2 = stereo' },
+            { name: 'sample_bytes', type: 'number', required: false, desc: 'Bytes per sample, default 2 (16-bit)' },
+            { name: 'accent', type: 'number', required: false, desc: 'English accent: 1 = British / 2 = American / 3 = any (default)' },
+            { name: 'age_group', type: 'string', required: false, desc: 'Chinese cohort: adult (default) / child' },
+            { name: 'rank', type: 'number', required: false, desc: 'Scoring scale: 4 or 100 (default)' },
+          ]} />
+
+          <p className="font-semibold mt-4">WebSocket frame protocol</p>
+          <div className="grid sm:grid-cols-2 gap-3 my-3">
+            <div className="rounded-lg border border-border/60 p-4">
+              <p className="text-xs font-semibold mb-2">Client → Server</p>
+              <ul className="text-xs space-y-1.5 text-muted-foreground leading-relaxed list-none pl-0">
+                <li>• <code className="bg-muted px-1 rounded">Binary</code> — raw audio frames; no handshake, start sending once open</li>
+                <li>• <code className="bg-muted px-1 rounded">{`{"type":"stop"}`}</code> — end recording</li>
+                <li>• <code className="bg-muted px-1 rounded">{`{"type":"ping"}`}</code> — keepalive</li>
+              </ul>
+            </div>
+            <div className="rounded-lg border border-border/60 p-4">
+              <p className="text-xs font-semibold mb-2">Server → Client</p>
+              <ul className="text-xs space-y-1.5 text-muted-foreground leading-relaxed list-none pl-0">
+                <li>• <code className="bg-muted px-1 rounded">ready</code> — connection is live; begin sending audio</li>
+                <li>• <code className="bg-muted px-1 rounded">intermediate</code> — partial results in real time</li>
+                <li>• <code className="bg-muted px-1 rounded">result</code> — final scoring result</li>
+                <li>• <code className="bg-muted px-1 rounded">backpressure</code> — slow down; payload carries <code className="bg-muted px-1 rounded">suggested_interval_ms</code></li>
+                <li>• <code className="bg-muted px-1 rounded">error</code> — structured <code className="bg-muted px-1 rounded">code</code> + <code className="bg-muted px-1 rounded">message</code> (see <a href="#error-codes" className="underline underline-offset-2">error codes</a>)</li>
+                <li>• <code className="bg-muted px-1 rounded">pong</code> — keepalive reply</li>
+              </ul>
             </div>
           </div>
-          <CodeBlock filename="app.py" lang="python" locale={L}>{`from fastapi import FastAPI
-from mcp.client.streamable_http import streamablehttp_client
-from mcp import ClientSession
-from contextlib import asynccontextmanager
-
-mcp_session: ClientSession | None = None
-
-@asynccontextmanager
-async def lifespan(app):
-    global mcp_session
-    async with streamablehttp_client("https://speech-eval.site/mcp") as (r, w, _):
-        async with ClientSession(r, w) as s:
-            await s.initialize()
-            mcp_session = s
-            yield
-    mcp_session = None
-
-app = FastAPI(lifespan=lifespan)
-
-@app.post("/api/evaluate")
-async def evaluate(audio_id: str, ref_text: str):
-    r = await mcp_session.call_tool(
-        "evaluate_english_sentence",
-        {"audioId": audio_id, "sentence": ref_text},
-    )
-    return {"result": r.content[0].text}`}</CodeBlock>
-          <Callout type="tip">
-            Reuse one MCP connection per worker — do not reconnect per request. Skip the LLM entirely for raw scoring APIs if you only need JSON.
-          </Callout>
-          <div className="rounded-lg border border-border/60 bg-muted/30 p-4 mt-4 text-sm">
-            <p className="font-semibold mb-2">Quick selection</p>
-            <ul className="list-disc list-inside space-y-1 text-muted-foreground text-xs">
-              <li>Swappable LLM vendors → official MCP SDK path above.</li>
-              <li>LangChain / Mastra / Agents SDK → use framework adapters.</li>
-              <li>Console-only OpenAI-compatible APIs → chat.completions section + vendor snippets.</li>
-              <li>Education SaaS backend → lifespan-hooked MCP client + optional LLM pass.</li>
-            </ul>
-          </div>
         </SubDoc>
+
+        <SubDoc id="rest-examples" title="JS / Android full examples">
+          <p className="font-semibold">JavaScript (browser / Node.js)</p>
+          <CodeBlock filename="browser-or-node.js" lang="javascript" locale={L}>{`// 1. Create session
+const resp = await fetch('http://your-host:8080/v1/call', {
+  method: 'POST',
+  headers: {
+    'Authorization': 'Bearer your_api_key',
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({
+    name: 'start_stream_eval',
+    arguments: {
+      core_type: 'en.sent.score',
+      ref_text: 'Hello world',
+      audio_type: 'pcm',
+      sample_rate: 16000,
+    },
+  }),
+});
+const { result } = await resp.json();
+
+// 2. WebSocket: push audio
+const ws = new WebSocket(result.ws_url);
+ws.onmessage = (ev) => {
+  const msg = JSON.parse(ev.data);
+  switch (msg.type) {
+    case 'ready':        startRecording(); break;
+    case 'intermediate': console.log('partial', msg.data); break;
+    case 'result':       console.log('final', msg.data); ws.close(); break;
+    case 'backpressure': console.warn('slow down ~', msg.suggested_interval_ms, 'ms'); break;
+    case 'error':        console.error(msg.code, msg.message); break;
+  }
+};
+
+function onAudioChunk(pcm) {
+  if (ws.readyState === WebSocket.OPEN) ws.send(pcm); // raw binary
+}
+
+function stopRecording() {
+  ws.send(JSON.stringify({ type: 'stop' }));
+}`}</CodeBlock>
+
+          <p className="font-semibold mt-6">Android (OkHttp · Kotlin)</p>
+          <CodeBlock filename="AudioEvalClient.kt" lang="kotlin" locale={L}>{`val wsUrl  = "ws://your-host:8080/ws/eval/$sessionId"
+val client = OkHttpClient()
+val req    = Request.Builder()
+    .url(wsUrl)
+    .addHeader("Authorization", "Bearer \${apiKey}")
+    .build()
+
+val ws = client.newWebSocket(req, object : WebSocketListener() {
+    override fun onMessage(ws: WebSocket, text: String) {
+        val msg = JSONObject(text)
+        when (msg.getString("type")) {
+            "ready"        -> startRecording()
+            "intermediate" -> updateUI(msg.getJSONObject("data"))
+            "result"       -> handleFinalResult(msg.getJSONObject("data"))
+            "error"        -> handleError(msg.getString("code"), msg.getString("message"))
+        }
+    }
+})
+
+// Forward PCM bytes from your recorder
+fun onAudioData(pcm: ByteArray) {
+    ws.send(ByteString.of(*pcm))
+}
+
+fun stop() {
+    ws.send("""{"type":"stop"}""")
+}`}</CodeBlock>
+          <Callout type="tip">iOS / Flutter / mini-programs work the same way: as long as the platform ships a WebSocket client, connect to <code className="bg-white/40 dark:bg-black/30 px-1 rounded text-xs">ws_url</code>, stream PCM bytes, and route server messages by the <code className="bg-white/40 dark:bg-black/30 px-1 rounded text-xs">type</code> field.</Callout>
+        </SubDoc>
+
+        <SubDoc id="rest-resume" title="Reconnect & fallback fetch">
+          <p className="font-semibold">resume_token · 60-second reconnect window</p>
+          <p>
+            When the client disconnects unexpectedly, the session is <strong>parked for 60 seconds</strong> on the server; reconnect with the <code className="bg-muted px-1 rounded text-xs">resume_token</code> returned at session creation:
+          </p>
+          <CodeBlock filename="reconnect" lang="http" locale={L}>{`GET ws://your-host:8080/ws/eval/{session_id}?resume={resume_token}
+Authorization: Bearer <your_api_key>`}</CodeBlock>
+          <Callout type="tip">
+            A successful resume yields a fresh <code className="bg-white/40 dark:bg-black/30 px-1 rounded text-xs">ready</code> — keep streaming audio. The server issues a <strong>new resume_token</strong> and invalidates the old one immediately.
+          </Callout>
+
+          <p className="font-semibold mt-6">Fallback fetch · get_stream_result</p>
+          <p>If the final <code className="bg-muted px-1 rounded text-xs">result</code> never arrived over WS, fetch it over HTTP:</p>
+          <CodeBlock filename="fallback-result.sh" lang="bash" locale={L}>{`curl -X POST http://your-host:8080/v1/call \\
+  -H "Authorization: Bearer your_api_key" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "name": "get_stream_result",
+    "arguments": {
+      "session_id": "stream-1713340800-a1b2c3",
+      "auto_stop": true,
+      "timeout": 30
+    }
+  }'`}</CodeBlock>
+          <ParamTable locale="en" params={[
+            { name: 'session_id', type: 'string', required: true, desc: 'Session ID returned by start_stream_eval' },
+            { name: 'auto_stop', type: 'bool', required: false, desc: 'Auto-send stop and wait for the result (default true)' },
+            { name: 'timeout', type: 'number', required: false, desc: 'Wait timeout in seconds (default 30)' },
+          ]} />
+
+          <Callout type="warning">
+            Function-calling mode and MCP mode are <strong>mutually exclusive per session</strong> — do not mix MCP <code className="bg-white/40 dark:bg-black/30 px-1 rounded text-xs">/ws/audio/</code> and cvx_fc <code className="bg-white/40 dark:bg-black/30 px-1 rounded text-xs">/ws/eval/</code> against the same session; the two paths have separate session-ID namespaces.
+          </Callout>
+        </SubDoc>
+
       </DocSection>
 
       <DocSection id="eval-modes" icon={Radio} title="Evaluation modes">
@@ -1789,6 +2314,7 @@ async def evaluate(audio_id: str, ref_text: str):
         </SubDoc>
 
         <SubDoc id="error-codes" title="Error handling">
+          <p className="font-semibold mb-2">Common symptoms</p>
           <div className="overflow-x-auto rounded-lg border border-border/60">
             <table className="w-full text-sm">
               <thead>
@@ -1810,6 +2336,64 @@ async def evaluate(audio_id: str, ref_text: str):
                   <td className="py-2 px-3">WebSocket disconnect</td>
                   <td className="py-2 px-3">Proxy reconnects automatically; check network if persistent.</td>
                 </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <p className="font-semibold mt-6 mb-2">HTTP status codes (function-calling mode)</p>
+          <div className="overflow-x-auto rounded-lg border border-border/60">
+            <table className="w-full text-sm">
+              <thead><tr className="border-b border-border/40 bg-muted/30">
+                <th className="text-left py-2 px-3 font-medium">Status</th>
+                <th className="text-left py-2 px-3 font-medium">Meaning</th>
+              </tr></thead>
+              <tbody className="divide-y divide-border/30">
+                {[
+                  ['400', 'Malformed request (missing fields / wrong types)'],
+                  ['401', 'Unauthenticated (missing Authorization header)'],
+                  ['403', 'Forbidden (invalid key or no permission for the requested core_type)'],
+                  ['404', 'Session not found (wrong or already-reaped session_id)'],
+                  ['409', 'Invalid state for current operation (e.g. audio sent after stop)'],
+                ].map(([code, desc]) => (
+                  <tr key={code as string}>
+                    <td className="py-2 px-3 font-mono text-xs">{code}</td>
+                    <td className="py-2 px-3 text-muted-foreground">{desc}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          <p className="font-semibold mt-6 mb-2">Structured streaming error codes</p>
+          <p className="text-xs text-muted-foreground mb-2">
+            WebSocket <code className="bg-muted px-1 rounded">error</code> frames and the error payload of <code className="bg-muted px-1 rounded">get_stream_result</code> share the same set of codes, making it easy to dispatch client-side handling:
+          </p>
+          <div className="overflow-x-auto rounded-lg border border-border/60">
+            <table className="w-full text-sm">
+              <thead><tr className="border-b border-border/40 bg-muted/30">
+                <th className="text-left py-2 px-3 font-medium">Code</th>
+                <th className="text-left py-2 px-3 font-medium">Meaning</th>
+                <th className="text-left py-2 px-3 font-medium">Suggested action</th>
+              </tr></thead>
+              <tbody className="divide-y divide-border/30">
+                {[
+                  ['SESSION_NOT_FOUND', 'Session does not exist', 'Recreate with start_stream_eval / create_stream_session'],
+                  ['SESSION_EXPIRED', 'Session expired (idle > 60s)', 'Recreate session'],
+                  ['INVALID_STATE', 'Operation not allowed in current state', 'Check call order (e.g. audio after stop)'],
+                  ['INVALID_PARAMS', 'Invalid parameters', 'Check core_type / ref_text / sample rate'],
+                  ['RESUME_INVALID', 'resume_token invalid or expired', 'Recreate session (each resume issues a fresh token)'],
+                  ['AUDIO_TOO_LARGE', 'Audio payload exceeds 50MB', 'Compress or segment before retry'],
+                  ['UPSTREAM_CONNECT', 'Scoring engine unreachable', 'Retry later; contact Chivox if persistent'],
+                  ['UPSTREAM_TIMEOUT', 'Scoring engine timed out', 'Shorten audio / check network'],
+                  ['UPSTREAM_EVAL_ERROR', 'Scoring engine returned an error', 'Inspect the message field'],
+                  ['CAPACITY_FULL', 'Concurrent session quota exceeded', 'Back off and retry, or upgrade quota'],
+                ].map(([code, desc, fix]) => (
+                  <tr key={code as string}>
+                    <td className="py-2 px-3 font-mono text-xs">{code}</td>
+                    <td className="py-2 px-3 text-muted-foreground">{desc}</td>
+                    <td className="py-2 px-3">{fix}</td>
+                  </tr>
+                ))}
               </tbody>
             </table>
           </div>
@@ -2177,12 +2761,32 @@ Produce a **weekly report** for the learner + parent / teacher. Emphasise **tren
                 <tr>
                   <td className="py-2 px-3 font-mono text-xs">/upload</td>
                   <td className="py-2 px-3">POST</td>
-                  <td className="py-2 px-3">Audio upload</td>
+                  <td className="py-2 px-3">Audio upload (used by MCP-mode file evaluation)</td>
                 </tr>
                 <tr>
                   <td className="py-2 px-3 font-mono text-xs">/mcp</td>
                   <td className="py-2 px-3">POST</td>
-                  <td className="py-2 px-3">MCP JSON-RPC (Streamable HTTP)</td>
+                  <td className="py-2 px-3">MCP mode · JSON-RPC (Streamable HTTP)</td>
+                </tr>
+                <tr>
+                  <td className="py-2 px-3 font-mono text-xs">{'/ws/audio/{session_id}'}</td>
+                  <td className="py-2 px-3">WS</td>
+                  <td className="py-2 px-3">MCP mode · streaming audio WebSocket</td>
+                </tr>
+                <tr>
+                  <td className="py-2 px-3 font-mono text-xs">/v1/functions</td>
+                  <td className="py-2 px-3">GET</td>
+                  <td className="py-2 px-3">Function-calling mode · list all scoring functions</td>
+                </tr>
+                <tr>
+                  <td className="py-2 px-3 font-mono text-xs">/v1/call</td>
+                  <td className="py-2 px-3">POST</td>
+                  <td className="py-2 px-3">Function-calling mode · one-shot eval / create stream session / fetch stream result</td>
+                </tr>
+                <tr>
+                  <td className="py-2 px-3 font-mono text-xs">{'/ws/eval/{session_id}'}</td>
+                  <td className="py-2 px-3">WS</td>
+                  <td className="py-2 px-3">Function-calling mode · streaming audio WebSocket</td>
                 </tr>
                 <tr>
                   <td className="py-2 px-3 font-mono text-xs">/health</td>

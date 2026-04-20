@@ -465,6 +465,34 @@ asyncio.run(main())
 
 👉 [完整开发者文档与示例代码](https://chivoxmcp2.netlify.app/zh/docs#config-code)
 
+#### 🅵 方式六：非 MCP 原生 REST · cvx_fc（OpenAI function-calling 风格）
+
+适合**客户端环境装不下 MCP SDK** 的场景——原生 Android / iOS / Flutter、微信/支付宝小程序、老版本 Java / PHP / Go 后端。驰声同时对外暴露一套 **OpenAI 兼容的 Function Calling REST API**（内部代号 `cvx_fc`），和 MCP 模式**指向同一个评测引擎**、能力等价，只是协议层走纯 HTTP + WebSocket，**零 MCP 依赖**。
+
+```bash
+# 一次性文件评测：一次请求直接拿分
+curl -X POST http://your-host:8080/v1/call \
+  -H "Authorization: Bearer your_api_key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "en_word_eval",
+    "arguments": {
+      "ref_text": "hello",
+      "audio_url": "https://example.com/hello.mp3",
+      "accent": 2,
+      "rank": 100
+    }
+  }'
+```
+
+- `GET /v1/functions` — 等价 MCP `tools/list`，拿到当前 API Key 授权的全部函数清单
+- `POST /v1/call` — 等价 MCP `tools/call`，同时用于创建流式会话 / 兜底拉取流式结果
+- `WS /ws/eval/{session_id}` — 推 PCM 音频帧，收 `intermediate` / `result` / `backpressure`，支持 60 秒 `resume_token` 续播
+
+> **选路原则**：能走 MCP 的一律优先 MCP；仅当客户端技术栈真的装不下 MCP SDK 时，再走 cvx_fc。两条链路**共享完全相同的 16 + 2 个评测函数名与参数 schema**。
+
+👉 [cvx_fc 完整接入手册](https://chivoxmcp2.netlify.app/zh/docs#config-rest) · [函数目录 · GET /v1/functions](https://chivoxmcp2.netlify.app/zh/docs#rest-catalog)
+
 ---
 
 ### 📋 一张表选对接入方式
@@ -476,6 +504,7 @@ asyncio.run(main())
 | 程序员日常用 Cursor / Claude Desktop | 🅰️ IDE 客户端 `mcp.json` | ❌ 不用 |
 | 做 AI APP / 小程序，用 Agent 框架 | 🅳 LangChain / Mastra MCP 插件 | ✅ 少量 |
 | 做高并发后端，直接调 LLM API | 🅴 MCP 客户端库 + Function Calling | ✅ 生产级 |
+| 原生 App / 小程序 / 老系统装不下 MCP SDK | 🅵 cvx_fc REST + WebSocket | ✅ 生产级 |
 
 ---
 
