@@ -234,11 +234,6 @@
 
 ## ⚡ 双模式评测：边录边评 + 文件批量
 
-<p align="center">
-  <img src="github-assets/gifs/mode-dual.gif" alt="实时流式 vs 音频文件:两种评测模式并排演示" width="90%" /><br>
-  <sub>🎞️ 左:实时流式边读边反馈(&lt; 300ms) · 右:文件批量处理(WAV/MP3/…)</sub>
-</p>
-
 | | **🎙️ 实时录音评测** | **📁 音频文件评测** |
 |--|--|--|
 | **适用** | 交互式口语练习、AI 陪练、课堂跟读 | 已有音频的批量处理、回放分析、UGC 质检 |
@@ -344,11 +339,6 @@
 
 3. 重启客户端,在聊天框里说一句:**「帮我评测这段英文发音」**,Cursor 会自动调用工具输出诊断。
 
-<p align="center">
-  <img src="github-assets/gifs/cursor-setup.gif" alt="Cursor 中添加 Chivox MCP 并触发语音评测工具调用的完整流程" width="85%" />
-  <br><sub>🎞️ 打开设置 → 粘贴 JSON → 对话即自动调用评测工具</sub>
-</p>
-
 > Claude Desktop / Windsurf / Zed / Continue / Cline 等客户端**用同一段配置**,只是入口分别在各自的 `mcp.json` / `settings.json` / Cascade 面板里。
 
 #### 🅱️ 方式二：可视化 Agent 平台（扣子 Coze · 豆包 · 飞书智能伙伴 · 钉钉 AI 助理 · WorkBuddy …）
@@ -366,11 +356,6 @@
    | URL | `https://speech-eval.site/mcp` |
 
 4. 保存；对 Agent 说「帮我评测这段发音」即可自动调用。
-
-<p align="center">
-  <img src="github-assets/gifs/coze-setup.gif" alt="扣子 Coze 中添加 MCP 扩展并在对话里触发语音评测的演示" width="85%" />
-  <br><sub>🎞️ 添加扩展 → 填 URL → 对话自动出分，全程零代码</sub>
-</p>
 
 > 豆包桌面版、飞书智能伙伴、钉钉 AI 助理、通义千问 App、腾讯会议 AI、企业微信智能助手 …… 所有这类**企业 / 日常 AI 工作台**都支持这个流程，入口分别在各自的「智能体扩展 / 插件 / AI 工具箱」。
 
