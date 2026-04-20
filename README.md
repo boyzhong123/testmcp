@@ -3,7 +3,7 @@
 </p>
 
 <p align="center">
-  <a href="github-assets/video/index.html?play=1">
+  <a href="github-assets/video/chivox-mcp-demo-manifest-final.mp4">
     <img src="github-assets/video-cover.jpg" alt="▶ Watch Chivox MCP Demo" width="100%" />
   </a>
 </p>

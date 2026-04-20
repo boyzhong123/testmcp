@@ -641,7 +641,7 @@ netlify deploy --prod --build
 
 ### ⭐ Star history
 
-[![Star History Chart](https://api.star-history.com/svg?repos=chivox/chivox-mcp&type=Date)](https://star-history.com/#chivox/chivox-mcp&Date)
+[![Star History Chart](./github-assets/star-history.svg)](https://star-history.com/#chivox/chivox-mcp&Date)
 
 ### 🤝 Contributing
 
