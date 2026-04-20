@@ -3,8 +3,9 @@
 </p>
 
 <p align="center">
-  <video src="https://18ks.chivoxapp.com/doc/chivox-mcp-demo.mp4" controls width="100%"></video><br/>
-  <a href="https://18ks.chivoxapp.com/doc/chivox-mcp-demo.mp4">▶ 无法播放？点击打开视频</a>
+  <a href="https://18ks.chivoxapp.com/doc/chivox-mcp-demo.mp4">
+    <img src="github-assets/video-cover.jpg" alt="▶ Watch Chivox MCP Demo" width="100%" />
+  </a>
 </p>
 
 <p align="center">
@@ -228,18 +229,10 @@
 
 ## ⚡ 双模式评测：边录边评 + 文件批量
 
-<table>
-  <tr>
-    <td width="50%" align="center">
-      <img src="github-assets/gifs/mode-realtime.gif" alt="实时录音评测:边说边出分,流式波形逐词点亮" width="100%" /><br>
-      <sub>🎙️ <b>实时模式</b> · 边说边出分,流式波形逐词点亮</sub>
-    </td>
-    <td width="50%" align="center">
-      <img src="github-assets/gifs/mode-file.gif" alt="音频文件评测:拖拽 mp3 上传,秒出完整多维报告" width="100%" /><br>
-      <sub>📁 <b>文件模式</b> · 拖拽上传,秒出多维报告</sub>
-    </td>
-  </tr>
-</table>
+<p align="center">
+  <img src="github-assets/gifs/mode-dual.gif" alt="实时流式 vs 音频文件:两种评测模式并排演示" width="90%" /><br>
+  <sub>🎞️ 左:实时流式边读边反馈(&lt; 300ms) · 右:文件批量处理(WAV/MP3/…)</sub>
+</p>
 
 | | **🎙️ 实时录音评测** | **📁 音频文件评测** |
 |--|--|--|
@@ -368,6 +361,11 @@
    | URL | `https://speech-eval.site/mcp` |
 
 4. 保存；对 Agent 说「帮我评测这段发音」即可自动调用。
+
+<p align="center">
+  <img src="github-assets/gifs/coze-setup.gif" alt="扣子 Coze 中添加 MCP 扩展并在对话里触发语音评测的演示" width="85%" />
+  <br><sub>🎞️ 添加扩展 → 填 URL → 对话自动出分，全程零代码</sub>
+</p>
 
 > 豆包桌面版、飞书智能伙伴、钉钉 AI 助理、通义千问 App、腾讯会议 AI、企业微信智能助手 …… 所有这类**企业 / 日常 AI 工作台**都支持这个流程，入口分别在各自的「智能体扩展 / 插件 / AI 工具箱」。
 
