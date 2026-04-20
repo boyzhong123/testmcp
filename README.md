@@ -3,9 +3,8 @@
 </p>
 
 <p align="center">
-  <a href="https://18ks.chivoxapp.com/doc/chivox-mcp-demo.mp4">
-    <img src="github-assets/video-cover.jpg" alt="▶ Watch Chivox MCP Demo" width="100%" />
-  </a>
+  <video src="https://18ks.chivoxapp.com/doc/chivox-mcp-demo.mp4" controls width="100%"></video><br/>
+  <a href="https://18ks.chivoxapp.com/doc/chivox-mcp-demo.mp4">▶ 无法播放？点击打开视频</a>
 </p>
 
 <p align="center">
@@ -135,6 +134,11 @@
 
 驰声配套的 **Prompt Skill 模板**，把同一份评测 JSON 在大模型里 **跑两遍**，输出从冷数据到温暖反馈、再到可执行练习的完整链路。
 
+<p align="center">
+  <img src="github-assets/gifs/llm-3-stage.gif" alt="MCP 一次评测 → LLM 二次诊断 → 三次练习生成 的数据流动演示" width="80%" />
+  <br><sub>🎞️ JSON → 自然语言反馈 → 个性化练习，三段链路实时流动</sub>
+</p>
+
 ```
    一段录音
        │
@@ -188,7 +192,12 @@
 
 ## 🎬 一段录音如何变成温柔反馈（4 步闭环）
 
-以"AI 雅思口语陪练"为例。**开发者只需配置一次**，用户每次说话都自动评测 + 反馈。
+以"AI 雅思口语陪练"为例。**开发者只需配置一次**,用户每次说话都自动评测 + 反馈。
+
+<p align="center">
+  <img src="github-assets/gifs/loop-4-steps.gif" alt="从用户录音到个性化反馈的 4 步 MCP 闭环演示" width="90%" />
+  <br><sub>🎞️ 用户说话 → LLM 调用 MCP → 引擎评分 → 温柔反馈,全程 &lt; 3 秒</sub>
+</p>
 
 ```
    用户朗读 1 分钟自我介绍                LLM 自动按 MCP 协议
@@ -219,13 +228,26 @@
 
 ## ⚡ 双模式评测：边录边评 + 文件批量
 
+<table>
+  <tr>
+    <td width="50%" align="center">
+      <img src="github-assets/gifs/mode-realtime.gif" alt="实时录音评测:边说边出分,流式波形逐词点亮" width="100%" /><br>
+      <sub>🎙️ <b>实时模式</b> · 边说边出分,流式波形逐词点亮</sub>
+    </td>
+    <td width="50%" align="center">
+      <img src="github-assets/gifs/mode-file.gif" alt="音频文件评测:拖拽 mp3 上传,秒出完整多维报告" width="100%" /><br>
+      <sub>📁 <b>文件模式</b> · 拖拽上传,秒出多维报告</sub>
+    </td>
+  </tr>
+</table>
+
 | | **🎙️ 实时录音评测** | **📁 音频文件评测** |
 |--|--|--|
 | **适用** | 交互式口语练习、AI 陪练、课堂跟读 | 已有音频的批量处理、回放分析、UGC 质检 |
-| **传输** | WebSocket 流式推送，**延迟降低 30-50%** | HTTP 上传，三种输入方式 |
-| **特性** | 录完即出分，**无需中间文件**；断线自动重连 | 支持 `audio_file_path` / `audio_base64` / `audio_url`；大文件自动压缩 |
-| **格式** | PCM 16k/16bit/mono 流 | mp3 · wav · ogg · m4a · aac · pcm（6 种） |
-| **题型覆盖** | 单词 · 句子 · 段落 · 半开放（5 维评分） | 同上 + 开放题（看图说话 / 作文）+ AI Talk 人机对话 |
+| **传输** | WebSocket 流式推送,**延迟降低 30-50%** | HTTP 上传,三种输入方式 |
+| **特性** | 录完即出分,**无需中间文件**;断线自动重连 | 支持 `audio_file_path` / `audio_base64` / `audio_url`;大文件自动压缩 |
+| **格式** | PCM 16k/16bit/mono 流 | mp3 · wav · ogg · m4a · aac · pcm(6 种) |
+| **题型覆盖** | 单词 · 句子 · 段落 · 半开放(5 维评分) | 同上 + 开放题(看图说话 / 作文)+ AI Talk 人机对话 |
 
 ---
 
@@ -322,9 +344,14 @@
 }
 ```
 
-3. 重启客户端，在聊天框里说一句：**「帮我评测这段英文发音」**，Cursor 会自动调用工具输出诊断。
+3. 重启客户端,在聊天框里说一句:**「帮我评测这段英文发音」**,Cursor 会自动调用工具输出诊断。
 
-> Claude Desktop / Windsurf / Zed / Continue / Cline 等客户端**用同一段配置**，只是入口分别在各自的 `mcp.json` / `settings.json` / Cascade 面板里。
+<p align="center">
+  <img src="github-assets/gifs/cursor-setup.gif" alt="Cursor 中添加 Chivox MCP 并触发语音评测工具调用的完整流程" width="85%" />
+  <br><sub>🎞️ 打开设置 → 粘贴 JSON → 对话即自动调用评测工具</sub>
+</p>
+
+> Claude Desktop / Windsurf / Zed / Continue / Cline 等客户端**用同一段配置**,只是入口分别在各自的 `mcp.json` / `settings.json` / Cascade 面板里。
 
 #### 🅱️ 方式二：可视化 Agent 平台（扣子 Coze · 豆包 · 飞书智能伙伴 · 钉钉 AI 助理 · WorkBuddy …）
 
