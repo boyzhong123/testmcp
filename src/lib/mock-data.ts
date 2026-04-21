@@ -10,31 +10,22 @@ export const EVAL_TYPES: EvalType[] = [
   { id: 'en.nsp.score', name: '英文自然拼读', nameEn: 'English Phonics' },
   { id: 'en.sent.score', name: '英文句子评测', nameEn: 'English Sentence' },
   { id: 'en.sent.pron', name: '英文句子纠音', nameEn: 'English Sentence Pron' },
-  { id: 'en.phrase.score', name: '英文词语评测', nameEn: 'English Phrase' },
+  { id: 'en.vocabs.pron', name: '英文词语评测', nameEn: 'English Phrase' },
   { id: 'en.pred.score', name: '英文段落评测', nameEn: 'English Paragraph' },
-  { id: 'en.realtime', name: '英文实时朗读', nameEn: 'English Realtime' },
-  { id: 'en.choice', name: '英文口语选择', nameEn: 'English Choice' },
-  { id: 'en.semi', name: '英文半开放题', nameEn: 'English Semi-open' },
-  { id: 'en.open', name: '英文开放题', nameEn: 'English Open' },
-  { id: 'en.recog', name: '英文识别评测', nameEn: 'English Recognition' },
-  { id: 'cn.char.pinyin', name: '中文字评测(拼音)', nameEn: 'Chinese Char Pinyin' },
-  { id: 'cn.char.hanzi', name: '中文字评测(汉字)', nameEn: 'Chinese Char Hanzi' },
-  { id: 'cn.word.score', name: '中文词句评测', nameEn: 'Chinese Word' },
-  { id: 'cn.pred.score', name: '中文段落评测', nameEn: 'Chinese Paragraph' },
-  { id: 'cn.branch', name: '中文有限分支', nameEn: 'Chinese Branch' },
-  { id: 'cn.aitalk', name: '中文AI Talk', nameEn: 'Chinese AI Talk' },
+  { id: 'en.rltm.score', name: '英文实时朗读', nameEn: 'English Realtime' },
+  { id: 'en.choc.score', name: '英文口语选择', nameEn: 'English Choice' },
+  { id: 'en.scne.exam', name: '英文半开放题', nameEn: 'English Semi-open' },
+  { id: 'en.prtl.exam', name: '英文开放题', nameEn: 'English Open' },
+  { id: 'en.asr.rec', name: '英文识别评测', nameEn: 'English Recognition' },
+  { id: 'cn.word.score', name: '中文字评测(拼音)', nameEn: 'Chinese Char Pinyin' },
+  { id: 'cn.word.raw', name: '中文字评测(汉字)', nameEn: 'Chinese Char Hanzi' },
+  { id: 'cn.sent.raw', name: '中文词句评测', nameEn: 'Chinese Word' },
+  { id: 'cn.pred.raw', name: '中文段落评测', nameEn: 'Chinese Paragraph' },
+  { id: 'cn.rec.raw', name: '中文有限分支', nameEn: 'Chinese Branch' },
+  { id: 'cn.recscore.raw', name: '中文AI Talk', nameEn: 'Chinese AI Talk' },
 ];
 
-export interface ApiKey {
-  id: string;
-  name: string;
-  key: string;
-  secret: string;
-  enabled: boolean;
-  evalTypes: string[];
-  createdAt: string;
-  lastUsedAt: string | null;
-}
+export type { ApiKeyRecord as ApiKey } from './api';
 
 export interface UsageRecord {
   id: string;
@@ -55,65 +46,6 @@ export interface BillingRecord {
   extraFee: number;
   total: number;
   status: 'paid' | 'pending';
-}
-
-function randomHex(len: number): string {
-  const chars = '0123456789abcdef';
-  let result = '';
-  for (let i = 0; i < len; i++) {
-    result += chars[Math.floor(Math.random() * chars.length)];
-  }
-  return result;
-}
-
-export function generateApiKey(): { key: string; secret: string } {
-  return {
-    key: `sk-${randomHex(8)}${randomHex(8)}${randomHex(8)}${randomHex(8)}`,
-    secret: `sks-${randomHex(12)}${randomHex(12)}${randomHex(12)}`,
-  };
-}
-
-const KEYS_STORAGE = 'chivox_api_keys';
-
-export function getStoredKeys(): ApiKey[] {
-  try {
-    const stored = localStorage.getItem(KEYS_STORAGE);
-    if (stored) return JSON.parse(stored);
-  } catch {
-    // ignore
-  }
-  return getDefaultKeys();
-}
-
-export function saveKeys(keys: ApiKey[]) {
-  localStorage.setItem(KEYS_STORAGE, JSON.stringify(keys));
-}
-
-function getDefaultKeys(): ApiKey[] {
-  const keys: ApiKey[] = [
-    {
-      id: '1',
-      name: '测试项目',
-      key: `sk-c9f7a2b8e3d14f6091827364${randomHex(8)}`,
-      secret: `sks-${randomHex(36)}`,
-      enabled: true,
-      evalTypes: ['en.word.score', 'en.sent.pron', 'en.choice', 'en.nsp.score', 'en.semi'],
-      createdAt: '2026-04-10T09:30:00Z',
-      lastUsedAt: '2026-04-16T14:22:00Z',
-    },
-    {
-      id: '2',
-      name: '生产环境',
-      key: `sk-d8e2f1a3b7c94e5086719253${randomHex(8)}`,
-      secret: `sks-${randomHex(36)}`,
-      enabled: true,
-      evalTypes: ['en.word.score', 'en.sent.score', 'en.pred.score', 'cn.word.score', 'cn.pred.score'],
-      createdAt: '2026-04-12T15:10:00Z',
-      lastUsedAt: '2026-04-16T17:40:41Z',
-    },
-  ];
-  saveKeys(keys);
-  return keys;
 }
 
 export function generateDailyUsage(days: number): { date: string; calls: number; errors: number }[] {

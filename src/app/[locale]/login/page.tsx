@@ -10,10 +10,24 @@ import { useLocale } from 'next-intl';
 export default function LoginPage() {
   const locale = useLocale();
   const isZh = locale.startsWith('zh');
+  function mapLoginError(raw: string | undefined): string {
+    if (!raw) return isZh ? '登录失败，请稍后重试' : 'Login failed, please try again';
+    if (raw.includes('fetch') || raw.includes('network') || raw.includes('Network')) {
+      return isZh ? '无法连接服务器，请检查网络后重试' : 'Cannot reach server — check your network and try again';
+    }
+    if (raw.includes('密码错误') || raw.toLowerCase().includes('password')) {
+      return isZh ? '密码错误，请重新输入' : 'Incorrect password, please try again';
+    }
+    if (raw.includes('用户不存在') || raw.toLowerCase().includes('not found')) {
+      return isZh ? '该邮箱尚未注册' : 'No account found for this email';
+    }
+    return raw;
+  }
+
   const t = {
     errEmail: isZh ? '请输入邮箱' : 'Please enter email',
     errPassword: isZh ? '请输入密码' : 'Please enter password',
-    errLogin: isZh ? '登录失败，请重试' : 'Login failed, please try again',
+    errLogin: isZh ? '登录失败，请稍后重试' : 'Login failed, please try again',
     title: isZh ? '欢迎回来' : 'Welcome back',
     subtitle: isZh ? '登录您的开发者账号' : 'Sign in to your developer account',
     email: isZh ? '邮箱' : 'Email',
@@ -55,8 +69,9 @@ export default function LoginPage() {
 
     setLoading(true);
     try {
-      const ok = await login(email, password);
-      if (ok) router.push('/dashboard/keys');
+      const res = await login(email, password);
+      if (res.ok) router.push('/dashboard/keys');
+      else setError(mapLoginError(res.error));
     } catch {
       setError(t.errLogin);
     } finally {

@@ -42,6 +42,17 @@ export default function RegisterPage() {
     b4: isZh ? '即时获取 API Key' : 'Instant API key access',
     users: isZh ? '已有 200+ 开发者注册使用' : '200+ developers already registered',
   };
+  function mapRegisterError(raw: string | undefined): string {
+    if (!raw) return isZh ? '注册失败，请稍后重试' : 'Sign up failed, please try again';
+    if (raw.includes('fetch') || raw.includes('network') || raw.includes('Network')) {
+      return isZh ? '无法连接服务器，请检查网络后重试' : 'Cannot reach server — check your network and try again';
+    }
+    if (raw.includes('UNIQUE') || raw.includes('already') || raw.includes('注册失败')) {
+      return isZh ? '该邮箱已被注册，请直接登录' : 'This email is already registered — try signing in';
+    }
+    return raw;
+  }
+
   const { register } = useAuth();
   const router = useRouter();
   const [name, setName] = useState('');
@@ -64,8 +75,9 @@ export default function RegisterPage() {
 
     setLoading(true);
     try {
-      const ok = await register(name, email, password);
-      if (ok) router.push('/dashboard/keys');
+      const res = await register(name, email, password);
+      if (res.ok) router.push('/dashboard/keys');
+      else setError(mapRegisterError(res.error));
     } catch {
       setError(t.errRegister);
     } finally {
@@ -166,38 +178,37 @@ export default function RegisterPage() {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="text-xs font-medium text-muted-foreground mb-1 block">{t.password}</label>
-                <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/50" />
-                  <input
-                    type={showPassword ? 'text' : 'password'}
-                    value={password}
-                    onChange={e => { setPassword(e.target.value); setError(''); }}
-                    placeholder={t.passHint}
-                    className={inputWithBtnCls}
-                  />
-                  <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground/40 hover:text-foreground transition-colors">
-                    {showPassword ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
-                  </button>
-                </div>
+            <div>
+              <label className="text-xs font-medium text-muted-foreground mb-1 block">{t.password}</label>
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/50" />
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  value={password}
+                  onChange={e => { setPassword(e.target.value); setError(''); }}
+                  placeholder={t.passHint}
+                  className={inputWithBtnCls}
+                />
+                <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground/40 hover:text-foreground transition-colors">
+                  {showPassword ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+                </button>
               </div>
-              <div>
-                <label className="text-xs font-medium text-muted-foreground mb-1 block">{t.confirmPassword}</label>
-                <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/50" />
-                  <input
-                    type={showConfirm ? 'text' : 'password'}
-                    value={confirmPassword}
-                    onChange={e => { setConfirmPassword(e.target.value); setError(''); }}
-                    placeholder={t.confirmPlaceholder}
-                    className={inputWithBtnCls}
-                  />
-                  <button type="button" onClick={() => setShowConfirm(!showConfirm)} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground/40 hover:text-foreground transition-colors">
-                    {showConfirm ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
-                  </button>
-                </div>
+            </div>
+
+            <div>
+              <label className="text-xs font-medium text-muted-foreground mb-1 block">{t.confirmPassword}</label>
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/50" />
+                <input
+                  type={showConfirm ? 'text' : 'password'}
+                  value={confirmPassword}
+                  onChange={e => { setConfirmPassword(e.target.value); setError(''); }}
+                  placeholder={t.confirmPlaceholder}
+                  className={inputWithBtnCls}
+                />
+                <button type="button" onClick={() => setShowConfirm(!showConfirm)} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground/40 hover:text-foreground transition-colors">
+                  {showConfirm ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+                </button>
               </div>
             </div>
 

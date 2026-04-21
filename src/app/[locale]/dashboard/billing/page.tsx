@@ -12,6 +12,9 @@ export default function BillingPage() {
   const t = {
     title: isZh ? '费用账单' : 'Billing',
     subtitle: isZh ? '查看账单明细和费用预估' : 'View billing details and estimates',
+    sampleBanner: isZh
+      ? '以下数据为示例数据，账单接口尚未上线，实际账单将在后续版本中接入。'
+      : 'The data below is for illustration only. Billing APIs are not yet available and will be connected in a future release.',
     currentPlan: isZh ? '当前套餐' : 'Current Plan',
     free: isZh ? '免费' : 'Free',
     custom: isZh ? '定制报价' : 'Custom quote',
@@ -53,7 +56,15 @@ export default function BillingPage() {
   return (
     <div>
       <h1 className="text-xl font-semibold tracking-[-0.015em] mb-2">{t.title}</h1>
-      <p className="text-sm text-muted-foreground mb-8">{t.subtitle}</p>
+      <p className="text-sm text-muted-foreground mb-4">{t.subtitle}</p>
+
+      {/* Sample data notice */}
+      <div className="flex items-start gap-2.5 mb-6 px-4 py-3 rounded-lg border border-amber-200 bg-amber-50 dark:border-amber-900/50 dark:bg-amber-950/20">
+        <svg className="h-4 w-4 mt-0.5 shrink-0 text-amber-500" viewBox="0 0 16 16" fill="currentColor">
+          <path d="M8.898.566a1 1 0 0 0-1.796 0l-6.5 13A1 1 0 0 0 1.5 15h13a1 1 0 0 0 .898-1.434zM8 5a.75.75 0 0 1 .75.75v3.5a.75.75 0 0 1-1.5 0v-3.5A.75.75 0 0 1 8 5m0 7a1 1 0 1 1 0-2 1 1 0 0 1 0 2" />
+        </svg>
+        <p className="text-xs leading-relaxed text-amber-800 dark:text-amber-200">{t.sampleBanner}</p>
+      </div>
 
       {/* Current Month Summary */}
       <div className="grid sm:grid-cols-3 gap-4 mb-8">

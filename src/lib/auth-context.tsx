@@ -1,6 +1,7 @@
 'use client';
 
 import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from 'react';
+import { authLogin, authMe, authRegister, setToken, getToken, ApiError, type ApiUser } from './api';
 
 export interface User {
   id: string;
@@ -13,59 +14,74 @@ export interface User {
 interface AuthContextType {
   user: User | null;
   loading: boolean;
-  login: (email: string, password: string) => Promise<boolean>;
-  register: (name: string, email: string, password: string) => Promise<boolean>;
+  login: (email: string, password: string) => Promise<{ ok: boolean; error?: string }>;
+  register: (name: string, email: string, password: string) => Promise<{ ok: boolean; error?: string }>;
   logout: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
-const STORAGE_KEY = 'chivox_user';
+function toUser(u: ApiUser): User {
+  return {
+    id: String(u.id),
+    name: u.name,
+    email: u.email,
+    plan: 'free',
+    createdAt: u.created_at,
+  };
+}
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    try {
-      const stored = localStorage.getItem(STORAGE_KEY);
-      if (stored) {
-        setUser(JSON.parse(stored));
+    let cancelled = false;
+    (async () => {
+      const token = getToken();
+      if (!token) {
+        setLoading(false);
+        return;
       }
-    } catch {
-      // ignore
+      try {
+        const { user: u } = await authMe();
+        if (!cancelled) setUser(toUser(u));
+      } catch (err) {
+        if (err instanceof ApiError && err.status === 401) {
+          setToken(null);
+        }
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
+  const login = useCallback(async (email: string, password: string) => {
+    try {
+      const { token, user: u } = await authLogin({ email, password });
+      setToken(token);
+      setUser(toUser(u));
+      return { ok: true };
+    } catch (err) {
+      return { ok: false, error: err instanceof Error ? err.message : String(err) };
     }
-    setLoading(false);
   }, []);
 
-  const login = useCallback(async (email: string, _password: string): Promise<boolean> => {
-    const newUser: User = {
-      id: crypto.randomUUID(),
-      name: email.split('@')[0],
-      email,
-      plan: 'free',
-      createdAt: new Date().toISOString(),
-    };
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(newUser));
-    setUser(newUser);
-    return true;
-  }, []);
-
-  const register = useCallback(async (name: string, email: string, _password: string): Promise<boolean> => {
-    const newUser: User = {
-      id: crypto.randomUUID(),
-      name,
-      email,
-      plan: 'free',
-      createdAt: new Date().toISOString(),
-    };
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(newUser));
-    setUser(newUser);
-    return true;
+  const register = useCallback(async (name: string, email: string, password: string) => {
+    try {
+      await authRegister({ name, email, password });
+      const { token, user: u } = await authLogin({ email, password });
+      setToken(token);
+      setUser(toUser(u));
+      return { ok: true };
+    } catch (err) {
+      return { ok: false, error: err instanceof Error ? err.message : String(err) };
+    }
   }, []);
 
   const logout = useCallback(() => {
-    localStorage.removeItem(STORAGE_KEY);
+    setToken(null);
     setUser(null);
   }, []);
 
