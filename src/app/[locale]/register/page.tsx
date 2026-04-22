@@ -76,7 +76,7 @@ export default function RegisterPage() {
     setLoading(true);
     try {
       const res = await register(name, email, password);
-      if (res.ok) router.push('/dashboard/keys');
+      if (res.ok) router.push(res.isAdmin ? '/dashboard/admin' : '/dashboard/keys');
       else setError(mapRegisterError(res.error));
     } catch {
       setError(t.errRegister);

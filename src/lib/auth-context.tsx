@@ -1,21 +1,23 @@
 'use client';
 
 import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from 'react';
-import { authLogin, authMe, authRegister, setToken, getToken, ApiError, type ApiUser } from './api';
+import { authLogin, authMe, authRegister, setToken, getToken, ApiError, type ApiUser, type UserRole } from './api';
 
 export interface User {
   id: string;
   name: string;
   email: string;
+  role: UserRole;
   plan: 'free' | 'pro' | 'enterprise';
   createdAt: string;
+  isAdmin: boolean;
 }
 
 interface AuthContextType {
   user: User | null;
   loading: boolean;
-  login: (email: string, password: string) => Promise<{ ok: boolean; error?: string }>;
-  register: (name: string, email: string, password: string) => Promise<{ ok: boolean; error?: string }>;
+  login: (email: string, password: string) => Promise<{ ok: boolean; error?: string; isAdmin?: boolean }>;
+  register: (name: string, email: string, password: string) => Promise<{ ok: boolean; error?: string; isAdmin?: boolean }>;
   logout: () => void;
 }
 
@@ -26,8 +28,10 @@ function toUser(u: ApiUser): User {
     id: String(u.id),
     name: u.name,
     email: u.email,
+    role: u.role,
     plan: 'free',
     createdAt: u.created_at,
+    isAdmin: u.role === 'admin',
   };
 }
 
@@ -60,9 +64,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = useCallback(async (email: string, password: string) => {
     try {
       const { token, user: u } = await authLogin({ email, password });
+      const nextUser = toUser(u);
       setToken(token);
-      setUser(toUser(u));
-      return { ok: true };
+      setUser(nextUser);
+      return { ok: true, isAdmin: nextUser.isAdmin };
     } catch (err) {
       return { ok: false, error: err instanceof Error ? err.message : String(err) };
     }
@@ -72,9 +77,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       await authRegister({ name, email, password });
       const { token, user: u } = await authLogin({ email, password });
+      const nextUser = toUser(u);
       setToken(token);
-      setUser(toUser(u));
-      return { ok: true };
+      setUser(nextUser);
+      return { ok: true, isAdmin: nextUser.isAdmin };
     } catch (err) {
       return { ok: false, error: err instanceof Error ? err.message : String(err) };
     }

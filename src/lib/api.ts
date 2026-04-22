@@ -69,10 +69,13 @@ async function request<T>(
 
 // ---------- Types ----------
 
+export type UserRole = 'user' | 'admin';
+
 export interface ApiUser {
   id: number;
   email: string;
   name: string;
+  role: UserRole;
   created_at: string;
   updated_at: string;
 }
@@ -80,16 +83,42 @@ export interface ApiUser {
 export interface ApiKeyRecord {
   id: number;
   user_id?: number;
+  user_email?: string;
   name: string;
   api_key: string;
   enabled: boolean;
   created_at: string;
-  core_types: string[];
+  total_limit?: number;
+  period_limit?: number;
+  period_type?: 'daily' | 'monthly';
+  total_used?: number;
+  period_used?: number;
 }
 
-export interface ApiCoreType {
-  value: string;
-  label: string;
+export interface ApiKeyUsage {
+  total_used: number;
+  period_used: number;
+  total_limit: number;
+  period_limit: number;
+  period_type: 'daily' | 'monthly';
+  daily_breakdown: { date: string; count: number }[];
+}
+
+export interface ApiAdminUser {
+  id: number;
+  email: string;
+  name: string;
+  role: UserRole;
+  created_at: string;
+  key_count: number;
+  total_used: number;
+}
+
+export interface ApiAdminUserListResponse {
+  users: ApiAdminUser[];
+  total: number;
+  page: number;
+  page_size: number;
 }
 
 // ---------- Auth ----------
@@ -108,39 +137,66 @@ export function authMe() {
 
 // ---------- Keys ----------
 
-function normalizeKey(raw: RawApiKey): ApiKeyRecord {
-  const coreTypes = Array.isArray(raw.core_types)
-    ? raw.core_types.map(ct => typeof ct === 'string' ? ct : ct.core_type)
-    : [];
-  return {
-    id: raw.id,
-    user_id: raw.user_id,
-    name: raw.name,
-    api_key: raw.api_key,
-    enabled: raw.enabled,
-    created_at: raw.created_at,
-    core_types: coreTypes,
-  };
-}
-
 type RawApiKey = {
   id: number;
   user_id?: number;
+  user_email?: string;
   name: string;
   api_key: string;
   enabled: boolean;
   created_at: string;
-  core_types?: Array<string | { core_type: string }>;
+  total_limit?: number;
+  period_limit?: number;
+  period_type?: 'daily' | 'monthly';
+  total_used?: number;
+  period_used?: number;
 };
+
+export function maskApiKey(key: string): string {
+  if (!key || key.length < 12) return key;
+  return `${key.slice(0, 7)}...${key.slice(-4)}`;
+}
+
+function normalizeKey(raw: RawApiKey): ApiKeyRecord {
+  // 历史数据里 period_type 可能为 ""（空字符串），后端对更新接口要求该字段必填，
+  // 这里统一规范化成合法值，避免前端把空串再回传导致 required 校验失败。
+  const pt = raw.period_type === 'monthly' ? 'monthly' : 'daily';
+  return {
+    id: raw.id,
+    user_id: raw.user_id,
+    user_email: raw.user_email,
+    name: raw.name,
+    api_key: raw.api_key,
+    enabled: raw.enabled,
+    created_at: raw.created_at,
+    total_limit: raw.total_limit,
+    period_limit: raw.period_limit,
+    period_type: pt,
+    total_used: raw.total_used,
+    period_used: raw.period_used,
+  };
+}
 
 export async function listKeys(): Promise<ApiKeyRecord[]> {
   const data = await request<{ keys: RawApiKey[] }>('/keys');
   return (data.keys || []).map(normalizeKey);
 }
 
-export async function createKey(params: { name: string; core_types: string[] }): Promise<ApiKeyRecord> {
-  const data = await request<{ api_key: RawApiKey }>('/keys', { method: 'POST', body: params });
-  return normalizeKey(data.api_key);
+export async function createKey(params: { name: string }): Promise<ApiKeyRecord> {
+  // Quota is auto-assigned by the backend:
+  //   first key  -> total_limit=900, period_limit=30, period_type=daily
+  //   later keys -> all zero (no quota; needs admin to allocate)
+  const data = await request<{ api_key: RawApiKey & { limit?: { total_limit: number; period_limit: number; period_type: 'daily' | 'monthly' } } }>(
+    '/keys',
+    { method: 'POST', body: params },
+  );
+  const rec = normalizeKey(data.api_key);
+  if (data.api_key.limit) {
+    rec.total_limit = data.api_key.limit.total_limit;
+    rec.period_limit = data.api_key.limit.period_limit;
+    rec.period_type = data.api_key.limit.period_type;
+  }
+  return rec;
 }
 
 export async function revealKey(id: number): Promise<string> {
@@ -162,13 +218,35 @@ export async function deleteKey(id: number): Promise<void> {
   await request<{ message: string }>(`/keys/${id}`, { method: 'DELETE' });
 }
 
-export async function updateKeyCoreTypes(id: number, core_types: string[]): Promise<void> {
-  await request<{ message: string }>(`/keys/${id}/core-types`, { method: 'PUT', body: { core_types } });
+export async function getKeyUsage(id: number): Promise<ApiKeyUsage> {
+  const data = await request<{ usage: ApiKeyUsage }>(`/keys/${id}/usage`);
+  return data.usage;
 }
 
-// ---------- CoreTypes ----------
+// ---------- Admin ----------
 
-export async function listCoreTypes(): Promise<ApiCoreType[]> {
-  const data = await request<{ core_types: ApiCoreType[] }>('/core-types');
-  return data.core_types || [];
+export async function adminListUsers(params: { page?: number; page_size?: number } = {}): Promise<ApiAdminUserListResponse> {
+  const qs = new URLSearchParams();
+  if (params.page) qs.set('page', String(params.page));
+  if (params.page_size) qs.set('page_size', String(params.page_size));
+  const query = qs.toString();
+  return request<ApiAdminUserListResponse>(`/admin/users${query ? `?${query}` : ''}`);
+}
+
+export async function adminListUserKeys(userId: number): Promise<ApiKeyRecord[]> {
+  const data = await request<{ keys: RawApiKey[] }>(`/admin/users/${userId}/keys`);
+  return (data.keys || []).map(normalizeKey);
+}
+
+export async function adminUpdateKeyLimits(keyId: number, params: {
+  total_limit?: number;
+  period_limit?: number;
+  period_type: 'daily' | 'monthly';
+}): Promise<void> {
+  await request<{ message: string }>(`/admin/keys/${keyId}/limits`, { method: 'PUT', body: params });
+}
+
+export async function adminGetKeyUsage(keyId: number): Promise<ApiKeyUsage> {
+  const data = await request<{ usage: ApiKeyUsage }>(`/admin/keys/${keyId}/usage`);
+  return data.usage;
 }

@@ -15,7 +15,7 @@ export function AuthNavButton() {
   if (user) {
     return (
       <Link
-        href="/dashboard/keys"
+        href={user.isAdmin ? '/dashboard/admin' : '/dashboard/keys'}
         className="inline-flex items-center gap-1.5 h-8 px-3 text-sm font-medium rounded-md bg-foreground text-background hover:bg-foreground/90 transition-colors"
       >
         <LayoutDashboard className="h-3.5 w-3.5" />

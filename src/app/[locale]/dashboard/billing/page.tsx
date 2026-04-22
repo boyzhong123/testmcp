@@ -1,9 +1,10 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { Receipt, Calculator, CreditCard } from 'lucide-react';
+import { Receipt, Calculator, CreditCard, Plus, Zap, Headphones } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
 import { generateBillingRecords, calculateCost, PLAN_DETAILS } from '@/lib/mock-data';
+import { SALES_CHAT_URL } from '@/lib/links';
 import { useLocale } from 'next-intl';
 
 export default function BillingPage() {
@@ -30,17 +31,29 @@ export default function BillingPage() {
     planFee: isZh ? '套餐费用' : 'Plan Fee',
     overage: isZh ? '超额' : 'Overage',
     estimatedTotal: isZh ? '预估总费用' : 'Estimated Total',
-    history: isZh ? '历史账单' : 'Billing History',
-    month: isZh ? '月份' : 'Month',
-    plan: isZh ? '套餐' : 'Plan',
-    planFeeHead: isZh ? '套餐费' : 'Plan Fee',
-    overageCallsHead: isZh ? '超额调用' : 'Overage Calls',
-    overageFee: isZh ? '超额费用' : 'Overage Fee',
-    total: isZh ? '总费用' : 'Total',
-    status: isZh ? '状态' : 'Status',
-    paid: isZh ? '已支付' : 'Paid',
-    pending: isZh ? '待支付' : 'Pending',
+    history: isZh ? '充值记录' : 'Recharge History',
+    historyDesc: isZh
+      ? '管理员为该账号各 API Key 调整额度的明细（以下为示例数据，后续将接入真实流水）'
+      : 'Quota adjustments made by admins for this account\'s API keys (sample data below; real records coming soon).',
+    colTime: isZh ? '充值时间' : 'Time',
+    colKey: isZh ? 'API Key' : 'API Key',
+    colDelta: isZh ? '追加额度' : 'Added',
+    colAfter: isZh ? '充值后总量' : 'Total after',
+    colOperator: isZh ? '操作人' : 'Operator',
+    colStatus: isZh ? '状态' : 'Status',
+    ok: isZh ? '成功' : 'Success',
+    sample: isZh ? '示例' : 'Sample',
+    needQuota: isZh ? '需要充值更多额度？' : 'Need more quota?',
+    needQuotaDesc: isZh ? '联系客服可为指定 Key 追加调用次数' : 'Contact support to add calls to a specific key',
+    contactSupport: isZh ? '联系客服充值' : 'Contact support',
   };
+
+  const rechargeSamples = [
+    { time: '2026/04/22 14:20', keyName: 'default', delta: 500, after: 1400, operator: 'admin@chivox.com' },
+    { time: '2026/04/12 09:15', keyName: 'prod-main', delta: 1000, after: 1900, operator: 'admin@chivox.com' },
+    { time: '2026/03/28 17:02', keyName: 'default', delta: 300, after: 900, operator: 'admin@chivox.com' },
+    { time: '2026/03/10 11:40', keyName: 'sandbox', delta: 200, after: 600, operator: 'admin@chivox.com' },
+  ];
   const { user } = useAuth();
   const billingRecords = useMemo(() => generateBillingRecords(), []);
   const currentPlan = PLAN_DETAILS[user?.plan || 'free'];
@@ -142,38 +155,52 @@ export default function BillingPage() {
         )}
       </div>
 
-      {/* Billing History */}
-      <h2 className="text-lg font-semibold tracking-[-0.015em] mb-4">{t.history}</h2>
-      <div className="rounded-xl border border-border bg-background overflow-hidden max-w-4xl">
+      {/* Recharge History */}
+      <div className="flex items-baseline justify-between mb-2 max-w-4xl">
+        <h2 className="text-lg font-semibold tracking-[-0.015em]">{t.history}</h2>
+        <span className="inline-flex items-center h-[18px] px-1.5 text-[10px] font-medium rounded-md bg-amber-500/15 text-amber-700 dark:text-amber-400 uppercase tracking-wide">
+          {t.sample}
+        </span>
+      </div>
+      <p className="text-xs text-muted-foreground mb-4 max-w-4xl">{t.historyDesc}</p>
+
+      <div className="rounded-xl border border-dashed border-border bg-background overflow-hidden max-w-4xl">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-border bg-muted/30">
-                <th className="text-left py-3 px-4 font-medium text-muted-foreground">{t.month}</th>
-                <th className="text-left py-3 px-4 font-medium text-muted-foreground">{t.plan}</th>
-                <th className="text-right py-3 px-4 font-medium text-muted-foreground">{t.planFeeHead}</th>
-                <th className="text-right py-3 px-4 font-medium text-muted-foreground">{t.overageCallsHead}</th>
-                <th className="text-right py-3 px-4 font-medium text-muted-foreground">{t.overageFee}</th>
-                <th className="text-right py-3 px-4 font-medium text-muted-foreground">{t.total}</th>
-                <th className="text-center py-3 px-4 font-medium text-muted-foreground">{t.status}</th>
+                <th className="text-left py-3 px-4 font-medium text-muted-foreground">{t.colTime}</th>
+                <th className="text-left py-3 px-4 font-medium text-muted-foreground">{t.colKey}</th>
+                <th className="text-right py-3 px-4 font-medium text-muted-foreground">{t.colDelta}</th>
+                <th className="text-right py-3 px-4 font-medium text-muted-foreground">{t.colAfter}</th>
+                <th className="text-left py-3 px-4 font-medium text-muted-foreground">{t.colOperator}</th>
+                <th className="text-center py-3 px-4 font-medium text-muted-foreground">{t.colStatus}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
-              {billingRecords.map(b => (
-                <tr key={b.id} className="hover:bg-muted/20 transition-colors">
-                  <td className="py-2.5 px-4 font-medium">{b.month}</td>
-                  <td className="py-2.5 px-4 text-muted-foreground">{b.plan}</td>
-                  <td className="py-2.5 px-4 text-right tabular-nums">¥{b.planFee.toFixed(2)}</td>
-                  <td className="py-2.5 px-4 text-right tabular-nums text-muted-foreground">{b.extraCalls.toLocaleString()}</td>
-                  <td className="py-2.5 px-4 text-right tabular-nums">¥{b.extraFee.toFixed(2)}</td>
-                  <td className="py-2.5 px-4 text-right tabular-nums font-medium">¥{b.total.toFixed(2)}</td>
+              {rechargeSamples.map((r, i) => (
+                <tr key={i} className="hover:bg-muted/20 transition-colors">
+                  <td className="py-2.5 px-4 font-medium tabular-nums whitespace-nowrap">{r.time}</td>
+                  <td className="py-2.5 px-4">
+                    <code className="text-xs font-mono text-muted-foreground">{r.keyName}</code>
+                  </td>
+                  <td className="py-2.5 px-4 text-right whitespace-nowrap">
+                    <span className="inline-flex items-center gap-0.5 tabular-nums font-semibold text-emerald-600 dark:text-emerald-400">
+                      <Plus className="h-3 w-3" />
+                      {r.delta.toLocaleString()}
+                    </span>
+                    <span className="ml-1 text-[10px] text-muted-foreground">{isZh ? '次' : 'calls'}</span>
+                  </td>
+                  <td className="py-2.5 px-4 text-right tabular-nums whitespace-nowrap">
+                    {r.after.toLocaleString()}
+                  </td>
+                  <td className="py-2.5 px-4 text-muted-foreground text-xs whitespace-nowrap">
+                    {r.operator}
+                  </td>
                   <td className="py-2.5 px-4 text-center">
-                    <span className={`inline-block text-[11px] px-2 py-0.5 rounded-md ${
-                      b.status === 'paid'
-                        ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
-                        : 'bg-amber-500/10 text-amber-600 dark:text-amber-400'
-                    }`}>
-                      {b.status === 'paid' ? t.paid : t.pending}
+                    <span className="inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+                      <Zap className="h-2.5 w-2.5" />
+                      {t.ok}
                     </span>
                   </td>
                 </tr>
@@ -181,6 +208,25 @@ export default function BillingPage() {
             </tbody>
           </table>
         </div>
+      </div>
+
+      {/* Contact support CTA */}
+      <div className="mt-4 flex items-center gap-3 rounded-xl border border-border bg-muted/10 px-5 py-4 max-w-4xl">
+        <div className="h-9 w-9 shrink-0 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-500 text-white flex items-center justify-center shadow-sm shadow-blue-500/20">
+          <Headphones className="h-4 w-4" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-medium">{t.needQuota}</p>
+          <p className="text-xs text-muted-foreground mt-0.5">{t.needQuotaDesc}</p>
+        </div>
+        <a
+          href={SALES_CHAT_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-1.5 h-9 px-4 text-xs font-medium rounded-lg bg-foreground text-background hover:bg-foreground/90 transition-colors whitespace-nowrap shrink-0"
+        >
+          {t.contactSupport}
+        </a>
       </div>
     </div>
   );

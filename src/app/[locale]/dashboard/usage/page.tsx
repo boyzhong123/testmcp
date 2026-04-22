@@ -1,249 +1,235 @@
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
-import { BarChart3, TrendingUp, AlertCircle } from 'lucide-react';
-import { generateDailyUsage, generateToolDistribution, generateUsageRecords } from '@/lib/mock-data';
-import { listKeys, type ApiKeyRecord } from '@/lib/api';
+import { useState, useEffect, useCallback, useMemo } from 'react';
+import { BarChart3, TrendingUp, Layers, Activity } from 'lucide-react';
+import { listKeys, getKeyUsage, type ApiKeyRecord, type ApiKeyUsage } from '@/lib/api';
 import { cn } from '@/lib/utils';
 import { useLocale } from 'next-intl';
-
-type TimeRange = '7d' | '30d';
 
 export default function UsagePage() {
   const locale = useLocale();
   const isZh = locale.startsWith('zh');
   const t = {
     title: isZh ? '用量统计' : 'Usage',
-    subtitle: isZh ? '查看 API 调用情况和使用趋势' : 'View API usage and trends',
-    sampleBanner: isZh
-      ? '以下数据为示例数据，用量统计接口尚未上线，实际数据将在后续版本中接入。'
-      : 'The data below is for illustration only. Usage statistics API is not yet available and will be connected in a future release.',
+    subtitle: isZh ? '查看 API 调用情况和使用趋势（实时数据）' : 'Real-time API usage and trends',
     all: isZh ? '全部' : 'All',
-    monthlyUsage: isZh ? '本月调用量' : 'This Month Calls',
-    quota: isZh ? '/ 1,000 配额' : '/ 1,000 quota',
-    todayRequests: isZh ? '今日请求' : "Today's Requests",
-    errorRate: isZh ? '错误率' : 'Error Rate',
-    failedCount: (n: number) => (isZh ? `${n} 次失败` : `${n} failed`),
-    timeRange: isZh ? '时间范围' : 'Time Range',
-    last7d: isZh ? '近 7 天' : 'Last 7 days',
-    last30d: isZh ? '近 30 天' : 'Last 30 days',
-    dailyCalls: isZh ? '每日调用量' : 'Daily Calls',
-    dist: isZh ? '评测类型分布' : 'Eval Type Distribution',
-    times: isZh ? '次' : 'times',
-    requestStatus: isZh ? '请求状态' : 'Request Status',
-    success: isZh ? '成功' : 'Success',
-    failed: isZh ? '失败' : 'Failed',
-    records: isZh ? '调用记录' : 'Call Records',
-    noRecords: isZh ? '该 Key 暂无调用记录' : 'No records for this key',
-    tool: isZh ? '评测类型' : 'Tool',
-    score: isZh ? '分数' : 'Score',
-    duration: isZh ? '耗时' : 'Duration',
-    status: isZh ? '状态' : 'Status',
-    time: isZh ? '时间' : 'Time',
+    totalUsed: isZh ? '累计调用' : 'Total Calls',
+    periodUsed: isZh ? '本周期调用' : 'Period Calls',
+    remaining: isZh ? '剩余额度' : 'Remaining',
+    noQuota: isZh ? '无配额' : 'No quota',
+    dailyCalls: isZh ? '近 30 天每日调用量' : 'Daily Calls (last 30 days)',
+    loadingKeys: isZh ? '加载中…' : 'Loading…',
+    selectKey: isZh ? '请选择一个 Key 查看用量详情' : 'Select a key to view usage details',
+    noKeys: isZh ? '暂无 API Key' : 'No API keys yet',
+    loadError: isZh ? '加载失败' : 'Failed to load',
+    totalLimit: isZh ? '总量上限' : 'Total Limit',
+    periodLimit: isZh ? '周期上限' : 'Period Limit',
+    daily: isZh ? '每日' : 'Daily',
+    monthly: isZh ? '每月' : 'Monthly',
+    times: isZh ? '次' : 'calls',
+    allKeysTotal: isZh ? '所有 Key 累计' : 'All Keys Total',
+    noUsageData: isZh ? '该 Key 暂未产生调用' : 'No calls recorded yet',
+    noUsageHint: isZh
+      ? '一旦你的应用使用该 Key 发起调用，这里会实时展示每日调用量。'
+      : 'Once this key starts receiving requests, daily breakdown will appear here in real time.',
+    today: isZh ? '今日' : 'Today',
+    periodCalls: isZh ? '周期调用' : 'Period',
   };
-  const [range, setRange] = useState<TimeRange>('7d');
+
   const [keys, setKeys] = useState<ApiKeyRecord[]>([]);
-  const [activeKeyId, setActiveKeyId] = useState<string>('all');
+  const [keysLoading, setKeysLoading] = useState(true);
+  const [activeKeyId, setActiveKeyId] = useState<number | null>(null);
+  const [usage, setUsage] = useState<ApiKeyUsage | null>(null);
+  const [usageLoading, setUsageLoading] = useState(false);
+  const [usageError, setUsageError] = useState('');
 
   useEffect(() => {
-    listKeys().then(setKeys).catch(() => setKeys([]));
+    listKeys()
+      .then(data => {
+        setKeys(data);
+        if (data.length > 0) setActiveKeyId(data[0].id);
+      })
+      .catch(() => setKeys([]))
+      .finally(() => setKeysLoading(false));
   }, []);
 
-  const dailyData = useMemo(() => generateDailyUsage(range === '7d' ? 7 : 30), [range]);
-  const toolDist = useMemo(() => generateToolDistribution(), []);
-  const allRecords = useMemo(() => generateUsageRecords(30), []);
+  const fetchUsage = useCallback(async (id: number) => {
+    setUsageLoading(true);
+    setUsageError('');
+    setUsage(null);
+    try {
+      const data = await getKeyUsage(id);
+      setUsage(data);
+    } catch (err) {
+      setUsageError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setUsageLoading(false);
+    }
+  }, []);
 
-  const filteredRecords = activeKeyId === 'all'
-    ? allRecords
-    : allRecords.filter(r => r.keyId === activeKeyId || r.keyId === String(activeKeyId));
+  useEffect(() => {
+    if (activeKeyId !== null) fetchUsage(activeKeyId);
+  }, [activeKeyId, fetchUsage]);
 
-  const scale = activeKeyId === 'all' ? 1 : 0.4 + Math.random() * 0.3;
-  const filteredDaily = dailyData.map(d => ({
-    ...d,
-    calls: activeKeyId === 'all' ? d.calls : Math.round(d.calls * scale),
-    errors: activeKeyId === 'all' ? d.errors : Math.round(d.errors * scale),
-  }));
+  const activeKey = keys.find(k => k.id === activeKeyId);
 
-  const totalCalls = filteredDaily.reduce((s, d) => s + d.calls, 0);
-  const totalErrors = filteredDaily.reduce((s, d) => s + d.errors, 0);
-  const todayCalls = filteredDaily[filteredDaily.length - 1]?.calls || 0;
-  const errorRate = totalCalls > 0 ? ((totalErrors / totalCalls) * 100).toFixed(2) : '0';
-  const maxCalls = Math.max(...filteredDaily.map(d => d.calls), 1);
+  // 汇总所有 Key 的调用数据
+  const { allTotalUsed, allPeriodUsed } = useMemo(() => {
+    let total = 0, period = 0;
+    for (const k of keys) {
+      total += k.total_used ?? 0;
+      period += k.period_used ?? 0;
+    }
+    return { allTotalUsed: total, allPeriodUsed: period };
+  }, [keys]);
+
+  const todayStr = new Date().toISOString().slice(0, 10);
+  const dailyBreakdown = usage?.daily_breakdown ?? [];
+  const maxCalls = dailyBreakdown.length > 0
+    ? Math.max(...dailyBreakdown.map(d => d.count), 1)
+    : 1;
+  const hasDailyData = dailyBreakdown.some(d => d.count > 0);
+
+  // 约定：limit === 0 表示 "无配额（禁用）"，不是 "不限"。
+  const totalNoQuota = usage?.total_limit === 0;
+  const periodNoQuota = usage?.period_limit === 0;
+  const totalRemaining = usage && !totalNoQuota
+    ? Math.max(0, usage.total_limit - usage.total_used)
+    : null;
+  const periodRemaining = usage && !periodNoQuota
+    ? Math.max(0, usage.period_limit - usage.period_used)
+    : null;
 
   return (
     <div>
       <h1 className="text-xl font-semibold tracking-[-0.015em] mb-2">{t.title}</h1>
-      <p className="text-sm text-muted-foreground mb-4">{t.subtitle}</p>
-
-      {/* Sample data notice */}
-      <div className="flex items-start gap-2.5 mb-6 px-4 py-3 rounded-lg border border-amber-200 bg-amber-50 dark:border-amber-900/50 dark:bg-amber-950/20">
-        <svg className="h-4 w-4 mt-0.5 shrink-0 text-amber-500" viewBox="0 0 16 16" fill="currentColor">
-          <path d="M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1zm0 3a.75.75 0 0 1 .75.75v3.5a.75.75 0 0 1-1.5 0v-3.5A.75.75 0 0 1 8 4zm0 8a1 1 0 1 1 0-2 1 1 0 0 1 0 2z"/>
-        </svg>
-        <p className="text-xs text-amber-700 dark:text-amber-400 leading-relaxed">{t.sampleBanner}</p>
-      </div>
+      <p className="text-sm text-muted-foreground mb-6">{t.subtitle}</p>
 
       {/* Key Tabs */}
-      <div className="flex items-center gap-1 mb-6 overflow-x-auto pb-1">
-        <TabButton active={activeKeyId === 'all'} onClick={() => setActiveKeyId('all')}>
-          {t.all}
-        </TabButton>
-        {keys.map(k => (
-          <TabButton key={k.id} active={activeKeyId === String(k.id)} onClick={() => setActiveKeyId(String(k.id))}>
-            {k.name}
-            <code className="ml-1.5 text-[10px] opacity-60 font-mono">
-              {k.api_key.slice(0, 8)}…
-            </code>
-          </TabButton>
-        ))}
-      </div>
-
-      {/* Stats Cards */}
-      <div className="grid sm:grid-cols-3 gap-4 mb-8">
-        <StatCard icon={BarChart3} label={t.monthlyUsage} value={totalCalls.toLocaleString()} sub={t.quota} />
-        <StatCard icon={TrendingUp} label={t.todayRequests} value={todayCalls.toLocaleString()} />
-        <StatCard icon={AlertCircle} label={t.errorRate} value={`${errorRate}%`} sub={t.failedCount(totalErrors)} />
-      </div>
-
-      {/* Time Range */}
-      <div className="flex items-center gap-2 mb-4">
-        <span className="text-sm font-medium text-muted-foreground">{t.timeRange}</span>
-        {(['7d', '30d'] as const).map(r => (
-          <button
-            key={r}
-            onClick={() => setRange(r)}
-            className={cn(
-              'h-7 px-3 text-xs font-medium rounded-md transition-colors',
-              range === r
-                ? 'bg-foreground text-background'
-                : 'bg-muted text-muted-foreground hover:text-foreground'
-            )}
-          >
-            {r === '7d' ? t.last7d : t.last30d}
-          </button>
-        ))}
-      </div>
-
-      {/* Bar Chart */}
-      <div className="rounded-xl border border-border bg-background p-6 mb-8">
-        <h3 className="text-sm font-medium mb-4">{t.dailyCalls}</h3>
-        <div className="flex items-end gap-1 h-40">
-          {filteredDaily.map((d, i) => (
-            <div key={i} className="flex-1 flex flex-col items-center gap-1 group">
-              <span className="text-[10px] text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity tabular-nums">
-                {d.calls}
-              </span>
-              <div
-                className="w-full rounded-t bg-foreground/80 hover:bg-foreground transition-colors min-h-[2px]"
-                style={{ height: `${(d.calls / maxCalls) * 100}%` }}
-              />
-              <span className="text-[9px] text-muted-foreground mt-1 tabular-nums">
-                {d.date.slice(5)}
-              </span>
-            </div>
+      {keysLoading ? (
+        <div className="text-sm text-muted-foreground mb-6">{t.loadingKeys}</div>
+      ) : (
+        <div className="flex items-center gap-1 mb-6 overflow-x-auto pb-1">
+          {keys.length === 0 ? (
+            <span className="text-sm text-muted-foreground">{t.noKeys}</span>
+          ) : keys.map(k => (
+            <TabButton key={k.id} active={activeKeyId === k.id} onClick={() => setActiveKeyId(k.id)}>
+              {k.name}
+              <code className="ml-1.5 text-[10px] opacity-60 font-mono">{k.api_key.slice(0, 8)}…</code>
+            </TabButton>
           ))}
         </div>
-      </div>
+      )}
 
-      <div className="grid lg:grid-cols-2 gap-6 mb-8">
-        {/* Tool Distribution */}
-        <div className="rounded-xl border border-border bg-background p-6">
-          <h3 className="text-sm font-medium mb-4">{t.dist}</h3>
-          <div className="space-y-3">
-            {toolDist.map(item => (
-              <div key={item.tool}>
-                <div className="flex items-center justify-between text-xs mb-1">
-                  <span>{item.toolName}</span>
-                  <span className="text-muted-foreground tabular-nums">{item.count} {t.times} ({item.percentage}%)</span>
-                </div>
-                <div className="h-2 bg-muted rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-foreground/70 rounded-full transition-all"
-                    style={{ width: `${item.percentage}%` }}
-                  />
-                </div>
-              </div>
-            ))}
-          </div>
+      {/* All-keys summary (shown when multiple keys exist) */}
+      {keys.length > 1 && (
+        <div className="mb-6 px-4 py-3 rounded-lg border border-border bg-muted/20 text-sm flex flex-wrap items-center gap-6">
+          <span className="text-muted-foreground">{t.allKeysTotal}</span>
+          <span>{t.totalUsed}：<strong className="tabular-nums">{allTotalUsed.toLocaleString()}</strong></span>
+          <span>{t.periodUsed}：<strong className="tabular-nums">{allPeriodUsed.toLocaleString()}</strong></span>
         </div>
+      )}
 
-        {/* Status Distribution */}
-        <div className="rounded-xl border border-border bg-background p-6">
-          <h3 className="text-sm font-medium mb-4">{t.requestStatus}</h3>
-          <div className="flex items-center gap-8 mb-4">
-            <div>
-              <div className="text-2xl font-bold tabular-nums">{totalCalls - totalErrors}</div>
-              <div className="text-xs text-muted-foreground">{t.success}</div>
-            </div>
-            <div>
-              <div className="text-2xl font-bold tabular-nums text-destructive">{totalErrors}</div>
-              <div className="text-xs text-muted-foreground">{t.failed}</div>
-            </div>
-          </div>
-          <div className="h-3 bg-muted rounded-full overflow-hidden flex">
-            <div
-              className="h-full bg-foreground/70 transition-all"
-              style={{ width: `${((totalCalls - totalErrors) / Math.max(totalCalls, 1)) * 100}%` }}
-            />
-            <div
-              className="h-full bg-destructive/60 transition-all"
-              style={{ width: `${(totalErrors / Math.max(totalCalls, 1)) * 100}%` }}
-            />
-          </div>
+      {/* Per-key usage */}
+      {usageError && (
+        <div className="mb-4 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive text-sm px-4 py-2.5">
+          {t.loadError}: {usageError}
         </div>
-      </div>
+      )}
 
-      {/* Records Table */}
-      <h2 className="text-lg font-semibold tracking-[-0.015em] mb-4">{t.records}</h2>
-      <div className="rounded-xl border border-border bg-background overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-border bg-muted/30">
-                <th className="text-left py-3 px-4 font-medium text-muted-foreground">{t.tool}</th>
-                <th className="text-left py-3 px-4 font-medium text-muted-foreground">{t.score}</th>
-                <th className="text-left py-3 px-4 font-medium text-muted-foreground">{t.duration}</th>
-                <th className="text-left py-3 px-4 font-medium text-muted-foreground">{t.status}</th>
-                <th className="text-left py-3 px-4 font-medium text-muted-foreground">{t.time}</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border">
-              {filteredRecords.length === 0 ? (
-                <tr>
-                  <td colSpan={5} className="py-12 text-center text-muted-foreground">
-                    {t.noRecords}
-                  </td>
-                </tr>
-              ) : (
-                filteredRecords.slice(0, 20).map(r => (
-                  <tr key={r.id} className="hover:bg-muted/20 transition-colors">
-                    <td className="py-2.5 px-4">{r.tool}</td>
-                    <td className="py-2.5 px-4 tabular-nums font-mono text-xs">
-                      {r.status === 'error' ? '—' : r.score}
-                    </td>
-                    <td className="py-2.5 px-4 text-muted-foreground tabular-nums text-xs">
-                      {(r.duration / 1000).toFixed(1)}s
-                    </td>
-                    <td className="py-2.5 px-4">
+      {usageLoading && (
+        <div className="py-12 text-center text-muted-foreground text-sm">{t.loadingKeys}</div>
+      )}
+
+      {!usageLoading && usage && activeKey && (
+        <>
+          {/* Stats Cards */}
+          <div className="grid sm:grid-cols-3 gap-4 mb-8">
+            <StatCard
+              icon={BarChart3}
+              label={t.totalUsed}
+              value={usage.total_used.toLocaleString()}
+              sub={totalNoQuota
+                ? `/ 0 · ${t.noQuota}`
+                : `/ ${usage.total_limit.toLocaleString()} ${t.times}`}
+              pct={totalNoQuota ? -1 : Math.round((usage.total_used / usage.total_limit) * 100)}
+            />
+            <StatCard
+              icon={TrendingUp}
+              label={`${usage.period_type === 'monthly' ? t.monthly : t.daily}${t.periodUsed}`}
+              value={usage.period_used.toLocaleString()}
+              sub={periodNoQuota
+                ? `/ 0 · ${t.noQuota}`
+                : `/ ${usage.period_limit.toLocaleString()} ${t.times}`}
+              pct={periodNoQuota ? -1 : Math.round((usage.period_used / usage.period_limit) * 100)}
+            />
+            <StatCard
+              icon={Layers}
+              label={t.remaining}
+              value={totalNoQuota
+                ? t.noQuota
+                : (totalRemaining ?? 0).toLocaleString()}
+              sub={periodNoQuota
+                ? (isZh ? '周期无配额' : 'period: none')
+                : periodRemaining !== null
+                  ? `${isZh ? '周期剩余' : 'period left'} ${periodRemaining.toLocaleString()}`
+                  : undefined}
+            />
+          </div>
+
+          {/* Daily breakdown bar chart */}
+          <div className="rounded-xl border border-border bg-background p-6 mb-8">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-sm font-medium flex items-center gap-2">
+                <Activity className="h-4 w-4 text-muted-foreground" />
+                {t.dailyCalls}
+              </h3>
+            </div>
+            {hasDailyData ? (
+              <div className="flex items-end gap-1 h-40">
+                {dailyBreakdown.map((d, i) => {
+                  const isToday = d.date === todayStr;
+                  const pct = (d.count / maxCalls) * 100;
+                  return (
+                    <div key={i} className="flex-1 flex flex-col items-center gap-1 group relative">
+                      <div className="absolute -top-7 opacity-0 group-hover:opacity-100 transition-opacity z-10 pointer-events-none">
+                        <div className="bg-foreground text-background text-[10px] px-2 py-1 rounded whitespace-nowrap tabular-nums">
+                          {d.date} · {d.count}
+                        </div>
+                      </div>
+                      <div
+                        className={cn(
+                          'w-full rounded-t transition-colors min-h-[2px]',
+                          isToday
+                            ? 'bg-emerald-500 hover:bg-emerald-600'
+                            : 'bg-foreground/70 hover:bg-foreground'
+                        )}
+                        style={{ height: `${pct}%` }}
+                      />
                       <span className={cn(
-                        'inline-block text-[11px] px-2 py-0.5 rounded-md',
-                        r.status === 'success'
-                          ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
-                          : 'bg-destructive/10 text-destructive'
+                        'text-[9px] mt-1 tabular-nums',
+                        isToday ? 'text-emerald-600 dark:text-emerald-400 font-medium' : 'text-muted-foreground'
                       )}>
-                        {r.status === 'success' ? t.success : t.failed}
+                        {d.date.slice(5)}
                       </span>
-                    </td>
-                    <td className="py-2.5 px-4 text-muted-foreground text-xs whitespace-nowrap">
-                      {new Date(r.createdAt).toLocaleString(isZh ? 'zh-CN' : 'en-US')}
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="h-40 flex flex-col items-center justify-center text-center px-4">
+                <Activity className="h-8 w-8 text-muted-foreground/40 mb-2" />
+                <p className="text-sm font-medium text-muted-foreground">{t.noUsageData}</p>
+                <p className="text-xs text-muted-foreground/70 mt-1 max-w-sm">{t.noUsageHint}</p>
+              </div>
+            )}
+          </div>
+        </>
+      )}
+
+      {!usageLoading && !usage && !usageError && keys.length > 0 && (
+        <div className="py-12 text-center text-muted-foreground text-sm">{t.selectKey}</div>
+      )}
     </div>
   );
 }
@@ -264,17 +250,32 @@ function TabButton({ active, onClick, children }: { active: boolean; onClick: ()
   );
 }
 
-function StatCard({ icon: Icon, label, value, sub }: { icon: React.ComponentType<{ className?: string }>; label: string; value: string; sub?: string }) {
+function StatCard({ icon: Icon, label, value, sub, pct }: {
+  icon: React.ComponentType<{ className?: string }>;
+  label: string; value: string; sub?: string; pct?: number;
+}) {
+  const warn = pct !== undefined && pct >= 80;
   return (
-    <div className="rounded-xl border border-border bg-background p-5">
+    <div className="relative rounded-xl border border-border bg-background p-5">
       <div className="flex items-center gap-2 text-muted-foreground mb-2">
         <Icon className="h-4 w-4" />
         <span className="text-xs font-medium">{label}</span>
       </div>
       <div className="flex items-baseline gap-1.5">
-        <span className="text-2xl font-bold tabular-nums">{value}</span>
+        <span className={cn('text-2xl font-bold tabular-nums', warn && 'text-amber-600 dark:text-amber-400')}>{value}</span>
         {sub && <span className="text-xs text-muted-foreground">{sub}</span>}
       </div>
+      {pct !== undefined && pct >= 0 && (
+        <div className="mt-2 h-1.5 bg-muted rounded-full overflow-hidden">
+          <div
+            className={cn(
+              'h-full rounded-full transition-all',
+              warn ? 'bg-amber-500' : 'bg-foreground/60'
+            )}
+            style={{ width: `${Math.min(pct, 100)}%` }}
+          />
+        </div>
+      )}
     </div>
   );
 }

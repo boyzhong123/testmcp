@@ -70,7 +70,7 @@ export default function LoginPage() {
     setLoading(true);
     try {
       const res = await login(email, password);
-      if (res.ok) router.push('/dashboard/keys');
+      if (res.ok) router.push(res.isAdmin ? '/dashboard/admin' : '/dashboard/keys');
       else setError(mapLoginError(res.error));
     } catch {
       setError(t.errLogin);

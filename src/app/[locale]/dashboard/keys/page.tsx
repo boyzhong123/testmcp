@@ -1,36 +1,66 @@
 'use client';
 
-import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
-import { Plus, Eye, EyeOff, Copy, Pencil, RefreshCw, Trash2, X, Check } from 'lucide-react';
-import { EVAL_TYPES } from '@/lib/mock-data';
+import { useState, useEffect, useCallback } from 'react';
+import { Plus, Eye, EyeOff, Copy, RefreshCw, Trash2, X, Check, Info, AlertTriangle, Sparkles, Lock, Headphones, ArrowRight } from 'lucide-react';
+import { SALES_CHAT_URL } from '@/lib/links';
 import {
   type ApiKeyRecord,
-  type ApiCoreType,
   listKeys,
   createKey as apiCreateKey,
   revealKey as apiRevealKey,
   resetKey as apiResetKey,
   toggleKey as apiToggleKey,
   deleteKey as apiDeleteKey,
-  listCoreTypes,
-  updateKeyCoreTypes,
+  maskApiKey,
 } from '@/lib/api';
 import { cn } from '@/lib/utils';
 import { useLocale } from 'next-intl';
 
+function formatDateTime(dateStr: string): string {
+  if (!dateStr) return '-';
+  try {
+    const date = new Date(dateStr);
+    if (isNaN(date.getTime())) return dateStr;
+    return date.toLocaleString('zh-CN', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false,
+    });
+  } catch {
+    return dateStr;
+  }
+}
+import { useAuth } from '@/lib/auth-context';
+import { useRouter } from '@/i18n/routing';
+
 export default function KeysPage() {
   const locale = useLocale();
   const isZh = locale.startsWith('zh');
+  const { user } = useAuth();
+  const router = useRouter();
+  const isAdmin = user?.isAdmin ?? false;
+
   const t = {
     title: isZh ? 'API Key 管理' : 'API Key Management',
+    subtitle: isZh
+      ? '创建后请立即复制完整 Key，之后仅显示脱敏值'
+      : 'Copy the full key on creation — afterwards only a masked value is shown',
     createKey: isZh ? '创建 Key' : 'Create Key',
     name: isZh ? '名称' : 'Name',
-    apiKey: 'API Key',
     status: isZh ? '状态' : 'Status',
-    evalTypes: isZh ? '评测类型' : 'Eval Types',
+    usage: isZh ? '用量 / 额度' : 'Usage / Quota',
     createdAt: isZh ? '创建时间' : 'Created At',
     actions: isZh ? '操作' : 'Actions',
     noData: isZh ? '暂无 API Key，点击上方按钮创建' : 'No API keys yet, click above to create one',
+    unlimited: isZh ? '不限' : 'Unlimited',
+    noQuota: isZh ? '无配额' : 'No quota',
+    noQuotaHint: isZh
+      ? '该 Key 暂无可用配额，请联系管理员分配额度后再使用'
+      : 'This key has no quota — please ask an admin to allocate before using',
     hide: isZh ? '隐藏' : 'Hide',
     show: isZh ? '显示' : 'Show',
     copy: isZh ? '复制' : 'Copy',
@@ -40,23 +70,37 @@ export default function KeysPage() {
     delete: isZh ? '删除' : 'Delete',
     loading: isZh ? '加载中…' : 'Loading…',
     loadFail: isZh ? '加载失败' : 'Failed to load',
-    confirmReset: isZh ? '重置后旧 Key 立即失效，确定继续？' : 'Resetting invalidates the old key immediately. Continue?',
     confirmDeleteTitle: isZh ? '删除 Key' : 'Delete Key',
     confirmDeleteDesc: isZh ? '删除后无法恢复，确认删除该 Key？' : 'This action cannot be undone. Delete this key?',
     confirmResetTitle: isZh ? '重置 Key' : 'Reset Key',
     confirmResetDesc: isZh ? '重置后旧 Key 立即失效，确定继续？' : 'Resetting invalidates the old key immediately. Continue?',
+    quotaRulesTitle: isZh ? '配额规则' : 'Quota rules',
+    quotaRule1Title: isZh ? '首个 Key · 免费配额' : 'First key · Free quota',
+    quotaRule1Body: isZh ? '每日 30 次 / 总量 900 次，创建后立即生效' : '30 / day · 900 total, active immediately on creation',
+    quotaRule2Title: isZh ? '后续 Key · 初始无配额' : 'Additional keys · No quota',
+    quotaRule2Body: isZh ? '新建的其他 Key 默认不携带额度，需由管理员分配' : 'Additional keys start with 0 quota — an admin must allocate',
+    quotaRule3Title: isZh ? '用户端 · 无法修改限额' : 'Limits are read-only',
+    quotaRule3Body: isZh ? '出于安全与计费需要，配额仅可由管理员调整' : 'For security and billing reasons, only admins can adjust',
+    contactTitle: isZh ? '需要更多配额？' : 'Need more quota?',
+    contactDesc: isZh
+      ? '联系客服可为指定 Key 充值额度或升级套餐，7×12 小时在线响应。'
+      : 'Reach out to support to top up a specific key or upgrade your plan. 7×12h online.',
+    contactCta: isZh ? '联系客服充值' : 'Contact support',
   };
 
   const [keys, setKeys] = useState<ApiKeyRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState('');
   const [showCreate, setShowCreate] = useState(false);
-  const [editKey, setEditKey] = useState<ApiKeyRecord | null>(null);
   const [revealed, setRevealed] = useState<Record<number, string>>({});
   const [copiedId, setCopiedId] = useState<number | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<number | null>(null);
   const [resetConfirm, setResetConfirm] = useState<number | null>(null);
   const [busyId, setBusyId] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (isAdmin) router.replace('/dashboard/admin');
+  }, [isAdmin, router]);
 
   const refresh = useCallback(async () => {
     setLoading(true);
@@ -87,11 +131,7 @@ export default function KeysPage() {
 
   async function toggleReveal(id: number) {
     if (revealed[id]) {
-      setRevealed(prev => {
-        const next = { ...prev };
-        delete next[id];
-        return next;
-      });
+      setRevealed(prev => { const next = { ...prev }; delete next[id]; return next; });
       return;
     }
     try {
@@ -128,12 +168,13 @@ export default function KeysPage() {
     }
   }
 
-  async function resetKey(id: number) {
+  async function doResetKey(id: number) {
     setBusyId(id);
     try {
       const updated = await apiResetKey(id);
-      setKeys(prev => prev.map(k => k.id === id ? updated : k));
-      setRevealed(prev => ({ ...prev, [id]: updated.api_key }));
+      setKeys(prev => prev.map(k => k.id === id ? { ...k, ...updated, api_key: maskApiKey(updated.api_key) } : k));
+      // 重置后默认仍以省略号展示，用户需要完整 key 时可点眼睛图标或复制按钮按需拉取
+      setRevealed(prev => { const next = { ...prev }; delete next[id]; return next; });
       setResetConfirm(null);
     } catch (err) {
       alert(err instanceof Error ? err.message : String(err));
@@ -142,23 +183,69 @@ export default function KeysPage() {
     }
   }
 
-  function handleCoreTypesUpdated(id: number, core_types: string[]) {
-    setKeys(prev => prev.map(k => k.id === id ? { ...k, core_types } : k));
-    setEditKey(null);
-  }
-
   function handleCreated(newKey: ApiKeyRecord) {
-    setKeys(prev => [newKey, ...prev]);
-    setRevealed(prev => ({ ...prev, [newKey.id]: newKey.api_key }));
+    setKeys(prev => [{ ...newKey, api_key: maskApiKey(newKey.api_key) }, ...prev]);
     setShowCreate(false);
   }
 
-  const evalTypeMap = Object.fromEntries(EVAL_TYPES.map(t => [t.id, t.name]));
+  if (isAdmin) return null;
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-1">
         <h1 className="text-xl font-semibold tracking-[-0.015em]">{t.title}</h1>
+      </div>
+      <p className="text-sm text-muted-foreground mb-5">{t.subtitle}</p>
+
+      {/* Quota rules card */}
+      <div className="mb-6 rounded-2xl border border-border bg-gradient-to-br from-muted/30 via-background to-background overflow-hidden">
+        <div className="flex items-center gap-2 px-5 pt-4 pb-3 border-b border-border/60">
+          <Info className="h-4 w-4 text-muted-foreground" />
+          <p className="text-sm font-semibold tracking-tight">{t.quotaRulesTitle}</p>
+        </div>
+
+        <div className="grid md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-border/60">
+          <QuotaRule
+            icon={Sparkles}
+            tone="emerald"
+            title={t.quotaRule1Title}
+            body={t.quotaRule1Body}
+          />
+          <QuotaRule
+            icon={AlertTriangle}
+            tone="amber"
+            title={t.quotaRule2Title}
+            body={t.quotaRule2Body}
+          />
+          <QuotaRule
+            icon={Lock}
+            tone="slate"
+            title={t.quotaRule3Title}
+            body={t.quotaRule3Body}
+          />
+        </div>
+
+        {/* Contact support CTA */}
+        <div className="relative px-5 py-4 flex flex-col sm:flex-row sm:items-center gap-3 border-t border-blue-500/20 bg-gradient-to-r from-blue-500/[0.09] via-indigo-500/[0.06] to-transparent dark:from-blue-400/[0.12] dark:via-indigo-400/[0.08]">
+          <div className="flex items-start gap-3 flex-1 min-w-0">
+            <div className="h-9 w-9 shrink-0 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-500 text-white flex items-center justify-center shadow-sm shadow-blue-500/30 ring-2 ring-background">
+              <Headphones className="h-4 w-4" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-sm font-semibold text-blue-950 dark:text-blue-100">{t.contactTitle}</p>
+              <p className="text-xs text-blue-900/70 dark:text-blue-200/70 mt-0.5 leading-relaxed">{t.contactDesc}</p>
+            </div>
+          </div>
+          <a
+            href={SALES_CHAT_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1.5 h-9 px-4 text-xs font-medium rounded-lg bg-gradient-to-br from-blue-600 to-indigo-600 text-white hover:from-blue-500 hover:to-indigo-500 shadow-sm shadow-blue-500/30 transition-all whitespace-nowrap self-start sm:self-auto"
+          >
+            {t.contactCta}
+            <ArrowRight className="h-3.5 w-3.5" />
+          </a>
+        </div>
       </div>
 
       <button
@@ -183,7 +270,7 @@ export default function KeysPage() {
                 <th className="text-left py-3 px-4 font-medium text-muted-foreground">{t.name}</th>
                 <th className="text-left py-3 px-4 font-medium text-muted-foreground">API Key</th>
                 <th className="text-left py-3 px-4 font-medium text-muted-foreground">{t.status}</th>
-                <th className="text-left py-3 px-4 font-medium text-muted-foreground">{t.evalTypes}</th>
+                <th className="text-left py-3 px-4 font-medium text-muted-foreground">{t.usage}</th>
                 <th className="text-left py-3 px-4 font-medium text-muted-foreground">{t.createdAt}</th>
                 <th className="text-left py-3 px-4 font-medium text-muted-foreground">{t.actions}</th>
               </tr>
@@ -197,27 +284,47 @@ export default function KeysPage() {
                 keys.map(k => {
                   const displayKey = revealed[k.id] || k.api_key;
                   const isRevealed = !!revealed[k.id];
+                  const totalLimit = k.total_limit ?? 0;
+                  const totalUsed = k.total_used ?? 0;
+                  const periodLimit = k.period_limit ?? 0;
+                  const periodUsed = k.period_used ?? 0;
+                  const hasNoQuota = totalLimit === 0 && periodLimit === 0;
+                  const totalPct = totalLimit > 0 ? Math.min(100, Math.round((totalUsed / totalLimit) * 100)) : -1;
+                  const periodPct = periodLimit > 0 ? Math.min(100, Math.round((periodUsed / periodLimit) * 100)) : -1;
+                  const isNearLimit = totalPct >= 80 || periodPct >= 80;
                   return (
                     <tr
                       key={k.id}
-                      className={cn('hover:bg-muted/20 transition-colors', !k.enabled && 'bg-muted/20 opacity-60')}
+                      className={cn(
+                        'transition-colors',
+                        !k.enabled && 'opacity-50',
+                        hasNoQuota
+                          ? 'bg-rose-50/60 dark:bg-rose-950/10 hover:bg-rose-50 dark:hover:bg-rose-950/20'
+                          : isNearLimit
+                            ? 'bg-amber-50/40 dark:bg-amber-950/10 hover:bg-amber-50/70 dark:hover:bg-amber-950/20'
+                            : 'hover:bg-muted/20'
+                      )}
                     >
-                      <td className="py-3.5 px-4 font-medium">{k.name}</td>
+                      <td className="py-3.5 px-4 font-medium">
+                        <div className="flex items-center gap-2">
+                          <span className={cn(
+                            'shrink-0 w-1 h-8 rounded-full',
+                            hasNoQuota
+                              ? 'bg-rose-400'
+                              : isNearLimit
+                                ? 'bg-amber-400'
+                                : 'bg-emerald-400'
+                          )} />
+                          {k.name}
+                        </div>
+                      </td>
                       <td className="py-3.5 px-4">
                         <div className="flex items-center gap-2">
                           <code className="text-xs font-mono text-muted-foreground">{displayKey}</code>
-                          <button
-                            onClick={() => toggleReveal(k.id)}
-                            className="text-muted-foreground hover:text-foreground transition-colors"
-                            title={isRevealed ? t.hide : t.show}
-                          >
+                          <button onClick={() => toggleReveal(k.id)} className="text-muted-foreground hover:text-foreground transition-colors" title={isRevealed ? t.hide : t.show}>
                             {isRevealed ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
                           </button>
-                          <button
-                            onClick={() => copyKey(k.id)}
-                            className="text-muted-foreground hover:text-foreground transition-colors"
-                            title={t.copy}
-                          >
+                          <button onClick={() => copyKey(k.id)} className="text-muted-foreground hover:text-foreground transition-colors" title={t.copy}>
                             {copiedId === k.id ? <Check className="h-3.5 w-3.5 text-emerald-500" /> : <Copy className="h-3.5 w-3.5" />}
                           </button>
                         </div>
@@ -231,53 +338,65 @@ export default function KeysPage() {
                             k.enabled ? 'bg-foreground' : 'bg-muted-foreground/30'
                           )}
                         >
-                          <span
-                            className={cn(
-                              'inline-block h-3.5 w-3.5 transform rounded-full bg-background transition-transform',
-                              k.enabled ? 'translate-x-[18px]' : 'translate-x-[3px]'
-                            )}
-                          />
+                          <span className={cn(
+                            'inline-block h-3.5 w-3.5 transform rounded-full bg-background transition-transform',
+                            k.enabled ? 'translate-x-[18px]' : 'translate-x-[3px]'
+                          )} />
                         </button>
                       </td>
-                      <td className="py-3.5 px-4">
-                        <div className="flex flex-wrap gap-1.5 max-w-xs">
-                          {k.core_types.map(ct => (
-                            <span
-                              key={ct}
-                              title={evalTypeMap[ct] || ct}
-                              className="inline-block whitespace-nowrap text-[11px] px-2 py-0.5 rounded-md bg-muted text-muted-foreground border border-border/60"
+                      <td className="py-3.5 px-4 min-w-[180px]">
+                        {hasNoQuota ? (
+                          <div className="flex flex-col gap-1.5">
+                            <div className="flex items-center gap-1.5 text-xs">
+                              <span className="h-1.5 w-1.5 rounded-full bg-rose-500 animate-pulse shrink-0" />
+                              <span className="font-semibold text-rose-600 dark:text-rose-400">{t.noQuota}</span>
+                            </div>
+                            <div className="text-[10px] text-muted-foreground leading-snug max-w-[180px]">
+                              {t.noQuotaHint}
+                            </div>
+                            <a
+                              href={SALES_CHAT_URL}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-1 h-6 px-2 text-[10px] font-medium rounded-md bg-rose-500/10 text-rose-600 dark:text-rose-400 hover:bg-rose-500/20 transition-colors whitespace-nowrap w-fit"
                             >
-                              <span className="sm:hidden">{(evalTypeMap[ct] || ct).slice(0, 3)}</span>
-                              <span className="hidden sm:inline">{evalTypeMap[ct] || ct}</span>
-                            </span>
-                          ))}
-                        </div>
+                              <Headphones className="h-3 w-3" />
+                              {isZh ? '联系客服充值' : 'Contact support'}
+                            </a>
+                          </div>
+                        ) : (
+                          <div className="space-y-1">
+                            <UsageBar
+                              label={isZh ? '总量' : 'Total'}
+                              used={totalUsed}
+                              limit={totalLimit}
+                              pct={totalPct}
+                              unlimited={t.unlimited}
+                              warn={totalPct >= 80}
+                            />
+                            <UsageBar
+                              label={k.period_type === 'monthly' ? (isZh ? '月' : 'Mon') : (isZh ? '日' : 'Day')}
+                              used={periodUsed}
+                              limit={periodLimit}
+                              pct={periodPct}
+                              unlimited={t.unlimited}
+                              warn={periodPct >= 80}
+                            />
+                            {isNearLimit && (
+                              <p className="mt-0.5 text-[10px] text-amber-600 dark:text-amber-400">
+                                {isZh ? '⚠ 额度即将用尽' : '⚠ Quota almost full'}
+                              </p>
+                            )}
+                          </div>
+                        )}
                       </td>
-                      <td className="py-3.5 px-4 text-muted-foreground text-xs whitespace-nowrap">
-                        {k.created_at}
-                      </td>
+                      <td className="py-3.5 px-4 text-muted-foreground text-xs whitespace-nowrap">{formatDateTime(k.created_at)}</td>
                       <td className="py-3.5 px-4">
                         <div className="flex items-center gap-1">
-                          <button
-                            onClick={() => setEditKey(k)}
-                            className="h-8 w-8 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-                            title={isZh ? '编辑权限' : 'Edit permissions'}
-                          >
-                            <Pencil className="h-3.5 w-3.5" />
-                          </button>
-                          <button
-                            onClick={() => setResetConfirm(k.id)}
-                            disabled={busyId === k.id}
-                            className="h-8 w-8 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors disabled:opacity-50"
-                            title={t.regenerate}
-                          >
+                          <button onClick={() => setResetConfirm(k.id)} disabled={busyId === k.id} className="h-8 w-8 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors disabled:opacity-50" title={t.regenerate}>
                             <RefreshCw className="h-3.5 w-3.5" />
                           </button>
-                          <button
-                            onClick={() => setDeleteConfirm(k.id)}
-                            className="h-8 w-8 rounded-lg flex items-center justify-center text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
-                            title={t.delete}
-                          >
+                          <button onClick={() => setDeleteConfirm(k.id)} className="h-8 w-8 rounded-lg flex items-center justify-center text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors" title={t.delete}>
                             <Trash2 className="h-3.5 w-3.5" />
                           </button>
                         </div>
@@ -292,431 +411,93 @@ export default function KeysPage() {
       </div>
 
       {showCreate && (
-        <CreateKeyModal
-          locale={locale}
-          onClose={() => setShowCreate(false)}
-          onCreate={handleCreated}
-        />
+        <CreateKeyModal locale={locale} onClose={() => setShowCreate(false)} onCreate={handleCreated} />
       )}
-
-      {editKey && (
-        <EditCoreTypesModal
-          locale={locale}
-          keyRecord={editKey}
-          onClose={() => setEditKey(null)}
-          onSaved={handleCoreTypesUpdated}
-        />
-      )}
-
       {deleteConfirm !== null && (
         <ConfirmActionModal
-          title={t.confirmDeleteTitle}
-          description={t.confirmDeleteDesc}
-          confirmText={t.confirm}
-          cancelText={t.cancel}
-          danger
+          title={t.confirmDeleteTitle} description={t.confirmDeleteDesc}
+          confirmText={t.confirm} cancelText={t.cancel} danger
           loading={busyId === deleteConfirm}
-          onCancel={() => setDeleteConfirm(null)}
-          onConfirm={() => deleteKey(deleteConfirm)}
+          onCancel={() => setDeleteConfirm(null)} onConfirm={() => deleteKey(deleteConfirm)}
         />
       )}
-
       {resetConfirm !== null && (
         <ConfirmActionModal
-          title={t.confirmResetTitle}
-          description={t.confirmResetDesc}
-          confirmText={t.confirm}
-          cancelText={t.cancel}
+          title={t.confirmResetTitle} description={t.confirmResetDesc}
+          confirmText={t.confirm} cancelText={t.cancel}
           loading={busyId === resetConfirm}
-          onCancel={() => setResetConfirm(null)}
-          onConfirm={() => resetKey(resetConfirm)}
+          onCancel={() => setResetConfirm(null)} onConfirm={() => doResetKey(resetConfirm)}
         />
       )}
     </div>
   );
 }
 
-function EditCoreTypesModal({
-  locale,
-  keyRecord,
-  onClose,
-  onSaved,
-}: {
-  locale: string;
-  keyRecord: ApiKeyRecord;
-  onClose: () => void;
-  onSaved: (id: number, core_types: string[]) => void;
+function UsageBar({ label, used, limit, pct, unlimited, warn }: {
+  label: string; used: number; limit: number; pct: number; unlimited: string; warn: boolean;
 }) {
-  const isZh = locale.startsWith('zh');
-  const t = {
-    title: isZh ? '编辑评测权限' : 'Edit Permissions',
-    subtitle: isZh ? '选择该 Key 可调用的评测类型' : 'Select which eval types this key can use',
-    evalTypes: isZh ? '评测类型' : 'Eval Types',
-    selectAll: isZh ? '全选全部' : 'Select all',
-    englishZone: isZh ? '英文评测' : 'English eval',
-    chineseZone: isZh ? '中文评测' : 'Chinese eval',
-    selectEnglish: isZh ? '全选英文' : 'Select English',
-    selectChinese: isZh ? '全选中文' : 'Select Chinese',
-    selectedCount: (n: number, total: number) => (isZh ? `已选 ${n}/${total}` : `${n}/${total} selected`),
-    cancel: isZh ? '取消' : 'Cancel',
-    save: isZh ? '保存' : 'Save',
-    saving: isZh ? '保存中…' : 'Saving…',
-    errTypes: isZh ? '请至少选择一种评测类型' : 'Please select at least one eval type',
-  };
-
-  const [selected, setSelected] = useState<Set<string>>(new Set(keyRecord.core_types));
-  const [options, setOptions] = useState<ApiCoreType[]>(
-    EVAL_TYPES.map(e => ({ value: e.id, label: e.name })),
-  );
-  const [error, setError] = useState('');
-  const [submitting, setSubmitting] = useState(false);
-  const selectAllRef = useRef<HTMLInputElement | null>(null);
-  const selectEnRef = useRef<HTMLInputElement | null>(null);
-  const selectCnRef = useRef<HTMLInputElement | null>(null);
-
-  useEffect(() => {
-    listCoreTypes()
-      .then(list => { if (list.length) setOptions(list); })
-      .catch(() => {});
-  }, []);
-
-  const allValues = useMemo(() => options.map(opt => opt.value), [options]);
-  const enValues = useMemo(
-    () => options.filter(opt => opt.value.startsWith('en.')).map(opt => opt.value),
-    [options],
-  );
-  const cnValues = useMemo(
-    () => options.filter(opt => opt.value.startsWith('cn.')).map(opt => opt.value),
-    [options],
-  );
-
-  function getGroupState(values: string[]) {
-    if (values.length === 0) return { checked: false, indeterminate: false };
-    const selectedCount = values.filter(v => selected.has(v)).length;
-    return {
-      checked: selectedCount > 0 && selectedCount === values.length,
-      indeterminate: selectedCount > 0 && selectedCount < values.length,
-    };
-  }
-
-  const allState = getGroupState(allValues);
-  const enState = getGroupState(enValues);
-  const cnState = getGroupState(cnValues);
-  const selectedEnCount = enValues.filter(v => selected.has(v)).length;
-  const selectedCnCount = cnValues.filter(v => selected.has(v)).length;
-
-  useEffect(() => {
-    if (selectAllRef.current) selectAllRef.current.indeterminate = allState.indeterminate;
-    if (selectEnRef.current) selectEnRef.current.indeterminate = enState.indeterminate;
-    if (selectCnRef.current) selectCnRef.current.indeterminate = cnState.indeterminate;
-  }, [allState.indeterminate, enState.indeterminate, cnState.indeterminate]);
-
-  function toggleType(value: string) {
-    setSelected(prev => {
-      const next = new Set(prev);
-      if (next.has(value)) next.delete(value); else next.add(value);
-      return next;
-    });
-  }
-
-  function toggleGroup(values: string[], checked: boolean) {
-    setSelected(prev => {
-      const next = new Set(prev);
-      values.forEach(value => {
-        if (checked) next.add(value);
-        else next.delete(value);
-      });
-      return next;
-    });
-    setError('');
-  }
-
-  async function handleSave() {
-    if (selected.size === 0) { setError(t.errTypes); return; }
-    setSubmitting(true);
-    try {
-      const newTypes = Array.from(selected);
-      await updateKeyCoreTypes(keyRecord.id, newTypes);
-      onSaved(keyRecord.id, newTypes);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : String(err));
-    } finally {
-      setSubmitting(false);
-    }
-  }
+  const barColor = pct >= 90
+    ? 'bg-rose-500'
+    : pct >= 80
+      ? 'bg-amber-500'
+      : pct >= 50
+        ? 'bg-sky-500'
+        : 'bg-emerald-500';
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/50" onClick={onClose} />
-      <div className="relative w-full max-w-lg bg-background rounded-xl border border-border shadow-xl p-6 max-h-[85vh] overflow-y-auto">
-        <div className="flex items-center justify-between mb-1">
-          <h2 className="text-lg font-semibold">{t.title}</h2>
-          <button
-            onClick={onClose}
-            className="h-8 w-8 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-          >
-            <X className="h-4 w-4" />
-          </button>
-        </div>
-        <p className="text-sm text-muted-foreground mb-5">
-          <span className="font-medium text-foreground">{keyRecord.name}</span>
-          {' · '}
-          {t.subtitle}
-        </p>
-
-        {error && (
-          <div className="mb-4 rounded-lg bg-destructive/10 text-destructive text-sm px-4 py-2.5">
-            {error}
+    <div className="flex items-center gap-1.5">
+      <span className="text-[10px] text-muted-foreground w-5 shrink-0">{label}</span>
+      {pct >= 0 ? (
+        <div className="flex-1 flex items-center gap-1.5 min-w-0">
+          <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden min-w-[60px]">
+            <div
+              className={cn('h-full rounded-full transition-all', barColor)}
+              style={{ width: `${pct}%` }}
+            />
           </div>
-        )}
-
-        <div className="mb-6 space-y-4">
-          <div className="flex items-center justify-between rounded-lg border border-border bg-muted/20 px-3 py-2">
-            <label className="inline-flex items-center gap-2.5 cursor-pointer text-sm font-medium">
-              <input
-                ref={selectAllRef}
-                type="checkbox"
-                checked={allState.checked}
-                onChange={(e) => toggleGroup(allValues, e.target.checked)}
-                className="h-4 w-4 rounded border-border accent-foreground"
-              />
-              <span>{t.selectAll}</span>
-            </label>
-            <span className="text-xs text-muted-foreground">{t.selectedCount(selected.size, allValues.length)}</span>
-          </div>
-
-          <section className="rounded-xl border border-border bg-background p-3 sm:p-4">
-            <div className="flex items-center justify-between mb-3">
-              <div>
-                <h3 className="text-sm font-semibold">{t.englishZone}</h3>
-                <p className="text-xs text-muted-foreground mt-0.5">{t.selectedCount(selectedEnCount, enValues.length)}</p>
-              </div>
-              <label className="inline-flex items-center gap-2 cursor-pointer text-xs text-muted-foreground hover:text-foreground">
-                <input
-                  ref={selectEnRef}
-                  type="checkbox"
-                  checked={enState.checked}
-                  onChange={(e) => toggleGroup(enValues, e.target.checked)}
-                  className="h-4 w-4 rounded border-border accent-foreground"
-                />
-                <span>{t.selectEnglish}</span>
-              </label>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              {options.filter(opt => opt.value.startsWith('en.')).map(opt => (
-                <label
-                  key={opt.value}
-                  className={cn(
-                    'flex items-center gap-2.5 px-3 py-2 rounded-lg border text-sm cursor-pointer transition-colors',
-                    selected.has(opt.value)
-                      ? 'border-foreground/30 bg-muted/50'
-                      : 'border-border hover:border-border/80 hover:bg-muted/20'
-                  )}
-                >
-                  <input
-                    type="checkbox"
-                    checked={selected.has(opt.value)}
-                    onChange={() => { toggleType(opt.value); setError(''); }}
-                    className="h-4 w-4 rounded border-border accent-foreground"
-                  />
-                  <span className="whitespace-nowrap text-[11px] sm:text-xs" title={opt.label}>
-                    <span className="sm:hidden">{opt.label.slice(0, 3)}</span>
-                    <span className="hidden sm:inline">{opt.label}</span>
-                  </span>
-                </label>
-              ))}
-            </div>
-          </section>
-
-          <section className="rounded-xl border border-border bg-background p-3 sm:p-4">
-            <div className="flex items-center justify-between mb-3">
-              <div>
-                <h3 className="text-sm font-semibold">{t.chineseZone}</h3>
-                <p className="text-xs text-muted-foreground mt-0.5">{t.selectedCount(selectedCnCount, cnValues.length)}</p>
-              </div>
-              <label className="inline-flex items-center gap-2 cursor-pointer text-xs text-muted-foreground hover:text-foreground">
-                <input
-                  ref={selectCnRef}
-                  type="checkbox"
-                  checked={cnState.checked}
-                  onChange={(e) => toggleGroup(cnValues, e.target.checked)}
-                  className="h-4 w-4 rounded border-border accent-foreground"
-                />
-                <span>{t.selectChinese}</span>
-              </label>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              {options.filter(opt => opt.value.startsWith('cn.')).map(opt => (
-                <label
-                  key={opt.value}
-                  className={cn(
-                    'flex items-center gap-2.5 px-3 py-2 rounded-lg border text-sm cursor-pointer transition-colors',
-                    selected.has(opt.value)
-                      ? 'border-foreground/30 bg-muted/50'
-                      : 'border-border hover:border-border/80 hover:bg-muted/20'
-                  )}
-                >
-                  <input
-                    type="checkbox"
-                    checked={selected.has(opt.value)}
-                    onChange={() => { toggleType(opt.value); setError(''); }}
-                    className="h-4 w-4 rounded border-border accent-foreground"
-                  />
-                  <span className="whitespace-nowrap text-[11px] sm:text-xs" title={opt.label}>
-                    <span className="sm:hidden">{opt.label.slice(0, 3)}</span>
-                    <span className="hidden sm:inline">{opt.label}</span>
-                  </span>
-                </label>
-              ))}
-            </div>
-          </section>
-          <div className="grid grid-cols-2 gap-2">
-            {options.filter(opt => !opt.value.startsWith('en.') && !opt.value.startsWith('cn.')).map(opt => (
-              <label
-                key={opt.value}
-                className={cn(
-                  'flex items-center gap-2.5 px-3 py-2 rounded-lg border text-sm cursor-pointer transition-colors',
-                  selected.has(opt.value)
-                    ? 'border-foreground/30 bg-muted/50'
-                    : 'border-border hover:border-border/80 hover:bg-muted/20'
-                )}
-              >
-                <input
-                  type="checkbox"
-                  checked={selected.has(opt.value)}
-                  onChange={() => { toggleType(opt.value); setError(''); }}
-                  className="h-4 w-4 rounded border-border accent-foreground"
-                />
-                <span className="whitespace-nowrap text-[11px] sm:text-xs" title={opt.label}>
-                  <span className="sm:hidden">{opt.label.slice(0, 3)}</span>
-                  <span className="hidden sm:inline">{opt.label}</span>
-                </span>
-              </label>
-            ))}
-          </div>
+          <span className={cn(
+            'text-[10px] tabular-nums whitespace-nowrap shrink-0',
+            warn ? 'text-amber-600 dark:text-amber-400 font-semibold' : 'text-muted-foreground'
+          )}>
+            {used.toLocaleString()} / {limit.toLocaleString()}
+          </span>
         </div>
-
-        <div className="flex items-center justify-end gap-3">
-          <button
-            onClick={onClose}
-            className="h-9 px-4 text-sm font-medium rounded-lg border border-border hover:bg-muted transition-colors"
-          >
-            {t.cancel}
-          </button>
-          <button
-            onClick={handleSave}
-            disabled={submitting}
-            className="h-9 px-4 text-sm font-medium rounded-lg bg-foreground text-background hover:bg-foreground/90 transition-colors disabled:opacity-50"
-          >
-            {submitting ? t.saving : t.save}
-          </button>
-        </div>
-      </div>
+      ) : (
+        <span className="text-[10px] text-muted-foreground tabular-nums">{used} / <span className="opacity-50">{unlimited}</span></span>
+      )}
     </div>
   );
 }
 
 function CreateKeyModal({
-  locale,
-  onClose,
-  onCreate,
+  locale, onClose, onCreate,
 }: {
-  locale: string;
-  onClose: () => void;
-  onCreate: (key: ApiKeyRecord) => void;
+  locale: string; onClose: () => void; onCreate: (key: ApiKeyRecord) => void;
 }) {
   const isZh = locale.startsWith('zh');
   const t = {
     title: isZh ? '创建 API Key' : 'Create API Key',
     name: isZh ? '名称' : 'Name',
     namePlaceholder: isZh ? '用于标识该 Key 的备注名' : 'A display name for this key',
-    evalTypes: isZh ? '评测类型' : 'Eval Types',
-    selectAll: isZh ? '全选全部' : 'Select all',
-    englishZone: isZh ? '英文评测' : 'English eval',
-    chineseZone: isZh ? '中文评测' : 'Chinese eval',
-    selectEnglish: isZh ? '全选英文' : 'Select English',
-    selectChinese: isZh ? '全选中文' : 'Select Chinese',
-    selectedCount: (n: number, total: number) => (isZh ? `已选 ${n}/${total}` : `${n}/${total} selected`),
+    quotaTitle: isZh ? '配额自动分配' : 'Quota auto-assignment',
+    quotaBody: isZh
+      ? '首个 Key：每日 30 次 / 总量 900 次。后续新建的 Key 初始无配额，需联系管理员分配。'
+      : 'First key: 30 / day · 900 total. Additional keys start with no quota and require admin allocation.',
     cancel: isZh ? '取消' : 'Cancel',
     create: isZh ? '创建' : 'Create',
     creating: isZh ? '创建中…' : 'Creating…',
     errName: isZh ? '请输入名称' : 'Please enter a name',
-    errTypes: isZh ? '请至少选择一种评测类型' : 'Please select at least one eval type',
   };
+
   const [name, setName] = useState('');
-  const [selected, setSelected] = useState<Set<string>>(new Set());
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
-  const [options, setOptions] = useState<ApiCoreType[]>(
-    EVAL_TYPES.map(e => ({ value: e.id, label: e.name })),
-  );
-  const selectAllRef = useRef<HTMLInputElement | null>(null);
-  const selectEnRef = useRef<HTMLInputElement | null>(null);
-  const selectCnRef = useRef<HTMLInputElement | null>(null);
-
-  useEffect(() => {
-    listCoreTypes()
-      .then(list => { if (list.length) setOptions(list); })
-      .catch(() => { /* fall back to EVAL_TYPES */ });
-  }, []);
-
-  const allValues = useMemo(() => options.map(opt => opt.value), [options]);
-  const enValues = useMemo(
-    () => options.filter(opt => opt.value.startsWith('en.')).map(opt => opt.value),
-    [options],
-  );
-  const cnValues = useMemo(
-    () => options.filter(opt => opt.value.startsWith('cn.')).map(opt => opt.value),
-    [options],
-  );
-
-  function getGroupState(values: string[]) {
-    if (values.length === 0) return { checked: false, indeterminate: false };
-    const selectedCount = values.filter(v => selected.has(v)).length;
-    return {
-      checked: selectedCount > 0 && selectedCount === values.length,
-      indeterminate: selectedCount > 0 && selectedCount < values.length,
-    };
-  }
-
-  const allState = getGroupState(allValues);
-  const enState = getGroupState(enValues);
-  const cnState = getGroupState(cnValues);
-  const selectedEnCount = enValues.filter(v => selected.has(v)).length;
-  const selectedCnCount = cnValues.filter(v => selected.has(v)).length;
-
-  useEffect(() => {
-    if (selectAllRef.current) selectAllRef.current.indeterminate = allState.indeterminate;
-    if (selectEnRef.current) selectEnRef.current.indeterminate = enState.indeterminate;
-    if (selectCnRef.current) selectCnRef.current.indeterminate = cnState.indeterminate;
-  }, [allState.indeterminate, enState.indeterminate, cnState.indeterminate]);
-
-  function toggleType(id: string) {
-    setSelected(prev => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id); else next.add(id);
-      return next;
-    });
-  }
-
-  function toggleGroup(values: string[], checked: boolean) {
-    setSelected(prev => {
-      const next = new Set(prev);
-      values.forEach(value => {
-        if (checked) next.add(value);
-        else next.delete(value);
-      });
-      return next;
-    });
-    setError('');
-  }
 
   async function handleCreate() {
     if (!name.trim()) { setError(t.errName); return; }
-    if (selected.size === 0) { setError(t.errTypes); return; }
     setSubmitting(true);
     try {
-      const created = await apiCreateKey({ name: name.trim(), core_types: Array.from(selected) });
+      const created = await apiCreateKey({ name: name.trim() });
       onCreate(created);
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
@@ -726,179 +507,38 @@ function CreateKeyModal({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/50" onClick={onClose} />
-      <div className="relative w-full max-w-lg bg-background rounded-xl border border-border shadow-xl p-6 max-h-[85vh] overflow-y-auto">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-lg font-semibold">{t.title}</h2>
-          <button
-            onClick={onClose}
-            className="h-8 w-8 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-          >
-            <X className="h-4 w-4" />
-          </button>
-        </div>
+    <ModalShell onClose={onClose} title={t.title}>
+      {error && <ErrorBanner msg={error} />}
+      <div className="mb-5">
+        <label className="text-sm font-medium mb-1.5 block">{t.name}</label>
+        <input
+          type="text" value={name} onChange={e => { setName(e.target.value); setError(''); }}
+          placeholder={t.namePlaceholder}
+          autoFocus
+          className="w-full h-10 px-3 text-sm rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-ring/20 focus:border-foreground/30 transition-colors placeholder:text-muted-foreground"
+        />
+      </div>
 
-        {error && (
-          <div className="mb-4 rounded-lg bg-destructive/10 text-destructive text-sm px-4 py-2.5">
-            {error}
-          </div>
-        )}
-
-        <div className="mb-5">
-          <label className="text-sm font-medium mb-1.5 block">{t.name}</label>
-          <input
-            type="text"
-            value={name}
-            onChange={e => { setName(e.target.value); setError(''); }}
-            placeholder={t.namePlaceholder}
-            className="w-full h-10 px-3 text-sm rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-ring/20 focus:border-foreground/30 transition-colors placeholder:text-muted-foreground"
-          />
-        </div>
-
-        <div className="mb-6">
-          <label className="text-sm font-medium mb-3 block">{t.evalTypes}</label>
-          <div className="space-y-4">
-            <div className="flex items-center justify-between rounded-lg border border-border bg-muted/20 px-3 py-2">
-              <label className="inline-flex items-center gap-2.5 cursor-pointer text-sm font-medium">
-                <input
-                  ref={selectAllRef}
-                  type="checkbox"
-                  checked={allState.checked}
-                  onChange={(e) => toggleGroup(allValues, e.target.checked)}
-                  className="h-4 w-4 rounded border-border accent-foreground"
-                />
-                <span>{t.selectAll}</span>
-              </label>
-              <span className="text-xs text-muted-foreground">{t.selectedCount(selected.size, allValues.length)}</span>
-            </div>
-
-            <section className="rounded-xl border border-border bg-background p-3 sm:p-4">
-              <div className="flex items-center justify-between mb-3">
-                <div>
-                  <h3 className="text-sm font-semibold">{t.englishZone}</h3>
-                  <p className="text-xs text-muted-foreground mt-0.5">{t.selectedCount(selectedEnCount, enValues.length)}</p>
-                </div>
-                <label className="inline-flex items-center gap-2 cursor-pointer text-xs text-muted-foreground hover:text-foreground">
-                  <input
-                    ref={selectEnRef}
-                    type="checkbox"
-                    checked={enState.checked}
-                    onChange={(e) => toggleGroup(enValues, e.target.checked)}
-                    className="h-4 w-4 rounded border-border accent-foreground"
-                  />
-                  <span>{t.selectEnglish}</span>
-                </label>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                {options.filter(opt => opt.value.startsWith('en.')).map(opt => (
-                  <label
-                    key={opt.value}
-                    className={cn(
-                      'flex items-center gap-2.5 px-3 py-2 rounded-lg border text-sm cursor-pointer transition-colors',
-                      selected.has(opt.value)
-                        ? 'border-foreground/30 bg-muted/50'
-                        : 'border-border hover:border-border/80 hover:bg-muted/20'
-                    )}
-                  >
-                    <input
-                      type="checkbox"
-                      checked={selected.has(opt.value)}
-                      onChange={() => { toggleType(opt.value); setError(''); }}
-                      className="h-4 w-4 rounded border-border accent-foreground"
-                    />
-                    <span className="whitespace-nowrap text-[11px] sm:text-xs" title={opt.label}>
-                      <span className="sm:hidden">{opt.label.slice(0, 3)}</span>
-                      <span className="hidden sm:inline">{opt.label}</span>
-                    </span>
-                  </label>
-                ))}
-              </div>
-            </section>
-
-            <section className="rounded-xl border border-border bg-background p-3 sm:p-4">
-              <div className="flex items-center justify-between mb-3">
-                <div>
-                  <h3 className="text-sm font-semibold">{t.chineseZone}</h3>
-                  <p className="text-xs text-muted-foreground mt-0.5">{t.selectedCount(selectedCnCount, cnValues.length)}</p>
-                </div>
-                <label className="inline-flex items-center gap-2 cursor-pointer text-xs text-muted-foreground hover:text-foreground">
-                  <input
-                    ref={selectCnRef}
-                    type="checkbox"
-                    checked={cnState.checked}
-                    onChange={(e) => toggleGroup(cnValues, e.target.checked)}
-                    className="h-4 w-4 rounded border-border accent-foreground"
-                  />
-                  <span>{t.selectChinese}</span>
-                </label>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                {options.filter(opt => opt.value.startsWith('cn.')).map(opt => (
-                  <label
-                    key={opt.value}
-                    className={cn(
-                      'flex items-center gap-2.5 px-3 py-2 rounded-lg border text-sm cursor-pointer transition-colors',
-                      selected.has(opt.value)
-                        ? 'border-foreground/30 bg-muted/50'
-                        : 'border-border hover:border-border/80 hover:bg-muted/20'
-                    )}
-                  >
-                    <input
-                      type="checkbox"
-                      checked={selected.has(opt.value)}
-                      onChange={() => { toggleType(opt.value); setError(''); }}
-                      className="h-4 w-4 rounded border-border accent-foreground"
-                    />
-                    <span className="whitespace-nowrap text-[11px] sm:text-xs" title={opt.label}>
-                      <span className="sm:hidden">{opt.label.slice(0, 3)}</span>
-                      <span className="hidden sm:inline">{opt.label}</span>
-                    </span>
-                  </label>
-                ))}
-              </div>
-            </section>
-          </div>
-        </div>
-
-        <div className="flex items-center justify-end gap-3">
-          <button
-            onClick={onClose}
-            className="h-9 px-4 text-sm font-medium rounded-lg border border-border hover:bg-muted transition-colors"
-          >
-            {t.cancel}
-          </button>
-          <button
-            onClick={handleCreate}
-            disabled={submitting}
-            className="h-9 px-4 text-sm font-medium rounded-lg bg-foreground text-background hover:bg-foreground/90 transition-colors disabled:opacity-50"
-          >
-            {submitting ? t.creating : t.create}
-          </button>
+      <div className="mb-6 rounded-xl border border-border bg-muted/20 p-4 flex gap-3">
+        <Info className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
+        <div>
+          <p className="text-sm font-medium">{t.quotaTitle}</p>
+          <p className="text-xs text-muted-foreground mt-1 leading-relaxed">{t.quotaBody}</p>
         </div>
       </div>
-    </div>
+
+      <ModalActions
+        onCancel={onClose} onConfirm={handleCreate}
+        cancelText={t.cancel} confirmText={submitting ? t.creating : t.create}
+        disabled={submitting}
+      />
+    </ModalShell>
   );
 }
 
-function ConfirmActionModal({
-  title,
-  description,
-  confirmText,
-  cancelText,
-  onConfirm,
-  onCancel,
-  loading,
-  danger = false,
-}: {
-  title: string;
-  description: string;
-  confirmText: string;
-  cancelText: string;
-  onConfirm: () => void;
-  onCancel: () => void;
-  loading?: boolean;
-  danger?: boolean;
+function ConfirmActionModal({ title, description, confirmText, cancelText, onConfirm, onCancel, loading, danger = false }: {
+  title: string; description: string; confirmText: string; cancelText: string;
+  onConfirm: () => void; onCancel: () => void; loading?: boolean; danger?: boolean;
 }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -906,25 +546,74 @@ function ConfirmActionModal({
       <div className="relative w-full max-w-md bg-background rounded-xl border border-border shadow-xl p-6">
         <h3 className="text-lg font-semibold">{title}</h3>
         <p className="text-sm text-muted-foreground mt-2 mb-6">{description}</p>
-        <div className="flex items-center justify-end gap-3">
-          <button
-            onClick={onCancel}
-            className="h-9 px-4 text-sm font-medium rounded-lg border border-border hover:bg-muted transition-colors"
-          >
-            {cancelText}
-          </button>
-          <button
-            onClick={onConfirm}
-            disabled={loading}
-            className={cn(
-              'h-9 px-4 text-sm font-medium rounded-lg text-background transition-colors disabled:opacity-50',
-              danger ? 'bg-destructive hover:bg-destructive/90' : 'bg-foreground hover:bg-foreground/90'
-            )}
-          >
-            {confirmText}
+        <ModalActions onCancel={onCancel} onConfirm={onConfirm} cancelText={cancelText} confirmText={confirmText} disabled={loading} danger={danger} />
+      </div>
+    </div>
+  );
+}
+
+function ModalShell({ children, onClose, title, subtitle }: {
+  children: React.ReactNode; onClose: () => void; title: string; subtitle?: string;
+}) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-black/50" onClick={onClose} />
+      <div className="relative w-full max-w-lg bg-background rounded-xl border border-border shadow-xl p-6 max-h-[85vh] overflow-y-auto">
+        <div className="flex items-center justify-between mb-1">
+          <h2 className="text-lg font-semibold">{title}</h2>
+          <button onClick={onClose} className="h-8 w-8 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
+            <X className="h-4 w-4" />
           </button>
         </div>
+        {subtitle && <p className="text-sm text-muted-foreground mb-5">{subtitle}</p>}
+        {children}
       </div>
+    </div>
+  );
+}
+
+function ErrorBanner({ msg }: { msg: string }) {
+  return (
+    <div className="mb-4 rounded-lg bg-destructive/10 text-destructive text-sm px-4 py-2.5">{msg}</div>
+  );
+}
+
+function ModalActions({ onCancel, onConfirm, cancelText, confirmText, disabled, danger = false }: {
+  onCancel: () => void; onConfirm: () => void; cancelText: string; confirmText: string; disabled?: boolean; danger?: boolean;
+}) {
+  return (
+    <div className="flex items-center justify-end gap-3">
+      <button onClick={onCancel} className="h-9 px-4 text-sm font-medium rounded-lg border border-border hover:bg-muted transition-colors">{cancelText}</button>
+      <button onClick={onConfirm} disabled={disabled}
+        className={cn('h-9 px-4 text-sm font-medium rounded-lg text-background transition-colors disabled:opacity-50',
+          danger ? 'bg-destructive hover:bg-destructive/90' : 'bg-foreground hover:bg-foreground/90')}>
+        {confirmText}
+      </button>
+    </div>
+  );
+}
+
+function QuotaRule({ icon: Icon, tone, title, body }: {
+  icon: React.ComponentType<{ className?: string }>;
+  tone: 'emerald' | 'amber' | 'slate';
+  title: string;
+  body: string;
+}) {
+  const toneStyles = {
+    emerald: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 ring-1 ring-emerald-500/20',
+    amber: 'bg-amber-500/10 text-amber-600 dark:text-amber-400 ring-1 ring-amber-500/20',
+    slate: 'bg-slate-500/10 text-slate-600 dark:text-slate-400 ring-1 ring-slate-500/20',
+  }[tone];
+
+  return (
+    <div className="px-5 py-4">
+      <div className="flex items-center gap-2 mb-1.5">
+        <span className={cn('inline-flex items-center justify-center h-6 w-6 rounded-md', toneStyles)}>
+          <Icon className="h-3.5 w-3.5" />
+        </span>
+        <p className="text-xs font-semibold tracking-tight">{title}</p>
+      </div>
+      <p className="text-xs text-muted-foreground leading-relaxed pl-8">{body}</p>
     </div>
   );
 }
