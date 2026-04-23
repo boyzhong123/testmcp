@@ -283,8 +283,8 @@ export default function ProfilePage() {
 function labelForMethod(method: string, t: (a: string, b: string) => string): string {
   if (method === 'google') return t('Google', 'Google');
   if (method === 'github') return t('GitHub', 'GitHub');
-  if (method === 'email') return t('Email + password', '邮箱 + 密码');
-  if (method === 'phone') return t('Phone + SMS code', '手机号 + 短信验证码');
+  if (method === 'microsoft') return t('Microsoft', 'Microsoft');
+  if (method === 'email') return t('Email + one-time code', '邮箱 + 一次性验证码');
   return method;
 }
 

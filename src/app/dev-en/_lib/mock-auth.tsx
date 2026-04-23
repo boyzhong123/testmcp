@@ -2,13 +2,18 @@
 
 import { createContext, useContext, useMemo, useSyncExternalStore, type ReactNode } from 'react';
 
-export type AuthMethod = 'email' | 'phone' | 'google' | 'github';
+// Supported sign-in methods for the static dev-en console.
+// Phone OTP was dropped: Western B2C developers tend to treat giving out a
+// mobile number as a privacy red flag, and email + major OAuth providers
+// cover virtually all real-world sign-in scenarios for this audience.
+// Microsoft is included so Entra ID / Office 365 developer tenants can sign
+// in with their work account without a separate email flow.
+export type AuthMethod = 'email' | 'google' | 'github' | 'microsoft';
 
 export interface MockUser {
   id: string;
   name: string;
   email: string;
-  phone?: string;
   avatarUrl?: string;
   method: AuthMethod;
   createdAt: string;
@@ -71,7 +76,7 @@ function getServerSnapshot(): AuthState {
 function deriveName(method: AuthMethod, identifier?: string): string {
   if (method === 'google') return 'Alex Rivera';
   if (method === 'github') return 'Jordan Lee';
-  if (method === 'phone') return 'Phone User';
+  if (method === 'microsoft') return 'Sam Chen';
   if (identifier && identifier.includes('@')) {
     const local = identifier.split('@')[0];
     return (
@@ -88,8 +93,8 @@ function deriveName(method: AuthMethod, identifier?: string): string {
 function deriveEmail(method: AuthMethod, identifier?: string): string {
   if (method === 'google') return 'alex.rivera@gmail.com';
   if (method === 'github') return 'jordan.lee@users.noreply.github.com';
+  if (method === 'microsoft') return 'sam.chen@outlook.com';
   if (method === 'email' && identifier) return identifier;
-  if (method === 'phone') return 'phone-user@example.dev';
   return 'you@example.dev';
 }
 
@@ -99,7 +104,6 @@ async function loginImpl({ method, identifier }: LoginArgs): Promise<MockUser> {
     id: 'u_' + Math.random().toString(36).slice(2, 10),
     name: deriveName(method, identifier),
     email: deriveEmail(method, identifier),
-    phone: method === 'phone' ? identifier : undefined,
     method,
     createdAt: new Date().toISOString(),
   };

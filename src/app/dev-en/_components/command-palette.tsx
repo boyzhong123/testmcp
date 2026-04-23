@@ -170,7 +170,7 @@ export function DevEnCommandPalette() {
         label: t('Open API Docs', '打开 API 文档'),
         icon: BookOpen,
         keywords: 'documentation reference',
-        run: () => go('/en/docs'),
+        run: () => go('/en/docs?from=dev'),
       },
     ];
 

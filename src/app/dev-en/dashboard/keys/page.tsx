@@ -35,6 +35,7 @@ import {
   getBillingTier,
   getKeyBalanceCents,
   getStarterKey,
+  isStarterUpgraded,
   keyLast4,
   listKeys,
   listPaidKeys,
@@ -76,6 +77,7 @@ export default function KeysPage() {
   const [menuFor, setMenuFor] = useState<string | null>(null);
   const [addCreditsFor, setAddCreditsFor] = useState<ApiKey | null>(null);
   const [settingsFor, setSettingsFor] = useState<ApiKey | null>(null);
+  const [starterCopyGuide, setStarterCopyGuide] = useState(false);
 
   const filteredPaid = useMemo(() => {
     return paidKeys.filter((k) => {
@@ -103,6 +105,31 @@ export default function KeysPage() {
       window.setTimeout(() => setCopiedId((c) => (c === id ? null : c)), 1500);
     } catch {
       /* ignore */
+    }
+  };
+
+  // For starter key: show guide modal first (unless user skipped or the key
+  // has already been topped up — once upgraded, the daily cap is lifted so
+  // the warning is no longer relevant).
+  const STARTER_COPY_SKIP_KEY = 'chivox:starter-copy-skip';
+  const copyStarter = async (text: string, id: string) => {
+    const skip =
+      typeof window !== 'undefined' && sessionStorage.getItem(STARTER_COPY_SKIP_KEY) === '1';
+    const alreadyUpgraded = starter ? isStarterUpgraded(starter) : false;
+    if (!skip && !alreadyUpgraded) {
+      setStarterCopyGuide(true);
+      return;
+    }
+    await copy(text, id);
+  };
+
+  const confirmStarterCopy = async (dontAskAgain: boolean) => {
+    if (dontAskAgain && typeof window !== 'undefined') {
+      sessionStorage.setItem(STARTER_COPY_SKIP_KEY, '1');
+    }
+    setStarterCopyGuide(false);
+    if (starter) {
+      await copy(starter.secret, starter.id);
     }
   };
 
@@ -136,8 +163,8 @@ export default function KeysPage() {
           <h1 className="text-2xl font-semibold tracking-[-0.02em]">{t('API Keys', 'API 密钥')}</h1>
           <p className="text-sm text-muted-foreground mt-1.5 leading-relaxed">
             {t(
-              'Every account gets one free starter key (30 calls/day · 900 lifetime) for learning and sandboxing. For production workloads, create paid keys and fund them with credits — no daily caps, pay only for what you use.',
-              '每个账号均自带一把免费 Starter Key（每日 30 次 · 总量 900 次），用于学习和沙箱测试。生产环境请创建付费 Key 并充值使用 — 无每日上限，按实际用量计费。',
+              'Every account gets one free Starter key (30 calls/day · 900 lifetime) for learning and sandboxing. Top up the Starter key to lift its daily cap, or create a dedicated paid key for production traffic — no daily caps, pay only for what you use.',
+              '每个账号均自带一把免费 Starter Key（每日 30 次 · 总量 900 次），用于学习和沙箱测试。充值即可解除 Starter 的每日限制；或为生产环境创建独立的付费 Key — 无每日上限，按实际用量计费。',
             )}
           </p>
         </div>
@@ -187,7 +214,7 @@ export default function KeysPage() {
             icon={Gift}
             title={tx('Starter key')}
             subtitle={tx(
-              'Included with your account — no setup required. For learning and sandboxing; rate-limited and cannot be deleted or topped up.',
+              'Included with your account — no setup required. Rate-limited for learning and sandboxing; top up any time to lift the daily cap. Cannot be deleted.',
             )}
             toneClass="text-emerald-600 dark:text-emerald-400"
           />
@@ -195,7 +222,8 @@ export default function KeysPage() {
             apiKey={starter}
             project={projects.find((p) => p.id === starter.projectId)}
             copiedId={copiedId}
-            onCopy={copy}
+            onCopy={copyStarter}
+            onAddCredits={() => setAddCreditsFor(starter)}
           />
         </section>
       )}
@@ -557,6 +585,22 @@ export default function KeysPage() {
         </Modal>
       )}
 
+      {starterCopyGuide && starter && (
+        <StarterCopyGuideModal
+          apiKey={starter}
+          onCancel={() => setStarterCopyGuide(false)}
+          onTopUp={() => {
+            setStarterCopyGuide(false);
+            setAddCreditsFor(starter);
+          }}
+          onCreatePaid={() => {
+            setStarterCopyGuide(false);
+            openCreate();
+          }}
+          onContinue={confirmStarterCopy}
+        />
+      )}
+
       <StripeCheckoutModal
         open={!!addCreditsFor}
         onClose={() => setAddCreditsFor(null)}
@@ -715,11 +759,13 @@ function StarterKeyCard({
   project,
   copiedId,
   onCopy,
+  onAddCredits,
 }: {
   apiKey: ApiKey;
   project: Project | undefined;
   copiedId: string | null;
   onCopy: (text: string, id: string) => Promise<void>;
+  onAddCredits: () => void;
 }) {
   const { tx, t } = useLang();
   const dailyLimit = k.freeDailyLimit || 1;
@@ -727,6 +773,11 @@ function StarterKeyCard({
   const dailyPct = Math.min(100, (k.freeDailyUsed / dailyLimit) * 100);
   const totalPct = Math.min(100, (k.freeTotalUsed / totalLimit) * 100);
   const exhausted = k.freeTotalUsed >= k.freeTotalLimit;
+  const upgraded = isStarterUpgraded(k);
+  const balanceCents = getKeyBalanceCents(k);
+  const loadedCents = k.paidCreditsCents;
+  const usedCents = k.paidCreditsUsedCents;
+  const usedPct = loadedCents > 0 ? Math.min(100, (usedCents / loadedCents) * 100) : 0;
 
   return (
     <div className="rounded-xl border border-emerald-500/20 bg-gradient-to-br from-emerald-500/[0.03] to-background">
@@ -740,19 +791,41 @@ function StarterKeyCard({
             <span className="inline-flex items-center px-1.5 py-0.5 rounded-md text-[10px] font-semibold uppercase tracking-wider bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20">
               {t('Free · complimentary', '免费 · 赠送')}
             </span>
-            {exhausted && (
+            {upgraded && (
+              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[10px] font-semibold uppercase tracking-wider bg-violet-500/15 text-violet-700 dark:text-violet-300 border border-violet-500/20">
+                <Sparkles className="h-3 w-3" />
+                {t('Upgraded · daily cap lifted', '已升级 · 解除日限')}
+              </span>
+            )}
+            {exhausted && !upgraded && (
               <span className="inline-flex items-center px-1.5 py-0.5 rounded-md text-[10px] font-semibold uppercase tracking-wider bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/20">
                 {tx('Exhausted')}
               </span>
             )}
           </div>
-          <Link
-            href={`/dev-en/dashboard/usage?key=${k.id}`}
-            className="inline-flex items-center gap-1 h-8 px-2.5 rounded-md border border-border bg-background hover:bg-muted/50 text-xs font-medium text-muted-foreground hover:text-foreground shrink-0"
-          >
-            <BarChart3 className="h-3.5 w-3.5" />
-            {tx('Usage')}
-          </Link>
+          <div className="flex items-center gap-1.5 shrink-0">
+            <Link
+              href={`/dev-en/dashboard/usage?key=${k.id}`}
+              className="inline-flex items-center gap-1 h-8 px-2.5 rounded-md border border-border bg-background hover:bg-muted/50 text-xs font-medium text-muted-foreground hover:text-foreground"
+            >
+              <BarChart3 className="h-3.5 w-3.5" />
+              {tx('Usage')}
+            </Link>
+            <button
+              type="button"
+              onClick={onAddCredits}
+              className={cn(
+                'inline-flex items-center gap-1 h-8 px-2.5 rounded-md text-xs font-semibold transition-colors',
+                upgraded
+                  ? 'border border-border bg-background hover:bg-muted/50 text-foreground'
+                  : 'bg-foreground text-background hover:brightness-110',
+              )}
+              title={tx('Top up to lift the daily cap and keep using this key in production')}
+            >
+              <DollarSign className="h-3.5 w-3.5" />
+              {upgraded ? tx('Add credits') : tx('Top up')}
+            </button>
+          </div>
         </div>
 
         {/* Credential block — full width of the card so the secret has room
@@ -806,27 +879,111 @@ function StarterKeyCard({
             used={k.freeDailyUsed}
             limit={k.freeDailyLimit}
             pct={dailyPct}
-            suffix={t('calls · resets 00:00 UTC', '次 · 每日 00:00 UTC 重置')}
+            suffix={
+              upgraded
+                ? t('cap lifted — credits apply', '日限已解除 — 使用余额计费')
+                : t('calls · resets 00:00 UTC', '次 · 每日 00:00 UTC 重置')
+            }
+            struck={upgraded}
           />
           <QuotaBar
             label={tx('Lifetime')}
             used={k.freeTotalUsed}
             limit={k.freeTotalLimit}
             pct={totalPct}
-            suffix={t(
-              'calls total — once exhausted, switch to a paid key',
-              '次总计 — 用完后请切换到付费 Key',
-            )}
+            suffix={
+              upgraded
+                ? t(
+                    'free calls remaining — credits pick up after',
+                    '剩余免费调用 — 用完后按余额计费',
+                  )
+                : t(
+                    'calls total — once exhausted, top up to keep going',
+                    '次总计 — 用完后充值即可继续',
+                  )
+            }
           />
         </div>
 
+        {/* Balance row — only visible once the Starter has been topped up. */}
+        {upgraded && (
+          <div className="mt-4 rounded-lg border border-violet-500/25 bg-violet-500/[0.04] dark:bg-violet-950/20 px-3 py-2.5">
+            <div className="flex items-baseline justify-between gap-2 mb-1.5">
+              <span className="text-[10px] font-semibold uppercase tracking-[0.12em] text-violet-800 dark:text-violet-300">
+                {t('Credit balance', '余额')}
+              </span>
+              <span className="text-sm tabular-nums">
+                <span className="font-semibold">{formatCents(balanceCents)}</span>
+                <span className="text-muted-foreground">
+                  {' '}
+                  · {formatCents(usedCents)}
+                  {t(' used of ', ' 已用 / ')}
+                  {formatCents(loadedCents)}
+                </span>
+              </span>
+            </div>
+            <div className="h-1.5 rounded-full bg-muted overflow-hidden">
+              <div
+                className={cn(
+                  'h-full transition-all',
+                  usedPct >= 90
+                    ? 'bg-amber-500'
+                    : usedPct >= 70
+                      ? 'bg-foreground/60'
+                      : 'bg-violet-500/80',
+                )}
+                style={{ width: `${usedPct}%` }}
+              />
+            </div>
+            <p className="mt-1.5 text-[10px] text-muted-foreground leading-snug">
+              {tx(
+                'Daily cap is lifted while this key has credits. Usage draws from the free lifetime allowance first, then from your balance.',
+              )}
+            </p>
+          </div>
+        )}
+
+        {/* Top-up nudge — only when the Starter has never been topped up. */}
+        {!upgraded && (
+          <button
+            type="button"
+            onClick={onAddCredits}
+            className="mt-4 w-full group flex items-center justify-between gap-3 rounded-lg border border-emerald-500/30 bg-emerald-500/[0.05] hover:bg-emerald-500/[0.09] px-3.5 py-2.5 text-left transition-colors"
+          >
+            <div className="flex items-start gap-2.5 min-w-0">
+              <span className="inline-flex items-center justify-center h-7 w-7 rounded-md bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 ring-1 ring-emerald-500/25 shrink-0">
+                <Zap className="h-3.5 w-3.5" />
+              </span>
+              <div className="min-w-0">
+                <p className="text-xs font-semibold text-emerald-900 dark:text-emerald-100">
+                  {exhausted
+                    ? t('Starter exhausted — top up to resume', 'Starter 已用完 — 充值即可恢复')
+                    : t('Top up to lift the daily cap', '充值即可解除每日限制')}
+                </p>
+                <p className="mt-0.5 text-[11px] text-emerald-900/75 dark:text-emerald-200/80 leading-snug">
+                  {tx(
+                    'Once topped up, this key runs on credits with no daily limit. Pay only for what you use.',
+                  )}
+                </p>
+              </div>
+            </div>
+            <span className="shrink-0 inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-800 dark:text-emerald-300 group-hover:translate-x-0.5 transition-transform">
+              {tx('Add credits')} →
+            </span>
+          </button>
+        )}
+
         {/* Footer explainer */}
-        <div className="mt-4 flex items-start gap-2 rounded-md bg-muted/30 border border-border/60 px-3 py-2 text-[11px] text-muted-foreground leading-relaxed">
+        <div className="mt-3 flex items-start gap-2 rounded-md bg-muted/30 border border-border/60 px-3 py-2 text-[11px] text-muted-foreground leading-relaxed">
           <ShieldCheck className="h-3.5 w-3.5 shrink-0 mt-0.5" />
           <span>
-            {tx(
-              'Rate-limited to protect the shared free pool. Cannot be topped up or deleted. For production, create a paid key below.',
-            )}
+            {upgraded
+              ? tx(
+                  'This Starter key is production-ready while credits last. Cannot be deleted — your account will always keep one Starter key.',
+                )
+              : tx(
+                  'Rate-limited to protect the shared free pool. Cannot be deleted. Top up this key or create a dedicated paid key below for production traffic.',
+                )}
           </span>
         </div>
       </div>
@@ -840,22 +997,28 @@ function QuotaBar({
   limit,
   pct,
   suffix,
+  struck = false,
 }: {
   label: string;
   used: number;
   limit: number;
   pct: number;
   suffix: string;
+  /** When true, renders the numbers and bar in a muted, de-emphasised style
+   *  to communicate that the cap has been lifted (e.g. Starter upgraded). */
+  struck?: boolean;
 }) {
-  const warn = pct >= 90;
+  const warn = !struck && pct >= 90;
   return (
-    <div>
+    <div className={cn(struck && 'opacity-60')}>
       <div className="flex items-baseline justify-between gap-2">
         <span className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
           {label}
         </span>
-        <span className="text-sm tabular-nums">
-          <span className="font-semibold">{used.toLocaleString()}</span>
+        <span className={cn('text-sm tabular-nums', struck && 'line-through')}>
+          <span className={cn('font-semibold', struck && 'font-normal')}>
+            {used.toLocaleString()}
+          </span>
           <span className="text-muted-foreground"> / {limit.toLocaleString()}</span>
         </span>
       </div>
@@ -863,7 +1026,11 @@ function QuotaBar({
         <div
           className={cn(
             'h-full transition-all',
-            warn ? 'bg-amber-500' : 'bg-emerald-500/80',
+            struck
+              ? 'bg-muted-foreground/30'
+              : warn
+                ? 'bg-amber-500'
+                : 'bg-emerald-500/80',
           )}
           style={{ width: `${pct}%` }}
         />
@@ -1303,6 +1470,176 @@ function Modal({
           </button>
         </div>
         <div className="px-5 py-5">{children}</div>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Guide modal shown when user tries to copy the Starter key. Nudges them
+ * toward creating a paid key for production use while still allowing the
+ * copy to proceed for development purposes.
+ */
+function StarterCopyGuideModal({
+  apiKey,
+  onCancel,
+  onTopUp,
+  onCreatePaid,
+  onContinue,
+}: {
+  apiKey: ApiKey;
+  onCancel: () => void;
+  onTopUp: () => void;
+  onCreatePaid: () => void;
+  onContinue: (dontAskAgain: boolean) => void;
+}) {
+  const { tx, t } = useLang();
+  const [dontAsk, setDontAsk] = useState(false);
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      translate="no"
+      lang="en"
+    >
+      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onCancel} />
+      <div className="relative w-full max-w-lg rounded-xl bg-background border border-border shadow-2xl max-h-[90vh] overflow-y-auto">
+        {/* Header */}
+        <div className="px-6 pt-6 pb-5 border-b border-border/60">
+          <div className="flex items-start gap-3">
+            <span className="inline-flex items-center justify-center h-9 w-9 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 ring-1 ring-emerald-500/20 shrink-0">
+              <FlaskConical className="h-4 w-4" />
+            </span>
+            <div className="min-w-0 flex-1">
+              <h2 className="text-base font-semibold tracking-tight">
+                {t('You are copying a Starter key', '你正在复制 Starter Key')}
+              </h2>
+              <p className="mt-1 text-xs text-muted-foreground">
+                <code className="font-mono text-foreground/80">{apiKey.name}</code>
+                <span className="mx-1.5 text-muted-foreground/40">·</span>
+                <span>{apiKey.freeDailyLimit}/{t('day', '日')} · {apiKey.freeTotalLimit} {t('total', '总量')}</span>
+              </p>
+            </div>
+            <button
+              onClick={onCancel}
+              className="h-8 w-8 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors shrink-0"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+          <p className="mt-4 text-sm text-muted-foreground leading-relaxed">
+            {t(
+              'Starter keys have a daily call limit (30/day) and lifetime cap (900 total). They are intended for development and sandboxing only.',
+              'Starter Key 有每日调用限制（30 次/天）和总量上限（900 次）。仅建议用于开发和沙箱测试。',
+            )}
+          </p>
+        </div>
+
+        {/* Options */}
+        <div className="px-6 py-5 space-y-3">
+          <div className="rounded-xl border border-amber-500/30 bg-amber-500/[0.04] p-4">
+            <div className="flex items-start gap-2.5">
+              <AlertTriangle className="h-4 w-4 text-amber-600 dark:text-amber-500 mt-0.5 shrink-0" />
+              <div className="min-w-0">
+                <p className="text-sm font-semibold text-amber-900 dark:text-amber-200">
+                  {t('Not recommended for production', '不建议用于生产环境')}
+                </p>
+                <p className="mt-1 text-xs text-amber-900/80 dark:text-amber-200/80 leading-relaxed">
+                  {t(
+                    'Starter keys may hit rate limits under real traffic. For production workloads, create a paid key with no daily caps.',
+                    'Starter Key 在实际流量下可能触达限额。生产环境请创建付费 Key，无每日上限。',
+                  )}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={onTopUp}
+            className="group flex w-full items-start gap-3 text-left rounded-xl border border-border hover:border-violet-500/50 hover:bg-violet-500/5 transition-colors p-4"
+          >
+            <span className="inline-flex items-center justify-center h-8 w-8 rounded-lg bg-violet-500/10 text-violet-600 dark:text-violet-400 ring-1 ring-violet-500/20 shrink-0">
+              <DollarSign className="h-4 w-4" />
+            </span>
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-2">
+                <p className="text-sm font-semibold">
+                  {t('Top up this Starter key', '为当前 Starter 充值')}
+                </p>
+                <span className="text-muted-foreground group-hover:text-violet-600 group-hover:translate-x-0.5 transition-all">
+                  →
+                </span>
+              </div>
+              <p className="mt-0.5 text-xs text-muted-foreground leading-relaxed">
+                {t(
+                  'Lift the daily cap while keeping the same key — no code changes, just add credits.',
+                  '保留当前 Key 不变，充值即可解除每日限制 — 无需改动代码。',
+                )}
+              </p>
+            </div>
+          </button>
+
+          <button
+            type="button"
+            onClick={onCreatePaid}
+            className="group flex w-full items-start gap-3 text-left rounded-xl border border-border hover:border-emerald-500/50 hover:bg-emerald-500/5 transition-colors p-4"
+          >
+            <span className="inline-flex items-center justify-center h-8 w-8 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 ring-1 ring-emerald-500/20 shrink-0">
+              <Plus className="h-4 w-4" />
+            </span>
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-2">
+                <p className="text-sm font-semibold">
+                  {t('Create a dedicated paid key', '新建一个独立付费 Key')}
+                </p>
+                <span className="text-muted-foreground group-hover:text-emerald-600 group-hover:translate-x-0.5 transition-all">
+                  →
+                </span>
+              </div>
+              <p className="mt-0.5 text-xs text-muted-foreground leading-relaxed">
+                {t(
+                  'Keep the Starter for sandboxing and route production traffic through a separate key — with its own balance, caps, and alerts.',
+                  '保留 Starter 用于沙箱，把生产流量打到独立的 Key 上 — 独立余额 / 上限 / 告警。',
+                )}
+              </p>
+            </div>
+          </button>
+        </div>
+
+        {/* Footer */}
+        <div className="px-6 pt-2 pb-5 border-t border-border/60 bg-muted/20">
+          <p className="mt-3 text-xs text-muted-foreground leading-relaxed">
+            {t(
+              'If you only need this key for development or testing, you can continue copying it below.',
+              '如果你仅需用于开发或测试，可继续复制。',
+            )}
+          </p>
+          <label className="mt-3 flex items-center gap-2 text-xs text-muted-foreground cursor-pointer select-none">
+            <input
+              type="checkbox"
+              checked={dontAsk}
+              onChange={(e) => setDontAsk(e.target.checked)}
+              className="h-3.5 w-3.5 rounded border-border text-foreground focus:ring-0 focus:ring-offset-0"
+            />
+            {t("Don't show this again (this session)", '本次会话不再提示')}
+          </label>
+          <div className="mt-4 flex items-center justify-end gap-2">
+            <button
+              onClick={onCancel}
+              className="h-9 px-4 text-sm font-medium rounded-lg border border-border hover:bg-muted transition-colors"
+            >
+              {tx('Cancel')}
+            </button>
+            <button
+              onClick={() => onContinue(dontAsk)}
+              className="h-9 px-4 text-sm font-medium rounded-lg bg-foreground text-background hover:brightness-110 transition-colors inline-flex items-center gap-1.5"
+            >
+              <Copy className="h-3.5 w-3.5" />
+              {t('Copy for development use', '仅用于开发 · 继续复制')}
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );

@@ -226,13 +226,15 @@ export function DevEnSidebar() {
             ))}
           </div>
 
-          {/* Resources — external links (docs). Visually separated with a
-              thin divider instead of a group label; group labels with only
-              one child item just add noise. */}
+          {/* Resources — docs live inside the same app (not a third-party
+              site), so we navigate same-tab via Next.js <Link> and skip the
+              ExternalLink chevron. The `?from=dev` flag tells the docs shell
+              to render a "Back to dashboard" link, and because it's same-tab
+              navigation the browser Back button naturally returns here too. */}
           <div className="mt-4 pt-4 border-t border-white/5 space-y-0.5">
             <SidebarLink
               item={{
-                href: '/en/docs',
+                href: '/en/docs?from=dev',
                 icon: BookOpen,
                 label: 'API Docs',
                 zhLabel: 'API 文档',
@@ -240,7 +242,6 @@ export function DevEnSidebar() {
               isActive={false}
               collapsed={collapsed}
               label={t('API Docs', 'API 文档')}
-              external
               onNavigate={() => setMobileOpen(false)}
             />
           </div>

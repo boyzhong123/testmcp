@@ -3,42 +3,23 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import {
-  ArrowRight,
-  AudioWaveform,
-  Check,
-  ChevronDown,
-  Mail,
-  Phone,
-} from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { ArrowRight, AudioWaveform, Check, Mail } from 'lucide-react';
 import { useMockAuth } from '../_lib/mock-auth';
 import { useLang } from '../_lib/use-lang';
 import { OAuthButtons } from '../_components/oauth-buttons';
 import { AntiBot } from '../_components/anti-bot';
 
-type Tab = 'email' | 'phone';
-
-const COUNTRY_CODES = [
-  { code: '+1', label: 'US / CA' },
-  { code: '+44', label: 'UK' },
-  { code: '+49', label: 'Germany' },
-  { code: '+33', label: 'France' },
-  { code: '+81', label: 'Japan' },
-  { code: '+65', label: 'Singapore' },
-  { code: '+61', label: 'Australia' },
-  { code: '+86', label: 'China' },
-];
-
+// Phone OTP was intentionally removed: Western developer audiences tend to
+// consider sharing a mobile number a privacy red flag, and GitHub / Google /
+// Microsoft OAuth plus email OTP cover effectively every real-world sign-in
+// need for this console. If we ever re-introduce phone it should live behind
+// an enterprise / locale flag rather than the default B2C flow.
 export default function DevEnLoginPage() {
   const router = useRouter();
   const { login, user } = useMockAuth();
   const { t, tx } = useLang();
 
-  const [tab, setTab] = useState<Tab>('email');
   const [email, setEmail] = useState('');
-  const [phone, setPhone] = useState('');
-  const [dialCode, setDialCode] = useState('+1');
   const [code, setCode] = useState('');
   const [codeSent, setCodeSent] = useState(false);
   const [cooldown, setCooldown] = useState(0);
@@ -57,12 +38,9 @@ export default function DevEnLoginPage() {
     return () => window.clearInterval(t);
   }, [cooldown]);
 
-  const identifier = tab === 'email' ? email.trim() : phone.trim();
+  const identifier = email.trim();
 
-  const identifierValid =
-    tab === 'email'
-      ? /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(identifier)
-      : /^\d{6,15}$/.test(identifier.replace(/[^\d]/g, ''));
+  const identifierValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(identifier);
 
   const codeValid = /^\d{6}$/.test(code);
 
@@ -71,11 +49,7 @@ export default function DevEnLoginPage() {
   const handleSendCode = () => {
     setError(null);
     if (!identifierValid) {
-      setError(
-        tab === 'email'
-          ? t('Please enter a valid email address.', '请输入有效的邮箱地址。')
-          : t('Please enter a valid phone number.', '请输入有效的手机号码。'),
-      );
+      setError(t('Please enter a valid email address.', '请输入有效的邮箱地址。'));
       return;
     }
     setCodeSent(true);
@@ -88,10 +62,7 @@ export default function DevEnLoginPage() {
     if (!canSubmit) return;
     setSubmitting(true);
     try {
-      await login({
-        method: tab,
-        identifier: tab === 'phone' ? `${dialCode} ${phone.trim()}` : identifier,
-      });
+      await login({ method: 'email', identifier });
       router.push('/dev-en/dashboard/overview');
     } catch {
       setError(t('Sign-in failed. Please try again.', '登录失败，请重试。'));
@@ -101,12 +72,8 @@ export default function DevEnLoginPage() {
 
   const codeHint = codeSent
     ? t(
-        `Demo tip — any 6-digit code works. Your code was sent to ${
-          tab === 'email' ? identifier : `${dialCode} ${phone}`
-        }.`,
-        `演示提示 — 任意 6 位数字均可通过。验证码已发送至 ${
-          tab === 'email' ? identifier : `${dialCode} ${phone}`
-        }。`,
+        `Demo tip — any 6-digit code works. Your code was sent to ${identifier}.`,
+        `演示提示 — 任意 6 位数字均可通过。验证码已发送至 ${identifier}。`,
       )
     : t(
         'A 6-digit code will be sent to verify this is you.',
@@ -280,36 +247,6 @@ export default function DevEnLoginPage() {
             </div>
           </div>
 
-          <div className="flex items-center gap-1 mb-4 rounded-lg bg-muted/40 p-1 border border-border/60">
-            {(
-              [
-                { id: 'email' as const, label: 'Email', icon: Mail },
-                { id: 'phone' as const, label: 'Phone', icon: Phone },
-              ]
-            ).map((opt) => (
-              <button
-                key={opt.id}
-                type="button"
-                onClick={() => {
-                  setTab(opt.id);
-                  setCodeSent(false);
-                  setCode('');
-                  setCooldown(0);
-                  setError(null);
-                }}
-                className={cn(
-                  'flex-1 inline-flex items-center justify-center gap-1.5 h-8 rounded-md text-xs font-medium transition-colors',
-                  tab === opt.id
-                    ? 'bg-background text-foreground shadow-sm border border-border'
-                    : 'text-muted-foreground hover:text-foreground',
-                )}
-              >
-                <opt.icon className="h-3.5 w-3.5" />
-                {tx(opt.label)}
-              </button>
-            ))}
-          </div>
-
           {error && (
             <div className="mb-3 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive text-xs px-3 py-2">
               {error}
@@ -317,66 +254,25 @@ export default function DevEnLoginPage() {
           )}
 
           <form onSubmit={handleSubmit} className="space-y-3.5">
-            {tab === 'email' ? (
-              <div>
-                <label className="text-xs font-medium text-muted-foreground mb-1.5 block">
-                  {tx('Email address')}
-                </label>
-                <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/50" />
-                  <input
-                    type="email"
-                    autoComplete="email"
-                    value={email}
-                    onChange={(e) => {
-                      setEmail(e.target.value);
-                      setError(null);
-                    }}
-                    placeholder="you@example.com"
-                    className="w-full h-10 pl-9 pr-3 text-sm rounded-lg border border-border bg-background shadow-sm focus:outline-none focus:ring-2 focus:ring-ring/20 focus:border-foreground/30 transition-all placeholder:text-muted-foreground/40"
-                  />
-                </div>
+            <div>
+              <label className="text-xs font-medium text-muted-foreground mb-1.5 block">
+                {tx('Email address')}
+              </label>
+              <div className="relative">
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/50" />
+                <input
+                  type="email"
+                  autoComplete="email"
+                  value={email}
+                  onChange={(e) => {
+                    setEmail(e.target.value);
+                    setError(null);
+                  }}
+                  placeholder="you@example.com"
+                  className="w-full h-10 pl-9 pr-3 text-sm rounded-lg border border-border bg-background shadow-sm focus:outline-none focus:ring-2 focus:ring-ring/20 focus:border-foreground/30 transition-all placeholder:text-muted-foreground/40"
+                />
               </div>
-            ) : (
-              <div>
-                <label className="text-xs font-medium text-muted-foreground mb-1.5 block">
-                  {tx('Phone number')}
-                </label>
-                <div className="flex gap-2">
-                  <div className="relative">
-                    <select
-                      value={dialCode}
-                      onChange={(e) => setDialCode(e.target.value)}
-                      className="appearance-none h-10 pl-3 pr-7 text-sm rounded-lg border border-border bg-background shadow-sm focus:outline-none focus:ring-2 focus:ring-ring/20 focus:border-foreground/30"
-                    >
-                      {COUNTRY_CODES.map((c) => (
-                        <option key={c.code} value={c.code}>
-                          {c.code} · {tx(c.label)}
-                        </option>
-                      ))}
-                    </select>
-                    <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground/60 pointer-events-none" />
-                  </div>
-                  <div className="relative flex-1">
-                    <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/50" />
-                    <input
-                      type="tel"
-                      autoComplete="tel"
-                      value={phone}
-                      onChange={(e) => {
-                        setPhone(e.target.value.replace(/[^\d\s-]/g, ''));
-                        setError(null);
-                      }}
-                      placeholder="555 123 4567"
-                      className="w-full h-10 pl-9 pr-3 text-sm rounded-lg border border-border bg-background shadow-sm focus:outline-none focus:ring-2 focus:ring-ring/20 focus:border-foreground/30 transition-all placeholder:text-muted-foreground/40"
-                    />
-                  </div>
-                </div>
-                <p className="text-[10px] text-muted-foreground/70 mt-1.5 leading-relaxed">
-                  {tx('Your number is only used to deliver the verification code.')}
-                </p>
-              </div>
-            )}
+            </div>
 
             <div>
               <label className="text-xs font-medium text-muted-foreground mb-1.5 block">
@@ -457,8 +353,6 @@ export default function DevEnLoginPage() {
               type="button"
               onClick={() => {
                 setEmail('dev@example.com');
-                setPhone('');
-                setTab('email');
                 setCodeSent(true);
                 setCode('000000');
                 setAntiBotOk(true);

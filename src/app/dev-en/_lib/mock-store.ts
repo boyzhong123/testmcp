@@ -997,10 +997,19 @@ export function hasFreeAllowance(k: ApiKey): boolean {
   return k.isStarter === true && k.freeTotalLimit > 0;
 }
 
-/** Remaining balance in cents for a paid key (0 for starter / revoked). */
+/** Remaining balance in cents for a paid key (0 for revoked).
+ *  Starter keys start at $0 and, once topped up, behave like paid keys —
+ *  their balance is tracked the same way. */
 export function getKeyBalanceCents(k: ApiKey): number {
-  if (k.isStarter) return 0;
+  if (k.status === 'revoked') return 0;
   return Math.max(0, k.paidCreditsCents - k.paidCreditsUsedCents);
+}
+
+/** True if the Starter key has been topped up with credits, which lifts
+ *  its daily trial cap and makes it behave like a paid key on top of the
+ *  original lifetime free allowance. */
+export function isStarterUpgraded(k: ApiKey): boolean {
+  return k.isStarter === true && k.paidCreditsCents > 0;
 }
 
 /**
@@ -1362,15 +1371,16 @@ export function deleteKey(id: string): void {
 }
 
 /**
- * Add credits to a paid key. Silently refuses the starter key — it cannot
- * be funded, by design. Returns the updated key, or undefined if the id
- * wasn't found / refused.
+ * Add credits to a key. Works for both paid keys and the Starter key —
+ * funding the Starter key lifts its daily trial cap while preserving the
+ * original lifetime free allowance on top of the purchased credits.
+ * Returns the updated key, or undefined if the id wasn't found.
  */
 export function addKeyCreditsCents(id: string, amountCents: number): ApiKey | undefined {
   seedIfNeeded();
   let updated: ApiKey | undefined;
   const next = (cache.keys ?? []).map((k) => {
-    if (k.id !== id || k.isStarter) return k;
+    if (k.id !== id) return k;
     updated = {
       ...k,
       paidCreditsCents: k.paidCreditsCents + amountCents,
