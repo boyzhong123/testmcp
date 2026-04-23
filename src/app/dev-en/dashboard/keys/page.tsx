@@ -731,77 +731,72 @@ function StarterKeyCard({
   return (
     <div className="rounded-xl border border-emerald-500/20 bg-gradient-to-br from-emerald-500/[0.03] to-background">
       <div className="p-5">
-        <div className="flex flex-wrap items-start justify-between gap-4">
-          {/* Identity + credential — the secret gets its own row so it reads
-              like a first-class API key, not body copy next to metadata. */}
-          <div className="min-w-0 flex-1 space-y-3">
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="text-sm font-semibold">{k.name}</span>
-              <span className="inline-flex items-center px-1.5 py-0.5 rounded-md text-[10px] font-semibold uppercase tracking-wider bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20">
-                {t('Free · complimentary', '免费 · 赠送')}
+        {/* Header row: identity + badges on the left, "View usage" shortcut
+            on the right. Keeping only the header in this flex row so the
+            credential block below can take the full card width. */}
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex flex-wrap items-center gap-2 min-w-0">
+            <span className="text-sm font-semibold">{k.name}</span>
+            <span className="inline-flex items-center px-1.5 py-0.5 rounded-md text-[10px] font-semibold uppercase tracking-wider bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20">
+              {t('Free · complimentary', '免费 · 赠送')}
+            </span>
+            {exhausted && (
+              <span className="inline-flex items-center px-1.5 py-0.5 rounded-md text-[10px] font-semibold uppercase tracking-wider bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/20">
+                {tx('Exhausted')}
               </span>
-              {exhausted && (
-                <span className="inline-flex items-center px-1.5 py-0.5 rounded-md text-[10px] font-semibold uppercase tracking-wider bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/20">
-                  {tx('Exhausted')}
-                </span>
-              )}
-            </div>
-
-            <div className="rounded-lg border border-emerald-500/25 bg-emerald-500/[0.04] dark:bg-emerald-950/20 px-3 py-2.5">
-              <div className="flex items-baseline justify-between gap-2 mb-1.5">
-                <span className="text-[10px] font-semibold uppercase tracking-[0.12em] text-emerald-800 dark:text-emerald-300">
-                  {tx('API key')}
-                </span>
-                <span className="text-[10px] text-muted-foreground">
-                  {project?.name ?? '—'} {t('· provisioned with your account', '· 随账号自动开通')}
-                </span>
-              </div>
-              <div className="flex items-stretch gap-2 min-w-0">
-                <code
-                  className="flex-1 min-w-0 font-mono text-[13px] sm:text-sm font-medium leading-relaxed text-foreground break-all select-all bg-background/80 dark:bg-background/40 rounded-md border border-border/80 px-2.5 py-2"
-                  title={tx('Masked preview — copy for the full secret')}
-                >
-                  {k.maskedSecret}
-                </code>
-                <button
-                  type="button"
-                  onClick={() => onCopy(k.secret, k.id)}
-                  className="shrink-0 inline-flex flex-col items-center justify-center gap-0.5 h-auto min-w-[4.5rem] px-2 rounded-md border border-emerald-500/30 bg-background hover:bg-emerald-500/10 text-[11px] font-semibold text-emerald-800 dark:text-emerald-300"
-                  title={tx('Copy full API key to clipboard')}
-                >
-                  {copiedId === k.id ? (
-                    <>
-                      <Check className="h-4 w-4 text-emerald-600" />
-                      {tx('Copied')}
-                    </>
-                  ) : (
-                    <>
-                      <Copy className="h-4 w-4" />
-                      {tx('Copy')}
-                    </>
-                  )}
-                </button>
-              </div>
-              <p className="mt-1.5 text-[10px] text-muted-foreground leading-snug">
-                {tx(
-                  'Use this key in your SDK or HTTP header. Only the last digits are shown here; Copy pastes the complete secret.',
-                )}
-              </p>
-            </div>
+            )}
           </div>
+          <Link
+            href={`/dev-en/dashboard/usage?key=${k.id}`}
+            className="inline-flex items-center gap-1 h-8 px-2.5 rounded-md border border-border bg-background hover:bg-muted/50 text-xs font-medium text-muted-foreground hover:text-foreground shrink-0"
+          >
+            <BarChart3 className="h-3.5 w-3.5" />
+            {tx('Usage')}
+          </Link>
+        </div>
 
-          {/* Right actions — Starter is system-provisioned and rate-limited;
-              rotation isn't meaningful since it can't be used for real
-              workloads. Keep only the "view usage" shortcut. */}
-          <div className="flex items-center gap-2">
-            <Link
-              href={`/dev-en/dashboard/usage?key=${k.id}`}
-              className="inline-flex items-center gap-1 h-8 px-2.5 rounded-md border border-border bg-background hover:bg-muted/50 text-xs font-medium text-muted-foreground hover:text-foreground"
+        {/* Credential block — full width of the card so the secret has room
+            to breathe instead of leaving dead space on the right. */}
+        <div className="mt-3 rounded-lg border border-emerald-500/25 bg-emerald-500/[0.04] dark:bg-emerald-950/20 px-3 py-2.5">
+          <div className="flex items-baseline justify-between gap-2 mb-1.5">
+            <span className="text-[10px] font-semibold uppercase tracking-[0.12em] text-emerald-800 dark:text-emerald-300">
+              {tx('API key')}
+            </span>
+            <span className="text-[10px] text-muted-foreground">
+              {project?.name ?? '—'} {t('· provisioned with your account', '· 随账号自动开通')}
+            </span>
+          </div>
+          <div className="flex items-stretch gap-2 min-w-0">
+            <code
+              className="flex-1 min-w-0 font-mono text-[13px] sm:text-sm font-medium leading-relaxed text-foreground break-all select-all bg-background/80 dark:bg-background/40 rounded-md border border-border/80 px-2.5 py-2"
+              title={tx('Masked preview — copy for the full secret')}
             >
-              <BarChart3 className="h-3.5 w-3.5" />
-              {tx('Usage')}
-            </Link>
+              {k.maskedSecret}
+            </code>
+            <button
+              type="button"
+              onClick={() => onCopy(k.secret, k.id)}
+              className="shrink-0 inline-flex flex-col items-center justify-center gap-0.5 h-auto min-w-[4.5rem] px-2 rounded-md border border-emerald-500/30 bg-background hover:bg-emerald-500/10 text-[11px] font-semibold text-emerald-800 dark:text-emerald-300"
+              title={tx('Copy full API key to clipboard')}
+            >
+              {copiedId === k.id ? (
+                <>
+                  <Check className="h-4 w-4 text-emerald-600" />
+                  {tx('Copied')}
+                </>
+              ) : (
+                <>
+                  <Copy className="h-4 w-4" />
+                  {tx('Copy')}
+                </>
+              )}
+            </button>
           </div>
+          <p className="mt-1.5 text-[10px] text-muted-foreground leading-snug">
+            {tx(
+              'Use this key in your SDK or HTTP header. Only the last digits are shown here; Copy pastes the complete secret.',
+            )}
+          </p>
         </div>
 
         {/* Quota row */}

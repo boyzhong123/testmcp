@@ -2,24 +2,20 @@
 
 import nodemailer from 'nodemailer';
 
-// SMTP 配置
-const SMTP_CONFIG = {
-  host: 'smtp.qiye.163.com',
-  port: 465,
-  user: 'sales@chivox.com',
-  pass: '2a2d$ZBCS4s$QK2L',
-};
-
 function createTransporter() {
   return nodemailer.createTransport({
-    host: SMTP_CONFIG.host,
-    port: SMTP_CONFIG.port,
+    host: process.env.SMTP_HOST || 'smtp.qiye.163.com',
+    port: Number(process.env.SMTP_PORT) || 465,
     secure: true,
     auth: {
-      user: SMTP_CONFIG.user,
-      pass: SMTP_CONFIG.pass,
+      user: process.env.SMTP_USER || '',
+      pass: process.env.SMTP_PASS || '',
     },
   });
+}
+
+function getSmtpUser() {
+  return process.env.SMTP_USER || 'sales@chivox.com';
 }
 
 export interface ContactFormData {
@@ -53,94 +49,64 @@ export async function sendContactEmail(data: ContactFormData): Promise<ContactFo
   }
 
   try {
-    // 调试日志
-    console.log('SMTP Config:', {
-      host: SMTP_CONFIG.host,
-      port: SMTP_CONFIG.port,
-      user: SMTP_CONFIG.user,
-      pass: `${SMTP_CONFIG.pass.slice(0, 4)}****`,
-    });
-
+    const smtpUser = getSmtpUser();
     const transporter = createTransporter();
+    
+    const submitTime = new Date().toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai' });
+    
+    const htmlContent = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+</head>
+<body style="margin:0;padding:0;background:#f5f5f5;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
+  <div style="max-width:500px;margin:20px auto;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+    <div style="background:linear-gradient(135deg,#3b82f6,#1d4ed8);padding:24px 28px;">
+      <h1 style="margin:0;color:#fff;font-size:18px;font-weight:600;">新的咨询请求</h1>
+    </div>
+    <div style="padding:28px;">
+      <div style="margin-bottom:16px;">
+        <div style="color:#6b7280;font-size:13px;margin-bottom:4px;">公司</div>
+        <div style="color:#111;font-size:15px;font-weight:500;">${escapeHtml(company)}</div>
+      </div>
+      <div style="margin-bottom:16px;">
+        <div style="color:#6b7280;font-size:13px;margin-bottom:4px;">联系人</div>
+        <div style="color:#111;font-size:15px;font-weight:500;">${escapeHtml(name)}</div>
+      </div>
+      <div style="margin-bottom:16px;">
+        <div style="color:#6b7280;font-size:13px;margin-bottom:4px;">手机号码</div>
+        <div style="color:#3b82f6;font-size:15px;font-weight:500;">${escapeHtml(phone)}</div>
+      </div>
+      ${email ? `
+      <div style="margin-bottom:16px;">
+        <div style="color:#6b7280;font-size:13px;margin-bottom:4px;">邮箱</div>
+        <div style="color:#3b82f6;font-size:15px;">${escapeHtml(email)}</div>
+      </div>
+      ` : ''}
+      ${message ? `
+      <div style="margin-bottom:16px;">
+        <div style="color:#6b7280;font-size:13px;margin-bottom:4px;">留言</div>
+        <div style="color:#111;font-size:15px;white-space:pre-wrap;">${escapeHtml(message)}</div>
+      </div>
+      ` : ''}
+      <div style="margin-top:24px;padding-top:16px;border-top:1px solid #e5e7eb;">
+        <div style="display:flex;justify-content:space-between;color:#9ca3af;font-size:12px;">
+          <span>来源：${escapeHtml(source || '官网')}</span>
+          <span>${submitTime}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>`;
+
     await transporter.sendMail({
-      from: `"Chivox MCP 官网" <${SMTP_CONFIG.user}>`,
-      to: SMTP_CONFIG.user,
+      from: `"Chivox MCP 官网" <${smtpUser}>`,
+      to: smtpUser,
       replyTo: email || undefined,
       subject: `[${source || '官网咨询'}] ${company} - ${name}`,
-      html: `
-        <div style="font-family: system-ui, sans-serif; max-width: 600px; margin: 0 auto;">
-          <h2 style="color: #1a1a1a; border-bottom: 2px solid #3b82f6; padding-bottom: 10px;">
-            新的咨询请求
-          </h2>
-          
-          <table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
-            <tr>
-              <td style="padding: 12px; background: #f8fafc; border: 1px solid #e2e8f0; width: 120px; font-weight: 600;">
-                公司名称
-              </td>
-              <td style="padding: 12px; border: 1px solid #e2e8f0;">
-                ${escapeHtml(company)}
-              </td>
-            </tr>
-            <tr>
-              <td style="padding: 12px; background: #f8fafc; border: 1px solid #e2e8f0; font-weight: 600;">
-                联系人
-              </td>
-              <td style="padding: 12px; border: 1px solid #e2e8f0;">
-                ${escapeHtml(name)}
-              </td>
-            </tr>
-            <tr>
-              <td style="padding: 12px; background: #f8fafc; border: 1px solid #e2e8f0; font-weight: 600;">
-                手机号码
-              </td>
-              <td style="padding: 12px; border: 1px solid #e2e8f0;">
-                <a href="tel:${escapeHtml(phone)}" style="color: #3b82f6;">${escapeHtml(phone)}</a>
-              </td>
-            </tr>
-            ${email ? `
-            <tr>
-              <td style="padding: 12px; background: #f8fafc; border: 1px solid #e2e8f0; font-weight: 600;">
-                邮箱
-              </td>
-              <td style="padding: 12px; border: 1px solid #e2e8f0;">
-                <a href="mailto:${escapeHtml(email)}" style="color: #3b82f6;">${escapeHtml(email)}</a>
-              </td>
-            </tr>
-            ` : ''}
-            ${message ? `
-            <tr>
-              <td style="padding: 12px; background: #f8fafc; border: 1px solid #e2e8f0; font-weight: 600; vertical-align: top;">
-                留言内容
-              </td>
-              <td style="padding: 12px; border: 1px solid #e2e8f0; white-space: pre-wrap;">
-                ${escapeHtml(message)}
-              </td>
-            </tr>
-            ` : ''}
-            <tr>
-              <td style="padding: 12px; background: #f8fafc; border: 1px solid #e2e8f0; font-weight: 600;">
-                来源
-              </td>
-              <td style="padding: 12px; border: 1px solid #e2e8f0;">
-                ${escapeHtml(source || '官网')}
-              </td>
-            </tr>
-            <tr>
-              <td style="padding: 12px; background: #f8fafc; border: 1px solid #e2e8f0; font-weight: 600;">
-                提交时间
-              </td>
-              <td style="padding: 12px; border: 1px solid #e2e8f0;">
-                ${new Date().toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai' })}
-              </td>
-            </tr>
-          </table>
-          
-          <p style="color: #64748b; font-size: 14px; margin-top: 30px;">
-            此邮件由 Chivox MCP 官网自动发送，请勿直接回复。
-          </p>
-        </div>
-      `,
+      html: htmlContent,
     });
 
     return { success: true };
@@ -155,6 +121,5 @@ function escapeHtml(str: string): string {
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#039;');
+    .replace(/"/g, '&quot;');
 }
