@@ -1,0 +1,4206 @@
+'use client';
+
+import Image from 'next/image';
+import Link from 'next/link';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import {
+  ArrowRight,
+  ArrowUpRight,
+  Check,
+  Copy,
+  MessageSquareText,
+  Sparkles,
+  Terminal,
+  Waves,
+  Languages,
+  Bot,
+  Baby,
+  GraduationCap,
+  Globe2,
+  Zap,
+  Mic2,
+  ShieldCheck,
+  Lightbulb,
+  type LucideIcon,
+} from 'lucide-react';
+import { FadeUp, StaggerContainer, StaggerItem, CountUp } from '@/components/animated-section';
+
+/* ─────────────────────────────────────────────────────────────
+ * Standalone English landing for overseas developers.
+ *
+ * Design intent:
+ *  • First fold = what it does + how to plug it in, in one screen.
+ *  • Content is dev-first: code, JSON, numbers; marketing copy kept minimal.
+ *  • Visuals drawn directly in JSX (waveform, score meter, phoneme chips,
+ *    tone chart) so the page ships fast with no extra assets.
+ *  • Aesthetic borrowed from tavily.com — neutral palette, quiet dividers,
+ *    generous spacing, cards over gradients.
+ * ────────────────────────────────────────────────────────── */
+
+const MCP_CLIENTS = [
+  'Cursor',
+  'Claude Desktop',
+  'Cline',
+  'Windsurf',
+  'Zed',
+  'LangChain',
+  'LlamaIndex',
+  'OpenAI Agents SDK',
+];
+
+/* ── code snippets for the hero's right card ─────────────── */
+const INSTALL_TABS = [
+  {
+    id: 'cursor',
+    label: 'Cursor',
+    filename: '~/.cursor/mcp.json',
+    code: `{
+  "mcpServers": {
+    "chivox": {
+      "command": "npx",
+      "args": ["-y", "@chivox/mcp"],
+      "env": { "CHIVOX_API_KEY": "sk_live_..." }
+    }
+  }
+}`,
+  },
+  {
+    id: 'claude',
+    label: 'Claude Desktop',
+    filename: 'claude_desktop_config.json',
+    code: `{
+  "mcpServers": {
+    "chivox": {
+      "command": "npx",
+      "args": ["-y", "@chivox/mcp"],
+      "env": { "CHIVOX_API_KEY": "sk_live_..." }
+    }
+  }
+}`,
+  },
+  {
+    id: 'node',
+    label: 'Node.js',
+    filename: 'agent.ts',
+    code: `import { Client } from '@modelcontextprotocol/sdk/client';
+
+const chivox = await Client.connect({ name: 'chivox' });
+
+const result = await chivox.callTool('assess_speech', {
+  language: 'en-US',
+  reference_text: 'The weather is gorgeous today.',
+  audio_file_path: './take-01.wav',
+});`,
+  },
+  {
+    id: 'python',
+    label: 'Python',
+    filename: 'agent.py',
+    code: `from mcp import Client
+
+async with Client("chivox") as chivox:
+    result = await chivox.call_tool(
+        "assess_speech",
+        language="zh-CN",
+        reference_text="你好，今天天气很好",
+        audio_file_path="./greeting.wav",
+    )`,
+  },
+];
+
+/* ── core capability cards (What can this MCP do?) ───────── */
+type CapabilityVisual = 'meters' | 'bilingual' | 'dialogue' | 'target';
+type CapabilityTone = 'emerald' | 'sky' | 'violet' | 'amber';
+
+const CORE_CAPABILITIES: {
+  icon: LucideIcon;
+  eyebrow: string;
+  title: string;
+  body: string;
+  chips: string[];
+  tone: CapabilityTone;
+  visual: CapabilityVisual;
+}[] = [
+  {
+    icon: Mic2,
+    eyebrow: 'assess',
+    title: 'Score a learner\u2019s speech',
+    body:
+      'Stream mic audio or post a file. Get overall / accuracy / integrity / fluency / rhythm scores, plus word and phoneme-level diagnostics.',
+    chips: ['overall', 'accuracy', 'fluency', 'rhythm', 'phoneme'],
+    tone: 'emerald',
+    visual: 'meters',
+  },
+  {
+    icon: Languages,
+    eyebrow: 'languages',
+    title: 'Mandarin &amp; English, natively',
+    body:
+      'Tones, pinyin, neutral tone, erhua, tone sandhi for Chinese. Stress, rhythm, CEFR-aligned scoring for English. One flag switches between them.',
+    chips: ['zh-CN', 'en-US', 'pinyin', 'tones', 'CEFR'],
+    tone: 'sky',
+    visual: 'bilingual',
+  },
+  {
+    icon: MessageSquareText,
+    eyebrow: 'converse',
+    title: 'Score free-flow dialogue',
+    body:
+      'Open-ended AI-talk evaluation returns 5-dimensional scores on fluency, content, grammar, accuracy and rhythm — ready for the next LLM turn.',
+    chips: ['AI-talk', 'open-question', '5-dim', 'streaming'],
+    tone: 'violet',
+    visual: 'dialogue',
+  },
+  {
+    icon: Sparkles,
+    eyebrow: 'drill',
+    title: 'Personalize the next practice',
+    body:
+      'Feed the JSON straight to GPT / Claude / Gemini. Use the shipped prompt-skill to generate targeted drills for weak phonemes or tones.',
+    chips: ['GPT', 'Claude', 'Gemini', 'Qwen', 'DeepSeek'],
+    tone: 'amber',
+    visual: 'target',
+  },
+];
+
+const CAPABILITY_TONE: Record<CapabilityTone, {
+  accent: string;
+  iconBg: string;
+  iconColor: string;
+  eyebrow: string;
+  glow: string;
+  ring: string;
+}> = {
+  emerald: {
+    accent: 'from-emerald-400/70 via-emerald-500/50 to-transparent',
+    iconBg: 'bg-emerald-500/10 border-emerald-500/25',
+    iconColor: 'text-emerald-700 dark:text-emerald-300',
+    eyebrow: 'text-emerald-700/80 dark:text-emerald-300/80',
+    glow: 'from-emerald-400/25',
+    ring: 'hover:ring-emerald-500/30',
+  },
+  sky: {
+    accent: 'from-sky-400/70 via-sky-500/50 to-transparent',
+    iconBg: 'bg-sky-500/10 border-sky-500/25',
+    iconColor: 'text-sky-700 dark:text-sky-300',
+    eyebrow: 'text-sky-700/80 dark:text-sky-300/80',
+    glow: 'from-sky-400/25',
+    ring: 'hover:ring-sky-500/30',
+  },
+  violet: {
+    accent: 'from-violet-400/70 via-violet-500/50 to-transparent',
+    iconBg: 'bg-violet-500/10 border-violet-500/25',
+    iconColor: 'text-violet-700 dark:text-violet-300',
+    eyebrow: 'text-violet-700/80 dark:text-violet-300/80',
+    glow: 'from-violet-400/25',
+    ring: 'hover:ring-violet-500/30',
+  },
+  amber: {
+    accent: 'from-amber-400/80 via-amber-500/50 to-transparent',
+    iconBg: 'bg-amber-500/10 border-amber-500/30',
+    iconColor: 'text-amber-700 dark:text-amber-300',
+    eyebrow: 'text-amber-700/80 dark:text-amber-300/80',
+    glow: 'from-amber-400/25',
+    ring: 'hover:ring-amber-500/30',
+  },
+};
+
+/* ── use-case cards, each with a colorful inline illustration ─── */
+type UseCaseArt =
+  | 'mandarin'
+  | 'english'
+  | 'kids'
+  | 'podcast'
+  | 'voice'
+  | 'ecosystem';
+
+const USE_CASES: {
+  art: UseCaseArt;
+  tag: string;
+  title: string;
+  body: string;
+}[] = [
+  {
+    art: 'mandarin',
+    tag: 'AI Language Tutor',
+    title: 'EdTech tutors that hear every tone and phoneme',
+    body:
+      'The category that launched us. Tone-accurate Mandarin feedback, CEFR-aligned English scoring, age-appropriate correction — stack on top of GPT / Claude to ship a real coach, not a flashcard app.',
+  },
+  {
+    art: 'voice',
+    tag: 'AI Interviewer',
+    title: 'Score candidate speech, not just transcripts',
+    body:
+      'Screen English fluency, pronunciation confidence and rhythm at scale. Your LLM reasons over numbers, not vibes — explainable rubrics every HR team will trust.',
+  },
+  {
+    art: 'podcast',
+    tag: 'Contact Center QA',
+    title: 'Agent training &amp; call-script compliance',
+    body:
+      'Evaluate standard-phrase delivery, articulation, pacing and keyword hits for call-center reps. Flag exactly which second drifted off-script and auto-generate coaching drills.',
+  },
+  {
+    art: 'ecosystem',
+    tag: 'Serious Games &amp; XR',
+    title: 'Voice-gated NPCs and pronunciation-powered gameplay',
+    body:
+      'Players unlock spells, dialogues or levels by saying the phrase correctly. Get a pass/fail plus the exact phoneme that missed, at <300 ms p95 — fast enough for real-time game loops.',
+  },
+];
+
+/* ── benchmarks ──────────────────────────────────────────── */
+const BENCHMARK_TABS = [
+  {
+    id: 'correlation',
+    label: 'Expert correlation',
+    metric: '95%+',
+    metricLabel: 'agreement with human experts',
+    body:
+      'Scores align with certified human expert rubrics at 95%+ correlation. Validated by national standardized speaking tests in 100+ cities.',
+    chart: 'correlation',
+  },
+  {
+    id: 'latency',
+    label: 'Latency',
+    metric: '<300ms',
+    metricLabel: 'p50 streaming response',
+    body:
+      'Streaming WebSocket sessions return multi-dimensional scores in a few hundred milliseconds after end-of-speech. Perfect for real-time tutoring UX.',
+    chart: 'latency',
+  },
+  {
+    id: 'coverage',
+    label: 'Coverage',
+    metric: '7 task types',
+    metricLabel: 'word · sentence · paragraph · semi-open · open · free · AI-talk',
+    body:
+      'One integration covers every stage of your learner journey — from single-word phonics to open-ended conversation.',
+    chart: 'coverage',
+  },
+  {
+    id: 'scale',
+    label: 'Scale',
+    metric: '9.2B+',
+    metricLabel: 'evaluations per year · 185 countries',
+    body:
+      'Production traffic serving ministries, test centers, and consumer apps, with 99.99% uptime SLA on enterprise plans.',
+    chart: 'scale',
+  },
+];
+
+/* ── FAQ ─────────────────────────────────────────────────── */
+const FAQS = [
+  {
+    q: 'How fast can I integrate?',
+    a: 'Minutes. Drop one object into your MCP client config, set the API key, and your agent can call `assess_speech` as a tool. No SDK wrappers, no ML setup.',
+  },
+  {
+    q: 'Which languages are supported?',
+    a: 'Mandarin Chinese and English are first-class, both with phoneme-level scoring. Chinese includes dedicated handling for tones, pinyin, neutral tone, erhua and tone sandhi. English includes CEFR-aligned scoring with stress and rhythm diagnostics.',
+  },
+  {
+    q: 'Which MCP clients work?',
+    a: 'Cursor, Claude Desktop, Cline, Windsurf, Zed, and any other MCP-compatible client. Also works as a tool inside LangChain, LlamaIndex and the OpenAI Agents SDK via the MCP adapter.',
+  },
+  {
+    q: 'Can I stream audio in real time?',
+    a: 'Yes. A WebSocket streaming session accepts mic audio frames and returns scores within a few hundred milliseconds of end-of-speech. File evaluation supports mp3 / wav / m4a / ogg / aac / pcm.',
+  },
+  {
+    q: 'How accurate is the scoring?',
+    a: 'The underlying engine has 95%+ correlation with human expert rubrics, validated by national standardized tests used across 100+ cities, with 9.2B+ evaluations per year.',
+  },
+  {
+    q: 'What does it cost?',
+    a: 'Free credits on signup. Tiered pricing scales with usage — higher volumes get lower unit prices. Contact sales for enterprise SLAs.',
+  },
+];
+
+export default function GlobalLandingPage() {
+  const [installTab, setInstallTab] = useState(INSTALL_TABS[0].id);
+  const [benchmark, setBenchmark] = useState(BENCHMARK_TABS[0].id);
+
+  const activeInstall = INSTALL_TABS.find((t) => t.id === installTab) ?? INSTALL_TABS[0];
+  const activeBench = BENCHMARK_TABS.find((t) => t.id === benchmark) ?? BENCHMARK_TABS[0];
+
+  return (
+    <main className="flex-1 flex flex-col relative">
+      {/* warm ambient — cream/peach wash that rides the full scroll so lower sections stay saturated */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 -z-20"
+        style={{
+          background:
+            'radial-gradient(ellipse 80% 30% at 50% 0%, rgba(253,242,213,0.65), transparent 60%),' +
+            'radial-gradient(ellipse 55% 22% at 8% 18%, rgba(251,207,232,0.28), transparent 65%),' +
+            'radial-gradient(ellipse 55% 22% at 95% 28%, rgba(191,219,254,0.30), transparent 65%),' +
+            'radial-gradient(ellipse 60% 20% at 15% 52%, rgba(254,215,170,0.28), transparent 65%),' +
+            'radial-gradient(ellipse 60% 22% at 90% 62%, rgba(196,181,253,0.28), transparent 65%),' +
+            'radial-gradient(ellipse 70% 22% at 50% 78%, rgba(252,211,170,0.32), transparent 65%),' +
+            'radial-gradient(ellipse 60% 18% at 10% 92%, rgba(167,243,208,0.24), transparent 70%),' +
+            'radial-gradient(ellipse 60% 18% at 90% 96%, rgba(253,186,202,0.24), transparent 70%),' +
+            'linear-gradient(180deg, #fdf8ec 0%, #fdf4e3 22%, #fbf1e1 48%, #fcf4e3 72%, #fdf8ec 100%)',
+        }}
+      />
+      <TopNav />
+
+      {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+       * HERO — "What it does" on the left, "how to plug it in" on the right.
+       * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
+      <section className="relative overflow-hidden border-b border-border/60">
+        <div className="absolute inset-0 -z-10 pointer-events-none">
+          <div
+            className="absolute inset-0 opacity-[0.05] dark:opacity-[0.07]"
+            style={{
+              backgroundImage:
+                'linear-gradient(rgba(0,0,0,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,0.5) 1px, transparent 1px)',
+              backgroundSize: '56px 56px',
+              maskImage: 'radial-gradient(ellipse 70% 70% at 50% 30%, black 30%, transparent 80%)',
+              WebkitMaskImage: 'radial-gradient(ellipse 70% 70% at 50% 30%, black 30%, transparent 80%)',
+            }}
+          />
+          {/* soft colored halos */}
+          <div className="absolute -top-40 left-[-8%] w-[620px] h-[620px] rounded-full blur-3xl bg-gradient-to-br from-emerald-300/30 via-sky-300/15 to-transparent" />
+          <div className="absolute top-[-10%] right-[-8%] w-[680px] h-[560px] rounded-full blur-3xl bg-gradient-to-bl from-violet-300/25 via-rose-200/20 to-transparent" />
+          {/* brand waveform — very subtle, drifts behind text */}
+          <HeroWaveGlyph />
+        </div>
+
+        <div className="container mx-auto px-6 pt-16 pb-12 md:pt-20 md:pb-16 max-w-6xl">
+          {/* ── two-column hero: text · ear illustration ── */}
+          <div className="grid lg:grid-cols-12 gap-8 lg:gap-10 items-center">
+            {/* LEFT COLUMN */}
+            <div className="lg:col-span-7">
+              <FadeUp>
+                <span className="inline-flex items-center gap-2 rounded-full pl-1 pr-3 py-1 text-[11px] font-medium bg-white/70 backdrop-blur-md border border-zinc-900/[0.08] text-foreground/80 mb-8 shadow-[0_4px_16px_-8px_rgba(0,0,0,0.10)]">
+                  <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 border border-emerald-500/25 px-2 py-0.5 text-[10px] font-mono uppercase tracking-wider text-emerald-700">
+                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 shadow-[0_0_6px_rgba(16,185,129,0.8)] animate-pulse" />
+                    live
+                  </span>
+                  The listening layer for voice-native agents
+                </span>
+              </FadeUp>
+
+              <FadeUp delay={0.06}>
+                <h1
+                  className="text-crisp text-[36px] sm:text-[48px] lg:text-[56px] xl:text-[64px] leading-[0.98] mb-6"
+                  style={{
+                    fontWeight: 680,
+                    letterSpacing: '-0.045em',
+                    fontFeatureSettings: '"ss01" 1, "cv11" 1',
+                  }}
+                >
+                  {/* line 1 */}
+                  <span className="block text-zinc-900">Give your agent</span>
+
+                  {/* line 2 — italic serif accent with animated sound-wave flanks */}
+                  <span
+                    className="block relative text-zinc-700"
+                    style={{
+                      fontFamily:
+                        'var(--font-hero-serif), "Georgia", "Iowan Old Style", serif',
+                      fontStyle: 'italic',
+                      fontWeight: 500,
+                      fontSize: '0.9em',
+                      letterSpacing: '-0.015em',
+                      fontVariationSettings: '"opsz" 48, "SOFT" 50',
+                    }}
+                  >
+                    <HeroEqGlyph side="left" />
+                    the ears of a
+                    <HeroEqGlyph side="right" />
+                  </span>
+
+                  {/* line 3 — gradient + hand-drawn underline */}
+                  <span className="relative inline-block whitespace-nowrap">
+                    <span className="relative z-10 bg-gradient-to-r from-emerald-700 via-teal-600 to-lime-500 bg-clip-text text-transparent">
+                      linguistics professor.
+                    </span>
+                    <svg
+                      aria-hidden
+                      className="absolute left-0 right-0 -bottom-[0.12em] w-full h-[0.18em] overflow-visible pointer-events-none"
+                      viewBox="0 0 600 20"
+                      preserveAspectRatio="none"
+                    >
+                      <defs>
+                        <linearGradient id="hero-underline" x1="0" x2="1" y1="0" y2="0">
+                          <stop offset="0%" stopColor="#047857" />
+                          <stop offset="55%" stopColor="#14b8a6" />
+                          <stop offset="100%" stopColor="#84cc16" />
+                        </linearGradient>
+                      </defs>
+                      <path
+                        d="M4 14 Q 140 4, 290 10 T 596 8"
+                        stroke="url(#hero-underline)"
+                        strokeWidth="4"
+                        strokeLinecap="round"
+                        fill="none"
+                        opacity="0.9"
+                      />
+                    </svg>
+                  </span>
+                </h1>
+              </FadeUp>
+
+              <FadeUp delay={0.14}>
+                <p className="text-[15.5px] md:text-[17px] text-muted-foreground leading-relaxed max-w-[540px] mb-8">
+                  Whisper tells your LLM <em>what</em> was said. Chivox MCP tells it{' '}
+                  <strong className="text-foreground/90 font-semibold">how well</strong> &mdash; a phonetic
+                  matrix your model can reason over, for English and tonal Mandarin.
+                </p>
+              </FadeUp>
+
+              {/* CTA row — left-aligned */}
+              <FadeUp delay={0.2}>
+                <div className="flex flex-wrap items-center gap-4 mb-10">
+                  <Link
+                    href="/dev-en/login"
+                    className="group inline-flex items-center gap-2 h-11 pl-5 pr-2 text-sm font-semibold rounded-full bg-zinc-900 text-white hover:bg-zinc-800 transition-colors shadow-[0_8px_24px_-8px_rgba(0,0,0,0.35)]"
+                  >
+                    Start free
+                    <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-white/15 group-hover:bg-white/25 transition-colors">
+                      <ArrowRight className="h-3.5 w-3.5" />
+                    </span>
+                  </Link>
+                  <a
+                    href="#quickstart"
+                    className="group inline-flex items-center gap-1.5 text-sm font-medium text-zinc-700 hover:text-zinc-900 transition-colors"
+                  >
+                    See it run
+                    <ArrowRight className="h-3.5 w-3.5 group-hover:translate-x-0.5 transition-transform" />
+                  </a>
+                </div>
+              </FadeUp>
+
+              {/* 3-value benefit strip */}
+              <FadeUp delay={0.26}>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  {[
+                    {
+                      icon: Waves,
+                      title: 'Deep linguistic understanding',
+                      sub: 'Go beyond transcripts.',
+                      bg: 'bg-emerald-500/10',
+                      fg: 'text-emerald-600',
+                    },
+                    {
+                      icon: ShieldCheck,
+                      title: 'Enterprise-ready',
+                      sub: 'Secure. Scalable. Reliable.',
+                      bg: 'bg-sky-500/10',
+                      fg: 'text-sky-600',
+                    },
+                    {
+                      icon: Zap,
+                      title: 'Real-time intelligence',
+                      sub: 'React in the moment.',
+                      bg: 'bg-amber-500/10',
+                      fg: 'text-amber-600',
+                    },
+                  ].map((v) => (
+                    <div key={v.title} className="flex items-start gap-2.5">
+                      <span className={`inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${v.bg}`}>
+                        <v.icon className={`h-4 w-4 ${v.fg}`} />
+                      </span>
+                      <div className="min-w-0">
+                        <div className="text-[13px] font-semibold tracking-[-0.005em] text-foreground leading-tight">
+                          {v.title}
+                        </div>
+                        <div className="text-[12px] text-muted-foreground mt-0.5">{v.sub}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </FadeUp>
+            </div>
+
+            {/* RIGHT COLUMN — custom ear illustration */}
+            <FadeUp delay={0.1} className="lg:col-span-5">
+              <div className="relative aspect-square lg:aspect-[4/5] select-none pointer-events-none">
+                <HeroEarArt />
+              </div>
+            </FadeUp>
+          </div>
+
+          {/* prominent install terminal — centered below, spans content width */}
+          <FadeUp delay={0.32}>
+            <div className="mt-12 md:mt-14">
+              <HeroInstallPill />
+            </div>
+          </FadeUp>
+
+          {/* deep-dive carousel — below the fold */}
+          <FadeUp delay={0.4}>
+            <div className="mt-20 max-w-5xl mx-auto">
+              <HeroCarousel />
+            </div>
+          </FadeUp>
+        </div>
+      </section>
+
+      {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+       * CORE CAPABILITIES — what the MCP can do, in 4 tiles
+       * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
+      <section className="relative py-16 md:py-20 border-b border-border/60 bg-gradient-to-b from-emerald-50/25 via-sky-50/20 to-violet-50/20">
+        <div className="container mx-auto px-6 max-w-6xl">
+          <FadeUp className="mb-10 text-center max-w-2xl mx-auto">
+            <div className="text-[11px] tracking-[0.2em] uppercase text-muted-foreground mb-3">/what-it-does</div>
+            <h2 className="heading-display text-3xl md:text-4xl tracking-[-0.02em] mb-3">
+              Plug-and-play AI tutor infrastructure
+            </h2>
+            <p className="text-muted-foreground leading-relaxed">
+              Twenty years of pronunciation-assessment R&amp;D, exposed as four MCP tools. Drop into LangChain,
+              LlamaIndex, the OpenAI Agents SDK or any custom loop — skip the months of DSP work.
+            </p>
+          </FadeUp>
+
+          <StaggerContainer className="grid md:grid-cols-2 gap-4">
+            {CORE_CAPABILITIES.map((c) => {
+              const tone = CAPABILITY_TONE[c.tone];
+              return (
+                <StaggerItem key={c.eyebrow}>
+                  <div
+                    className={`group relative glass-card h-full p-5 md:p-6 flex flex-col sm:flex-row gap-5 overflow-hidden transition-all duration-300 hover:-translate-y-[2px] ring-1 ring-transparent ${tone.ring}`}
+                  >
+                    {/* colored corner glow */}
+                    <div
+                      aria-hidden
+                      className={`pointer-events-none absolute -top-24 -right-16 h-56 w-56 rounded-full blur-3xl bg-gradient-to-br ${tone.glow} to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500`}
+                    />
+                    {/* accent strip */}
+                    <div
+                      aria-hidden
+                      className={`absolute left-0 top-6 bottom-6 w-[3px] rounded-r-full bg-gradient-to-b ${tone.accent}`}
+                    />
+
+                    {/* LEFT — compact visual preview */}
+                    <div className="sm:w-[190px] sm:shrink-0 self-start">
+                      <CapabilityVisual id={c.visual} />
+                    </div>
+
+                    {/* RIGHT — header + body + chips */}
+                    <div className="flex-1 min-w-0 flex flex-col">
+                      <div className="flex items-center gap-2.5 mb-2">
+                        <div className={`h-8 w-8 rounded-lg border ${tone.iconBg} flex items-center justify-center`}>
+                          <c.icon className={`h-4 w-4 ${tone.iconColor}`} />
+                        </div>
+                        <span className={`text-[10.5px] font-mono tracking-wide uppercase ${tone.eyebrow}`}>
+                          /{c.eyebrow}
+                        </span>
+                      </div>
+
+                      <h3
+                        className="text-[17px] font-semibold tracking-[-0.01em] mb-1.5"
+                        dangerouslySetInnerHTML={{ __html: c.title }}
+                      />
+                      <p className="text-[13px] text-muted-foreground leading-relaxed mb-3">{c.body}</p>
+
+                      <div className="mt-auto flex flex-wrap gap-1.5">
+                        {c.chips.map((chip) => (
+                          <span
+                            key={chip}
+                            className="inline-flex items-center rounded-md border border-zinc-900/[0.08] bg-white/60 backdrop-blur-sm px-1.5 py-0.5 text-[10px] font-mono text-foreground/70"
+                          >
+                            {chip}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </StaggerItem>
+              );
+            })}
+          </StaggerContainer>
+        </div>
+      </section>
+
+      {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+       * QUICKSTART — 3 steps, dead simple
+       * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
+      <section id="quickstart" className="relative py-20 md:py-24 border-b border-border/60 bg-gradient-to-b from-amber-50/40 via-white/40 to-rose-50/30">
+        <div className="container mx-auto px-6 max-w-6xl">
+          <FadeUp className="mb-12 text-center">
+            <div className="text-[11px] tracking-[0.2em] uppercase text-muted-foreground mb-3">/quickstart</div>
+            <h2 className="heading-display text-3xl md:text-4xl tracking-[-0.02em] mb-3">
+              Production-ready in 3 steps
+            </h2>
+            <p className="text-muted-foreground max-w-xl mx-auto leading-relaxed">
+              Watch it run. Paste config → server connects → your LLM calls a tool and gets structured scores back.
+            </p>
+          </FadeUp>
+
+          <QuickstartDemo
+            installTab={installTab}
+            setInstallTab={setInstallTab}
+            activeInstall={activeInstall}
+          />
+        </div>
+      </section>
+
+      {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+       * MANDARIN MOAT — the differentiator, promoted to its own section
+       * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
+      <section
+        id="mandarin-moat"
+        className="relative py-20 md:py-24 border-b border-border/60 scroll-mt-24 bg-gradient-to-b from-rose-50/35 via-amber-50/25 to-white/40"
+      >
+        <div className="container mx-auto px-6 max-w-6xl">
+          <FadeUp className="mb-10 max-w-3xl">
+            <div className="inline-flex items-center gap-2 text-[11px] tracking-[0.2em] uppercase text-muted-foreground mb-3">
+              <span>/mandarin-moat</span>
+              <span className="inline-flex items-center gap-1 rounded-full border border-rose-500/30 bg-rose-500/10 px-2 py-0.5 text-[9px] font-mono text-rose-600 dark:text-rose-400 normal-case tracking-normal">
+                <span className="h-1 w-1 rounded-full bg-rose-500" />
+                Hard mode
+              </span>
+            </div>
+            <h2 className="heading-display text-3xl md:text-[42px] tracking-[-0.02em] mb-3 leading-[1.1]">
+              Crack the tonal code.
+              <br />
+              <span className="text-muted-foreground/90">Own the Mandarin market.</span>
+            </h2>
+            <p className="text-muted-foreground leading-relaxed">
+              Open-source STT flatlines on{' '}
+              <span className="font-zh text-foreground/85">妈</span> /{' '}
+              <span className="font-zh text-foreground/85">麻</span> /{' '}
+              <span className="font-zh text-foreground/85">马</span> /{' '}
+              <span className="font-zh text-foreground/85">骂</span>. We return tone-, phoneme-, and sandhi-level
+              scores &mdash; the only MCP purpose-built for the language every generic model gets wrong.
+            </p>
+          </FadeUp>
+
+          {/* ── market proof strip — why this moat matters commercially ── */}
+          <FadeUp delay={0.06}>
+            <div className="mb-8 rounded-xl border border-rose-500/15 bg-gradient-to-r from-rose-50/70 via-amber-50/50 to-rose-50/30 px-4 md:px-5 py-3.5 flex flex-col md:flex-row md:items-center gap-3 md:gap-5">
+              <div className="inline-flex items-center gap-1.5 shrink-0">
+                <Globe2 className="h-3.5 w-3.5 text-rose-600" />
+                <span className="text-[10px] font-mono uppercase tracking-[0.18em] text-rose-700/90">
+                  Market moat
+                </span>
+              </div>
+              <div className="flex flex-wrap items-baseline gap-x-5 gap-y-1.5 flex-1 min-w-0">
+                <span className="inline-flex items-baseline gap-1.5">
+                  <span className="heading-display text-[17px] md:text-[19px] tabular-nums tracking-[-0.02em] text-rose-700">
+                    25M+
+                  </span>
+                  <span className="text-[12.5px] text-foreground/75">
+                    Mandarin learners worldwide
+                  </span>
+                </span>
+                <span className="hidden md:inline-block h-3 w-px bg-rose-500/25" />
+                <span className="inline-flex items-baseline gap-1.5">
+                  <span className="heading-display text-[17px] md:text-[19px] tabular-nums tracking-[-0.02em] text-rose-700">
+                    ~$6B
+                  </span>
+                  <span className="text-[12.5px] text-foreground/75">
+                    language-learning TAM
+                  </span>
+                </span>
+                <span className="hidden md:inline-block h-3 w-px bg-rose-500/25" />
+                <span className="inline-flex items-baseline gap-1.5">
+                  <span className="heading-display text-[17px] md:text-[19px] tabular-nums tracking-[-0.02em] text-rose-700">
+                    0
+                  </span>
+                  <span className="text-[12.5px] text-foreground/75">
+                    MCPs purpose-built for it
+                  </span>
+                </span>
+              </div>
+              <div className="shrink-0 inline-flex items-center gap-1.5 text-[12.5px] italic text-foreground/80">
+                <ArrowRight className="h-3.5 w-3.5 text-rose-600" />
+                Ship the tutor they can&rsquo;t build on Whisper.
+              </div>
+            </div>
+          </FadeUp>
+
+          {/* condensed feature chip row */}
+          <FadeUp delay={0.08}>
+            <div className="mb-8 flex flex-wrap gap-2">
+              {[
+                '4 tones + T5',
+                'Tone sandhi',
+                'Erhua · 儿化音',
+                'Pinyin align',
+                'Code-switch zh ↔ en',
+                'HSK 1-9',
+              ].map((f) => (
+                <span
+                  key={f}
+                  className="inline-flex items-center gap-1.5 rounded-md border border-rose-500/20 bg-rose-500/[0.06] px-2.5 py-1 text-[11.5px] font-mono text-rose-700 dark:text-rose-300"
+                >
+                  <span className="h-1 w-1 rounded-full bg-rose-500" />
+                  {f}
+                </span>
+              ))}
+            </div>
+          </FadeUp>
+
+          <FadeUp delay={0.12}>
+            <TonePanel />
+          </FadeUp>
+
+          <FadeUp delay={0.18}>
+            <div className="mt-6 rounded-xl border border-zinc-900/[0.08] bg-white/55 backdrop-blur-sm p-5 md:p-6">
+              <div className="text-[10.5px] font-mono tracking-[0.18em] uppercase text-muted-foreground mb-2">
+                Code-switching · cross-lingual scoring
+              </div>
+              <p className="text-[13.5px] text-foreground/80 leading-relaxed">
+                Score a heritage speaker mid-sentence as they flip between languages &mdash;{' '}
+                <span className="italic">
+                  &ldquo;I told her <span className="font-zh">我下周回家</span> and she was thrilled.&rdquo;
+                </span>{' '}
+                Returns separate EN / zh sub-scores plus a blended fluency index. Useful for bilingual corporate
+                training, linguistic research, and apps targeting the 60M+ global Chinese diaspora.
+              </p>
+            </div>
+          </FadeUp>
+        </div>
+      </section>
+
+      {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+       * THREE-STAGE PIPELINE — why MCP, not just another eval API
+       * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
+      <section id="reasoning-engine-trigger" className="relative py-20 md:py-24 border-b border-border/60 scroll-mt-24 bg-gradient-to-b from-violet-50/25 via-rose-50/20 to-amber-50/20">
+        <div className="container mx-auto px-6 max-w-6xl">
+          <FadeUp className="mb-14 max-w-3xl">
+            <div className="text-[11px] tracking-[0.2em] uppercase text-muted-foreground mb-3">
+              /reasoning-engine-trigger
+            </div>
+            <h2 className="heading-display text-3xl md:text-[42px] tracking-[-0.02em] mb-3 leading-[1.1]">
+              It&apos;s not just a score.
+              <br />
+              <span className="text-muted-foreground/90">It&apos;s a reasoning engine trigger.</span>
+            </h2>
+            <p className="text-muted-foreground leading-relaxed">
+              You just saw Mandarin tones scored character-by-character. Now look at the payload behind it. A
+              flat <span className="font-mono text-foreground/80">score: 85</span> is a dead end; the rich
+              phonetic matrix we return &mdash; vowel fullness, affricate quality, pause distribution, rhythm
+              curve &mdash; is{' '}
+              <strong className="text-foreground/90 font-semibold">fuel for an LLM&apos;s chain of thought</strong>.
+              Your model runs two more passes over it: diagnose the pattern, then prescribe the drill. O1,
+              Claude 3.5 Sonnet, Gemini 2 &mdash; they all reason beautifully over this shape.
+            </p>
+          </FadeUp>
+
+          <PipelineStages />
+
+          {/* concrete code proof — the Aha moment */}
+          <div className="mt-14">
+            <FadeUp>
+              <div className="mb-4 flex items-center gap-3">
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-violet-500/10 border border-violet-500/25 px-2.5 py-0.5 text-[10px] font-mono uppercase tracking-wider text-violet-700">
+                  <span className="h-1.5 w-1.5 rounded-full bg-violet-500" />
+                  Live demo
+                </span>
+                <span className="text-[12.5px] text-muted-foreground">
+                  Watch pass ② run. <span className="text-foreground/85">Same Mandarin payload in</span> — a
+                  textbook-grade diagnosis out, streamed by o1-mini.
+                </span>
+              </div>
+            </FadeUp>
+            <ReasoningDemo />
+          </div>
+
+          <FadeUp delay={0.3}>
+            <ul className="mt-10 grid md:grid-cols-3 gap-3 text-[13px] leading-relaxed">
+              {[
+                {
+                  t: 'Secondary · Pattern mining',
+                  b: 'Agent surfaces session-level regularities: "unvoiced consonants failing 3 sessions in a row." No rule engine — pure LLM reasoning over dense data.',
+                },
+                {
+                  t: 'Tertiary · Student profiling',
+                  b: 'Stack sessions in any vector DB or row store. Your agent plots learning curves and predicts next-exam CEFR / HSK band.',
+                },
+                {
+                  t: 'Combo · Diagnose + prescribe',
+                  b: 'Chain Chivox MCP with O1 / Sonnet 3.5 / Gemini 2 for a world-class diagnosis-to-prescription loop, out of the box.',
+                },
+              ].map((c) => (
+                <li
+                  key={c.t}
+                  className="flex gap-3 rounded-xl border border-zinc-900/[0.08] bg-white/55 backdrop-blur-sm px-4 py-3.5"
+                >
+                  <span className="mt-1.5 inline-block h-1.5 w-1.5 rounded-full bg-violet-500 shrink-0" />
+                  <div>
+                    <div className="font-semibold tracking-tight mb-0.5">{c.t}</div>
+                    <div className="text-muted-foreground">{c.b}</div>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </FadeUp>
+        </div>
+      </section>
+
+      {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+       * USE CASES — with real imagery
+       * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
+      <section className="relative py-20 md:py-24 border-b border-border/60 bg-gradient-to-b from-violet-50/25 via-sky-50/20 to-emerald-50/20">
+        <div className="container mx-auto px-6 max-w-6xl">
+          <FadeUp className="mb-12 max-w-2xl">
+            <div className="text-[11px] tracking-[0.2em] uppercase text-muted-foreground mb-3">/use-cases</div>
+            <h2 className="heading-display text-3xl md:text-4xl tracking-[-0.02em] mb-3">
+              Built for what developers actually ship
+            </h2>
+            <p className="text-muted-foreground leading-relaxed">
+              Tutors, coaches, companions, QA tooling — pick the scenario that\u2019s yours and see how the
+              agent loop looks in practice.
+            </p>
+          </FadeUp>
+
+          <StaggerContainer className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+            {USE_CASES.map((u) => (
+              <StaggerItem key={u.tag}>
+                <div className="group rounded-2xl border border-zinc-900/[0.08] bg-white/80 backdrop-blur-sm overflow-hidden h-full flex flex-col hover:border-zinc-900/25 hover:-translate-y-[2px] hover:shadow-[0_12px_40px_-16px_rgba(0,0,0,0.12)] transition-all duration-300">
+                  <div className="relative aspect-[16/10] w-full border-b border-zinc-900/[0.06] overflow-hidden">
+                    <UseCaseArtwork id={u.art} />
+                  </div>
+                  <div className="p-5 flex-1 flex flex-col">
+                    <h3
+                      className="text-[15px] font-semibold tracking-[-0.01em] mb-2 leading-snug"
+                      dangerouslySetInnerHTML={{ __html: u.title }}
+                    />
+                    <p className="text-[13px] text-muted-foreground leading-relaxed">{u.body}</p>
+                  </div>
+                </div>
+              </StaggerItem>
+            ))}
+          </StaggerContainer>
+        </div>
+      </section>
+
+      {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+       * BENCHMARKS — quiet cards with inline micro-charts
+       * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
+      <section className="relative py-20 md:py-24 border-b border-border/60 bg-gradient-to-b from-amber-100/30 via-rose-50/25 to-amber-50/20">
+        <div className="container mx-auto px-6 max-w-6xl">
+          <FadeUp className="mb-10">
+            <div className="text-[11px] tracking-[0.2em] uppercase text-muted-foreground mb-3">/benchmarks</div>
+            <h2 className="heading-display text-3xl md:text-4xl tracking-[-0.02em] mb-3">
+              Speech scoring driven by research
+            </h2>
+            <p className="text-muted-foreground leading-relaxed max-w-2xl">
+              The engine behind Chivox MCP is 20 years of R&amp;D in pronunciation assessment. Here\u2019s how it
+              holds up in production.
+            </p>
+          </FadeUp>
+
+          <div className="grid lg:grid-cols-12 gap-6 items-stretch">
+            <div className="lg:col-span-4">
+              <div className="flex lg:flex-col gap-1 overflow-x-auto lg:overflow-visible">
+                {BENCHMARK_TABS.map((t) => (
+                  <button
+                    key={t.id}
+                    type="button"
+                    onClick={() => setBenchmark(t.id)}
+                    className={`relative text-left px-4 py-3 rounded-lg text-sm whitespace-nowrap transition-all ${
+                      t.id === benchmark
+                        ? 'bg-background text-foreground border border-border/60 shadow-sm'
+                        : 'text-muted-foreground hover:text-foreground hover:bg-background/60 border border-transparent'
+                    }`}
+                  >
+                    <span className="font-medium">{t.label}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="lg:col-span-8">
+              <div className="rounded-2xl border border-border/60 bg-background p-7 md:p-9 h-full">
+                <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-5 mb-5">
+                  <div>
+                    <div className="text-5xl md:text-6xl heading-display tracking-[-0.03em] leading-none mb-2">
+                      {activeBench.metric}
+                    </div>
+                    <div className="text-sm text-muted-foreground">{activeBench.metricLabel}</div>
+                  </div>
+                  <BenchmarkMicroChart id={activeBench.chart} />
+                </div>
+                <div className="h-px bg-border/60 my-5" />
+                <p className="text-foreground/85 leading-relaxed">{activeBench.body}</p>
+              </div>
+            </div>
+          </div>
+
+          <StaggerContainer className="mt-10 grid grid-cols-2 md:grid-cols-4 gap-3">
+            {[
+              { value: 9.2, suffix: 'B+', label: 'evaluations per year' },
+              { value: 95, suffix: '%+', label: 'correlation with human experts' },
+              { value: 185, suffix: '', label: 'countries & regions' },
+              { value: 20, suffix: ' yrs', label: 'in speech AI research' },
+            ].map((s) => (
+              <StaggerItem key={s.label}>
+                <div className="glass-card px-5 py-6 text-center">
+                  <div className="text-2xl md:text-3xl heading-display tracking-[-0.02em] tabular-nums">
+                    <CountUp value={s.value} suffix={s.suffix} />
+                  </div>
+                  <div className="text-[11px] text-muted-foreground mt-1.5 leading-snug">{s.label}</div>
+                </div>
+              </StaggerItem>
+            ))}
+          </StaggerContainer>
+
+          {/* trust bullets — lifted from the old Trust section */}
+          <FadeUp delay={0.15}>
+            <div className="mt-8 grid md:grid-cols-2 gap-x-6 gap-y-2.5">
+              {[
+                'Validated by national testing centers for standardized speaking exams',
+                '14+ granted patents in speech assessment',
+                '99.99% uptime SLA for enterprise deployments',
+                'GDPR-friendly data handling for EU markets',
+              ].map((f) => (
+                <div key={f} className="flex items-start gap-2.5 text-[13px] text-foreground/80">
+                  <Check className="h-4 w-4 text-emerald-600 mt-0.5 shrink-0" />
+                  <span>{f}</span>
+                </div>
+              ))}
+            </div>
+          </FadeUp>
+        </div>
+      </section>
+
+      {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+       * FAQ
+       * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
+      <section className="relative py-20 md:py-24 border-b border-border/60 bg-gradient-to-b from-rose-50/25 via-amber-50/20 to-violet-50/20">
+        <div className="container mx-auto px-6 max-w-4xl">
+          <FadeUp className="mb-10 text-center">
+            <div className="text-[11px] tracking-[0.2em] uppercase text-muted-foreground mb-3">/faq</div>
+            <h2 className="heading-display text-3xl md:text-4xl tracking-[-0.02em]">
+              Frequently asked questions
+            </h2>
+          </FadeUp>
+
+          <div className="divide-y divide-border/60 border-y border-border/60">
+            {FAQS.map((f) => (
+              <details key={f.q} className="group py-5">
+                <summary className="flex items-center justify-between gap-4 cursor-pointer list-none">
+                  <span className="text-base font-medium text-foreground/90 group-hover:text-foreground transition-colors">
+                    {f.q}
+                  </span>
+                  <span className="h-6 w-6 rounded-full border border-border/60 flex items-center justify-center shrink-0 text-muted-foreground group-open:rotate-45 transition-transform">
+                    +
+                  </span>
+                </summary>
+                <p className="mt-3 text-sm text-muted-foreground leading-relaxed max-w-3xl whitespace-pre-line">
+                  {f.a}
+                </p>
+              </details>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+       * COMPLIANCE STRIP — stateless streaming, GDPR-aligned (condensed)
+       * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
+      <section className="relative py-12 md:py-14 border-b border-border/60">
+        <div className="container mx-auto px-6 max-w-6xl">
+          <div className="rounded-2xl border border-zinc-900/[0.08] bg-white/55 backdrop-blur-md p-6 md:p-8">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+              <div className="max-w-md">
+                <div className="text-[11px] tracking-[0.2em] uppercase text-muted-foreground mb-2">/privacy</div>
+                <h2 className="text-lg md:text-xl font-semibold tracking-[-0.01em] mb-1">
+                  Built for the GDPR era.
+                </h2>
+                <p className="text-[13px] text-muted-foreground leading-relaxed">
+                  Stateless streaming — audio scored in-memory, never stockpiled, never used for training.
+                </p>
+              </div>
+              <div className="grid grid-cols-3 gap-3 md:gap-4 md:min-w-[520px]">
+                {[
+                  { icon: Zap, title: 'Stateless', chip: 'TTL: 0s' },
+                  { icon: ShieldCheck, title: 'Compliance-ready', chip: 'GDPR · CCPA · SOC 2' },
+                  { icon: Lightbulb, title: 'You own the data', chip: 'JSON out, no audio copies' },
+                ].map((p) => (
+                  <div
+                    key={p.title}
+                    className="rounded-xl border border-emerald-500/20 bg-emerald-500/[0.04] px-3 py-3"
+                  >
+                    <div className="flex items-center gap-2 mb-1.5">
+                      <p.icon className="h-3.5 w-3.5 text-emerald-600" />
+                      <span className="text-[12.5px] font-semibold tracking-tight">{p.title}</span>
+                    </div>
+                    <div className="text-[10.5px] font-mono text-muted-foreground">{p.chip}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+       * CTA
+       * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
+      <section className="relative py-24 md:py-32 border-b border-border/60 overflow-hidden">
+        <div className="absolute inset-0 -z-10 pointer-events-none">
+          <div className="absolute inset-0 bg-gradient-to-b from-muted/10 via-background to-muted/30" />
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] rounded-full blur-3xl bg-foreground/[0.04]" />
+        </div>
+        <div className="container mx-auto px-6 text-center max-w-3xl">
+          <h2 className="heading-display text-3xl md:text-5xl tracking-[-0.025em] mb-5 leading-[1.1]">
+            Ship a speech-aware agent today.
+          </h2>
+          <p className="text-muted-foreground leading-relaxed mb-9 text-base md:text-lg max-w-2xl mx-auto">
+            Free credits on signup. One config block. No credit card required. Scale into production when
+            you\u2019re ready.
+          </p>
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3">
+            <Link
+              href="/en/register"
+              className="inline-flex items-center justify-center h-12 px-8 text-sm font-semibold rounded-lg gap-2 bg-foreground text-background shadow-lg hover:-translate-y-[2px] transition-all duration-200"
+            >
+              Start free
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+            <Link
+              href="/en/docs"
+              className="inline-flex items-center justify-center h-12 px-8 text-sm font-medium rounded-lg border border-border/70 bg-background hover:border-foreground/30 transition-all duration-200"
+            >
+              Read the docs
+            </Link>
+          </div>
+          <div className="mt-8 text-xs text-muted-foreground">
+            Free trial credits · Cancel anytime · Used in 185 countries
+          </div>
+        </div>
+      </section>
+
+      <SiteFooter />
+    </main>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════════
+ *  VISUAL COMPONENTS (drawn inline so no extra assets are needed)
+ * ═══════════════════════════════════════════════════════════ */
+
+/* ── Quickstart demo — types config, boots server, runs tool ─
+ * A single looping timeline that makes integration feel live:
+ *   phase 0  →  JSON config is typed into the editor
+ *   phase 1  →  `npx -y @chivox/mcp` boots, ✓ connected
+ *   phase 2  →  LLM issues assess_speech(...) tool call
+ *   phase 3  →  server streams structured scores back
+ * Left-side step cards highlight in sync with the current phase so
+ * the eye tracks "what's happening" without reading a single word.
+ * ────────────────────────────────────────────────────────── */
+type InstallTab = { id: string; label: string; filename: string; code: string };
+function QuickstartDemo({
+  installTab,
+  setInstallTab,
+  activeInstall,
+}: {
+  installTab: string;
+  setInstallTab: (v: string) => void;
+  activeInstall: InstallTab;
+}) {
+  const [phase, setPhase] = useState(0);
+  const [typed, setTyped] = useState(0);
+  const [responseChars, setResponseChars] = useState(0);
+  const [copied, setCopied] = useState(false);
+  const prefersReducedMotion = useRef(false);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    prefersReducedMotion.current = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  }, []);
+
+  const code = activeInstall.code;
+
+  const RESPONSE = useMemo(
+    () =>
+      `{
+  "overall": 84,
+  "accuracy": 82,
+  "fluency": 88,
+  "rhythm": 79,
+  "words": [
+    { "text": "gorgeous", "score": 71, "phonemes": [
+      { "p": "ɡ", "s": 92 },
+      { "p": "ɔː", "s": 64 },
+      { "p": "dʒ", "s": 58 },
+      { "p": "əs", "s": 80 }
+    ] }
+  ]
+}`,
+    []
+  );
+
+  /* restart the timeline whenever the tab changes */
+  useEffect(() => {
+    setPhase(0);
+    setTyped(0);
+    setResponseChars(0);
+  }, [installTab]);
+
+  /* timeline driver */
+  useEffect(() => {
+    if (prefersReducedMotion.current) {
+      setTyped(code.length);
+      setResponseChars(RESPONSE.length);
+      setPhase(3);
+      return;
+    }
+
+    let cancelled = false;
+
+    if (phase === 0) {
+      // type config char-by-char
+      if (typed >= code.length) {
+        const t = setTimeout(() => !cancelled && setPhase(1), 500);
+        return () => {
+          cancelled = true;
+          clearTimeout(t);
+        };
+      }
+      const t = setTimeout(() => {
+        if (!cancelled) setTyped((n) => Math.min(code.length, n + (code[n] === '\n' ? 1 : 2)));
+      }, 18);
+      return () => {
+        cancelled = true;
+        clearTimeout(t);
+      };
+    }
+
+    if (phase === 1) {
+      const t = setTimeout(() => !cancelled && setPhase(2), 1100);
+      return () => {
+        cancelled = true;
+        clearTimeout(t);
+      };
+    }
+
+    if (phase === 2) {
+      const t = setTimeout(() => !cancelled && setPhase(3), 900);
+      return () => {
+        cancelled = true;
+        clearTimeout(t);
+      };
+    }
+
+    if (phase === 3) {
+      if (responseChars >= RESPONSE.length) {
+        // loop
+        const t = setTimeout(() => {
+          if (cancelled) return;
+          setTyped(0);
+          setResponseChars(0);
+          setPhase(0);
+        }, 2600);
+        return () => {
+          cancelled = true;
+          clearTimeout(t);
+        };
+      }
+      const t = setTimeout(() => {
+        if (!cancelled) setResponseChars((n) => Math.min(RESPONSE.length, n + 3));
+      }, 14);
+      return () => {
+        cancelled = true;
+        clearTimeout(t);
+      };
+    }
+  }, [phase, typed, responseChars, code, RESPONSE]);
+
+  const activeStep = phase === 0 ? 1 : phase >= 2 ? 2 : 1; // step 02 during typing, step 03 during call+response
+  const steps = [
+    {
+      n: '01',
+      title: 'Grab an API key',
+      body: 'Sign up, confirm your email, copy the key. Free trial credits included.',
+      cta: { label: 'Get a key', href: '/en/register' },
+      done: true, // always marked done — assume the dev already has a key
+    },
+    {
+      n: '02',
+      title: 'Add one block to your MCP config',
+      body: 'Paste the snippet into Cursor, Claude Desktop, or your custom agent — pick a tab on the right.',
+      done: phase >= 1,
+    },
+    {
+      n: '03',
+      title: 'Call a tool from your LLM',
+      body: 'Hand your model the audio_file_path. It gets back structured scores + per-phoneme diagnostics.',
+      cta: { label: 'API reference', href: '/en/docs' },
+      done: phase >= 3 && responseChars >= RESPONSE.length,
+    },
+  ];
+
+  const copy = async () => {
+    try {
+      await navigator.clipboard.writeText(code);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1400);
+    } catch {
+      /* noop */
+    }
+  };
+
+  return (
+    <div className="grid lg:grid-cols-12 gap-6 items-stretch">
+      {/* ─── LEFT: steps, live-highlighted ─── */}
+      <div className="lg:col-span-5 flex flex-col gap-3">
+        {steps.map((s, i) => {
+          const active = i === activeStep && !s.done;
+          return (
+            <div
+              key={s.n}
+              className={`relative rounded-xl border bg-background p-5 flex gap-4 transition-all duration-300 ${
+                active
+                  ? 'border-emerald-400/70 shadow-[0_0_0_3px_rgba(16,185,129,0.08)]'
+                  : s.done
+                  ? 'border-border/60'
+                  : 'border-border/60'
+              }`}
+            >
+              {/* pulsing rail on the active step */}
+              {active && (
+                <span className="pointer-events-none absolute -left-px top-3 bottom-3 w-[2px] rounded-full bg-emerald-400/80 animate-pulse" />
+              )}
+              <div
+                className={`shrink-0 h-10 w-10 rounded-lg flex items-center justify-center font-mono text-sm font-semibold transition-colors ${
+                  s.done
+                    ? 'bg-emerald-500 text-white'
+                    : active
+                    ? 'bg-foreground text-background'
+                    : 'bg-foreground/90 text-background'
+                }`}
+              >
+                {s.done ? <Check className="h-4 w-4" strokeWidth={3} /> : s.n}
+              </div>
+              <div className="flex-1 min-w-0">
+                <h3 className="text-base font-semibold tracking-[-0.01em] mb-1 flex items-center gap-2">
+                  {s.title}
+                  {active && (
+                    <span className="inline-flex items-center gap-1 rounded-full border border-emerald-400/40 bg-emerald-400/10 px-1.5 py-0.5 text-[9.5px] font-mono uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
+                      <span className="h-1 w-1 rounded-full bg-emerald-500 animate-pulse" />
+                      running
+                    </span>
+                  )}
+                </h3>
+                <p className="text-sm text-muted-foreground leading-relaxed">{s.body}</p>
+                {s.cta ? (
+                  <Link
+                    href={s.cta.href}
+                    className="mt-2 inline-flex items-center gap-1 text-xs font-medium text-foreground hover:underline underline-offset-4"
+                  >
+                    {s.cta.label} <ArrowUpRight className="h-3 w-3" />
+                  </Link>
+                ) : null}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* ─── RIGHT: live editor + terminal ─── */}
+      <div className="lg:col-span-7 min-w-0">
+        <div className="glass-card-dark text-zinc-200 overflow-hidden h-full flex flex-col">
+          {/* tab strip */}
+          <div className="flex items-center justify-between border-b border-white/[0.08] bg-white/[0.04] backdrop-blur-sm">
+            <div
+              className="flex flex-wrap min-w-0"
+              style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+            >
+              {INSTALL_TABS.map((t) => {
+                const isActive = t.id === installTab;
+                return (
+                  <button
+                    key={t.id}
+                    type="button"
+                    onClick={() => setInstallTab(t.id)}
+                    aria-current={isActive ? 'page' : undefined}
+                    className={`relative inline-flex items-center gap-1.5 px-3 py-2.5 text-[11.5px] font-mono whitespace-nowrap transition-all ${
+                      isActive
+                        ? 'text-white font-semibold bg-white/[0.08]'
+                        : 'text-zinc-300 hover:text-white hover:bg-white/[0.04]'
+                    }`}
+                  >
+                    <span
+                      aria-hidden
+                      className={`h-1.5 w-1.5 rounded-full transition-all ${
+                        isActive
+                          ? 'bg-emerald-400 shadow-[0_0_8px_rgba(16,185,129,0.8)]'
+                          : 'bg-zinc-500'
+                      }`}
+                    />
+                    {t.label}
+                    {isActive && (
+                      <span
+                        aria-hidden
+                        className="pointer-events-none absolute left-2 right-2 -bottom-px h-[2px] rounded-full bg-gradient-to-r from-emerald-400 via-emerald-300 to-teal-400 shadow-[0_0_10px_rgba(16,185,129,0.55)]"
+                      />
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+            <div className="flex items-center gap-2 px-3 shrink-0">
+              <span className="hidden xl:inline-flex items-center gap-1.5 text-[10.5px] font-mono text-zinc-500 tracking-wider">
+                <span
+                  className={`h-1.5 w-1.5 rounded-full ${
+                    phase === 0 ? 'bg-amber-400 animate-pulse' : 'bg-emerald-400'
+                  }`}
+                />
+                {activeInstall.filename}
+              </span>
+              <button
+                type="button"
+                onClick={copy}
+                className="inline-flex items-center gap-1 rounded-md border border-white/10 bg-white/[0.04] hover:bg-white/[0.08] px-2 py-1 text-[11px] font-mono text-zinc-300 transition-colors"
+                aria-label="Copy config"
+              >
+                {copied ? (
+                  <>
+                    <Check className="h-3 w-3 text-emerald-400" /> Copied
+                  </>
+                ) : (
+                  <>
+                    <Copy className="h-3 w-3" /> Copy
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+
+          {/* code viewport — typed config */}
+          <pre className="text-[12.5px] leading-[1.7] font-mono p-6 whitespace-pre overflow-hidden min-h-[190px]">
+            {code.slice(0, typed)}
+            {phase === 0 && (
+              <span className="inline-block w-[7px] h-[1.1em] translate-y-[2px] bg-emerald-400/90 animate-pulse align-middle" />
+            )}
+          </pre>
+
+          {/* live terminal transcript */}
+          <div className="border-t border-white/[0.08] bg-black/30 backdrop-blur-sm px-5 py-4 font-mono text-[11.5px] leading-[1.7] text-zinc-300 space-y-1 min-h-[130px]">
+            {/* boot line */}
+            <TerminalLine
+              visible={phase >= 0}
+              prefix="$"
+              prefixClass="text-zinc-500"
+              running={phase === 0 || phase === 1}
+              done={phase >= 2}
+            >
+              <span className="text-zinc-100">npx</span>
+              <span className="text-zinc-400"> -y @chivox/mcp</span>
+              {phase === 1 && (
+                <span className="ml-2 text-emerald-400">✓ connected · 4 tools registered</span>
+              )}
+              {phase >= 2 && (
+                <span className="ml-2 text-emerald-400">✓ ready</span>
+              )}
+            </TerminalLine>
+
+            {/* LLM call */}
+            <TerminalLine
+              visible={phase >= 2}
+              prefix="→"
+              prefixClass="text-sky-400"
+              running={phase === 2}
+              done={phase >= 3}
+            >
+              <span className="text-sky-300">llm.tool_call</span>
+              <span className="text-zinc-500">(</span>
+              <span className="text-zinc-100">&quot;assess_speech&quot;</span>
+              <span className="text-zinc-500">, </span>
+              <span className="text-zinc-400">{'{ language: "en-US", audio_file_path: "./take-01.wav" }'}</span>
+              <span className="text-zinc-500">)</span>
+            </TerminalLine>
+
+            {/* response stream */}
+            {phase >= 3 && (
+              <div className="pt-1">
+                <div className="flex items-start gap-2">
+                  <span className="text-emerald-400 shrink-0">←</span>
+                  <pre className="font-mono text-[11.5px] leading-[1.65] text-emerald-200/90 whitespace-pre overflow-hidden">
+                    {RESPONSE.slice(0, responseChars)}
+                    {responseChars < RESPONSE.length && (
+                      <span className="inline-block w-[6px] h-[0.95em] translate-y-[1px] bg-emerald-300/80 animate-pulse align-middle" />
+                    )}
+                  </pre>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function TerminalLine({
+  visible,
+  prefix,
+  prefixClass,
+  running,
+  done,
+  children,
+}: {
+  visible: boolean;
+  prefix: string;
+  prefixClass?: string;
+  running?: boolean;
+  done?: boolean;
+  children: React.ReactNode;
+}) {
+  if (!visible) return null;
+  return (
+    <div className="flex items-start gap-2 qd-line-in">
+      <span className={`shrink-0 ${prefixClass ?? 'text-zinc-500'}`}>{prefix}</span>
+      <div className="flex-1 min-w-0 flex items-start gap-2 flex-wrap">
+        <div className="min-w-0">{children}</div>
+        {running && <Spinner />}
+        {done && !running && <Check className="h-3 w-3 text-emerald-400 mt-0.5" />}
+      </div>
+    </div>
+  );
+}
+
+function Spinner() {
+  return (
+    <span className="inline-flex items-center">
+      <svg className="h-3 w-3 animate-spin text-emerald-400" viewBox="0 0 24 24" fill="none">
+        <circle cx="12" cy="12" r="9" stroke="currentColor" strokeOpacity="0.25" strokeWidth="3" />
+        <path d="M21 12a9 9 0 0 0-9-9" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
+      </svg>
+    </span>
+  );
+}
+
+
+/* ── Reasoning demo — the Aha moment ─────────────────────────
+ * Shows concretely how a developer piggy-backs on the rich
+ * Chivox payload to drive two more LLM turns:
+ *   Pass ②  LLM reads the phoneme matrix → teacher-style diagnosis
+ *   Pass ③  LLM turns the diagnosis into a Mandarin tongue-twister
+ *            that targets exactly the failing phonemes
+ * Left pane = input (Chivox JSON + system prompt).
+ * Right pane = streamed LLM output.
+ * ────────────────────────────────────────────────────────── */
+const REASONING_TABS = [
+  { id: 'diagnose', label: 'Pass ② · Diagnose' },
+  { id: 'drill', label: 'Pass ③ · Generate drill' },
+] as const;
+
+type ReasoningTabId = (typeof REASONING_TABS)[number]['id'];
+
+const REASONING_INPUT: Record<ReasoningTabId, string> = {
+  diagnose: `// pass 2 — feed the phonetic matrix to your LLM
+const diag = await openai.chat.completions.create({
+  model: "o1-mini",
+  messages: [{
+    role: "system",
+    content:
+      "You are a Mandarin pronunciation coach. " +
+      "Given the Chivox MCP assessment payload, identify " +
+      "the learner's 3 most impactful issues. Be concrete."
+  }, {
+    role: "user",
+    content: JSON.stringify(assessment)
+    // ↓ the payload Chivox MCP just returned
+    // {
+    //   "overall": 72,
+    //   "syllables": [
+    //     { "pinyin": "nǐ",    "tone": 3, "score": 88 },
+    //     { "pinyin": "hǎo",   "tone": 3, "score": 63,
+    //       "flag": "tone_collapse_to_t2" },
+    //     { "pinyin": "shàng", "tone": 4, "score": 58,
+    //       "flag": "initial_sh_retroflex_weak" },
+    //     { "pinyin": "hǎi",   "tone": 3, "score": 81 }
+    //   ],
+    //   "sandhi_violations": ["T3+T3 on 你好"],
+    //   "code_switch": null
+    // }
+  }]
+});`,
+  drill: `// pass 3 — turn the diagnosis into a targeted practice
+const drill = await openai.chat.completions.create({
+  model: "claude-3-5-sonnet",
+  messages: [{
+    role: "system",
+    content:
+      "You're a Mandarin coach. Given the diagnosis below, " +
+      "generate ONE tongue-twister (绕口令) that forces the " +
+      "learner to repeat the failing phonemes + tones at " +
+      "least 3× each. Include pinyin + English gloss."
+  }, {
+    role: "user",
+    content: diagnosis
+    // ↓ pass 2's diagnosis text, e.g.:
+    // "Key issue: retroflex /sh/ collapses to /s/
+    //  on 上. Tone 3 sandhi on 你好 is not applied.
+    //  Target: /sh/ + T3-T3 combos."
+  }]
+});`,
+};
+
+const REASONING_OUTPUT: Record<ReasoningTabId, string> = {
+  diagnose: `# Diagnosis
+
+**1. Retroflex /sh/ is softening.**
+On 上 (shàng, T4) the initial /ʂ/ came out closer
+to a flat /s/. Score 58. Tip: curl the tongue
+tip back and up — think "dr" in "drop".
+
+**2. Tone 3 + Tone 3 sandhi not applied.**
+你好 was read as T3 + T3 instead of T2 + T3.
+This is the #1 textbook-to-speech gap.
+
+**3. Overall tone 3 is shallow.**
+Your T3 dips (hǎo, hǎi) don't reach the low
+register — they sound like T2 halfway.`,
+  drill: `## Drill · tongue-twister
+
+**四是四，十是十，十四是十四，
+四十是四十 —— 十四不要说四十。**
+
+sì shì sì, shí shì shí,
+shí sì shì shí sì, sì shí shì sì shí ——
+shí sì bú yào shuō sì shí.
+
+> Four is four, ten is ten, fourteen is fourteen,
+> forty is forty — don't say "forty" for "fourteen".
+
+**Targets:**
+• /sh/ × 6 (shì, shí, shuō)
+• /s/ × 6  (sì) — force the contrast
+• T3→T2 sandhi × 2  (十四)
+
+⏱ 45 s · repeat 3× · record and compare to
+the reference MCP score.`,
+};
+
+function ReasoningDemo() {
+  const [tab, setTab] = useState<ReasoningTabId>('diagnose');
+  const [typed, setTyped] = useState(0);
+  const prefersReducedMotion = useRef(false);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    prefersReducedMotion.current = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  }, []);
+
+  const output = REASONING_OUTPUT[tab];
+  const input = REASONING_INPUT[tab];
+
+  useEffect(() => {
+    setTyped(0);
+  }, [tab]);
+
+  useEffect(() => {
+    if (prefersReducedMotion.current) {
+      setTyped(output.length);
+      return;
+    }
+    if (typed >= output.length) return;
+    const t = setTimeout(() => setTyped((n) => Math.min(output.length, n + 4)), 18);
+    return () => clearTimeout(t);
+  }, [typed, output]);
+
+  return (
+    <FadeUp>
+      <div className="glass-card overflow-hidden relative">
+        {/* header */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-zinc-900/[0.06] bg-white/30 backdrop-blur-sm px-4 py-3">
+          <div className="flex items-center gap-2">
+            <Sparkles className="h-4 w-4 text-violet-500" />
+            <span className="text-[13px] font-semibold tracking-[-0.005em] text-foreground">
+              How an LLM reasons over a Chivox payload
+            </span>
+            <span className="inline-flex items-center gap-1 rounded-full bg-rose-500/10 border border-rose-500/25 px-2 py-0.5 text-[10px] font-mono text-rose-700 dark:text-rose-400">
+              <span className="h-1 w-1 rounded-full bg-rose-500" />
+              中文 · 你好 / 上海
+            </span>
+          </div>
+          <div className="flex rounded-md border border-border/60 bg-background p-0.5 self-start sm:self-auto">
+            {REASONING_TABS.map((t) => (
+              <button
+                key={t.id}
+                type="button"
+                onClick={() => setTab(t.id)}
+                className={`px-3 py-1 text-[11px] font-mono rounded-[5px] transition-colors whitespace-nowrap ${
+                  t.id === tab
+                    ? 'bg-foreground text-background'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                {t.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="grid lg:grid-cols-2 relative">
+          {/* divider arrow on lg+ */}
+          <div
+            aria-hidden
+            className="hidden lg:flex absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10 h-9 w-9 items-center justify-center rounded-full bg-white border border-violet-500/30 shadow-[0_6px_20px_-8px_rgba(139,92,246,0.35)]"
+          >
+            <ArrowRight className="h-4 w-4 text-violet-600" />
+          </div>
+
+          {/* INPUT — what you send */}
+          <div
+            className="relative border-b lg:border-b-0 lg:border-r border-zinc-900/[0.06]"
+            style={{
+              background:
+                'linear-gradient(135deg, rgba(255,255,255,0.6) 0%, rgba(253,247,234,0.35) 50%, rgba(255,255,255,0.5) 100%)',
+            }}
+          >
+            <div className="flex items-center justify-between px-4 py-2 border-b border-zinc-900/[0.08] bg-white/40 backdrop-blur-sm">
+              <span className="inline-flex items-center gap-2 text-[11px] font-mono text-zinc-700 tracking-wide">
+                <span className="inline-flex h-4 w-4 items-center justify-center rounded-sm bg-zinc-900 text-white text-[9px] font-bold">
+                  IN
+                </span>
+                You send — Chivox payload + 1-line prompt
+              </span>
+              <span className="text-[10px] font-mono text-zinc-500">
+                {tab === 'diagnose' ? 'diagnose.ts' : 'drill.ts'}
+              </span>
+            </div>
+            <pre className="text-[11.5px] leading-[1.6] font-mono p-5 whitespace-pre overflow-x-auto max-h-[420px] text-zinc-800">
+              <code>{input}</code>
+            </pre>
+          </div>
+
+          {/* OUTPUT — what the LLM writes back */}
+          <div className="relative bg-gradient-to-br from-violet-500/[0.05] via-background to-background">
+            <div className="flex items-center justify-between px-4 py-2 border-b border-border/60 bg-white/40 backdrop-blur-sm">
+              <span className="inline-flex items-center gap-2 text-[11px] font-mono text-zinc-700 tracking-wide">
+                <span className="inline-flex h-4 w-4 items-center justify-center rounded-sm bg-violet-600 text-white text-[9px] font-bold">
+                  OUT
+                </span>
+                LLM writes — {tab === 'diagnose' ? 'diagnosis' : 'drill plan'} ({tab === 'diagnose' ? 'o1-mini' : 'claude-3.5-sonnet'})
+              </span>
+              <span className="inline-flex items-center gap-1.5 text-[10px] font-mono text-emerald-600 dark:text-emerald-400">
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                {typed >= output.length ? 'done' : 'thinking…'}
+              </span>
+            </div>
+            <pre className="text-[12.5px] leading-[1.7] font-mono p-5 whitespace-pre-wrap text-foreground/85 max-h-[420px] overflow-auto">
+              {output.slice(0, typed)}
+              {typed < output.length && (
+                <span className="inline-block w-[6px] h-[0.95em] translate-y-[1px] bg-violet-400 animate-pulse align-middle" />
+              )}
+            </pre>
+          </div>
+        </div>
+
+        {/* footer note */}
+        <div className="flex flex-wrap items-center gap-2 px-4 py-2.5 border-t border-border/60 bg-muted/40 text-[11px] text-muted-foreground">
+          <Lightbulb className="h-3.5 w-3.5 text-amber-500" />
+          <span>
+            The <strong className="text-foreground/85 font-semibold">same payload</strong> plugs into{' '}
+            <code className="font-mono text-foreground/80">o1</code>,{' '}
+            <code className="font-mono text-foreground/80">claude-3.5-sonnet</code>,{' '}
+            <code className="font-mono text-foreground/80">gemini-2.0-pro</code>,{' '}
+            <code className="font-mono text-foreground/80">qwen-max</code>,{' '}
+            <code className="font-mono text-foreground/80">deepseek-v3</code> — any model that reads JSON.
+          </span>
+        </div>
+      </div>
+    </FadeUp>
+  );
+}
+
+/* ── Three-pass pipeline: assess → diagnose → drill ──────────
+ * The differentiator. Most eval APIs stop at pass ①. Chivox
+ * MCP hands the downstream LLM everything it needs to run
+ * passes ② and ③ as just-more-tool-turns. This card makes the
+ * handoff visible: raw JSON flows into a natural-language
+ * diagnosis, which flows into a targeted drill plan.
+ * ────────────────────────────────────────────────────────── */
+function PipelineStages() {
+  return (
+    <div className="relative">
+      {/* connecting line on md+ */}
+      <div
+        aria-hidden
+        className="hidden md:block absolute top-[88px] left-[16.6%] right-[16.6%] h-px bg-gradient-to-r from-emerald-400/0 via-emerald-400/60 to-sky-400/0"
+      />
+
+      {/* ─── Stages ─── */}
+      <StaggerContainer className="grid md:grid-cols-3 gap-5 md:gap-4">
+        <StaggerItem>
+          <StageCard
+            tone="emerald"
+            num="01"
+            runner="Chivox MCP"
+            runnerKind="tool"
+            title="Assess"
+            sub="Audio in → structured scores out"
+            inLabel="audio_file_path"
+            outLabel="scores.json"
+          >
+            <pre className="font-mono text-[11px] leading-[1.55] text-zinc-700 dark:text-zinc-300 whitespace-pre overflow-hidden">
+{`{
+  "overall":   84,
+  "accuracy": 82,
+  "fluency":  88,
+  "rhythm":   79,
+  "words": [{
+    "text": "gorgeous",
+    "score": 71,
+    "phonemes": [
+      { "p": "ɔː", "s": 64 },
+      { "p": "dʒ", "s": 58 }
+    ]
+  }]
+}`}
+            </pre>
+          </StageCard>
+        </StaggerItem>
+
+        {/* ─── Stage ② diagnose ─── */}
+        <StaggerItem>
+          <StageCard
+            tone="sky"
+            num="02"
+            runner="Your LLM · pass 1"
+            runnerKind="llm"
+            title="Diagnose"
+            sub="Scores → teacher-style feedback"
+            inLabel="scores.json"
+            outLabel="diagnosis.md"
+          >
+            <div className="font-sans text-[12.5px] leading-[1.6] text-zinc-700 dark:text-zinc-200 space-y-2">
+              <p>
+                <span className="font-semibold">Fluency (88)</span> is strong &mdash; good rhythm and chunking.
+              </p>
+              <p>
+                The weak spot is <span className="font-semibold text-rose-500">/ɔː/</span> in{' '}
+                <span className="font-mono bg-rose-500/10 text-rose-600 dark:text-rose-400 rounded px-1">gorgeous</span>
+                : lips aren&apos;t rounded enough, coming out closer to /ɒ/.
+              </p>
+              <p className="text-muted-foreground text-[11.5px]">
+                Also review <span className="font-mono">/dʒ/</span> affricate &mdash; stop-to-fricative transition is too soft.
+              </p>
+            </div>
+          </StageCard>
+        </StaggerItem>
+
+        {/* ─── Stage ③ drill ─── */}
+        <StaggerItem>
+          <StageCard
+            tone="violet"
+            num="03"
+            runner="Your LLM · pass 2"
+            runnerKind="llm"
+            title="Drill"
+            sub="Diagnosis → personalized practice"
+            inLabel="diagnosis.md"
+            outLabel="practice.json"
+          >
+            <div className="space-y-2.5">
+              <div className="rounded-lg bg-violet-500/5 border border-violet-500/20 p-2.5">
+                <div className="text-[10px] font-mono uppercase tracking-wider text-violet-600 dark:text-violet-400 mb-1">
+                  /ɔː/ minimal pairs
+                </div>
+                <div className="font-mono text-[12px] text-zinc-800 dark:text-zinc-200">
+                  caught · cot · court · cot
+                </div>
+              </div>
+              <div className="rounded-lg bg-violet-500/5 border border-violet-500/20 p-2.5">
+                <div className="text-[10px] font-mono uppercase tracking-wider text-violet-600 dark:text-violet-400 mb-1">
+                  Shadow read · 2×
+                </div>
+                <div className="text-[12px] text-zinc-700 dark:text-zinc-300 italic">
+                  &ldquo;The gorgeous storm poured all morning.&rdquo;
+                </div>
+              </div>
+              <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
+                <span className="inline-flex items-center gap-1">
+                  <span className="h-1.5 w-1.5 rounded-full bg-violet-500" />
+                  3 tasks
+                </span>
+                <span>·</span>
+                <span>~90s</span>
+                <span>·</span>
+                <span>targets 2 phonemes</span>
+              </div>
+            </div>
+          </StageCard>
+        </StaggerItem>
+      </StaggerContainer>
+    </div>
+  );
+}
+
+function StageCard({
+  tone,
+  num,
+  runner,
+  runnerKind,
+  title,
+  sub,
+  inLabel,
+  outLabel,
+  children,
+}: {
+  tone: 'emerald' | 'sky' | 'violet';
+  num: string;
+  runner: string;
+  runnerKind: 'tool' | 'llm';
+  title: string;
+  sub: string;
+  inLabel: string;
+  outLabel: string;
+  children: React.ReactNode;
+}) {
+  const toneMap = {
+    emerald: {
+      dot: 'bg-emerald-500',
+      chip: 'text-emerald-700 dark:text-emerald-400 bg-emerald-500/10 border-emerald-500/30',
+      num: 'bg-emerald-500 text-white',
+      runnerPill: 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/30',
+    },
+    sky: {
+      dot: 'bg-sky-500',
+      chip: 'text-sky-700 dark:text-sky-400 bg-sky-500/10 border-sky-500/30',
+      num: 'bg-sky-500 text-white',
+      runnerPill: 'bg-sky-500/10 text-sky-700 dark:text-sky-300 border-sky-500/30',
+    },
+    violet: {
+      dot: 'bg-violet-500',
+      chip: 'text-violet-700 dark:text-violet-400 bg-violet-500/10 border-violet-500/30',
+      num: 'bg-violet-500 text-white',
+      runnerPill: 'bg-violet-500/10 text-violet-700 dark:text-violet-300 border-violet-500/30',
+    },
+  }[tone];
+
+  return (
+    <div className="relative h-full glass-card overflow-hidden hover:border-foreground/20 transition-colors">
+      {/* header */}
+      <div className="p-5 border-b border-zinc-900/[0.08]">
+        <div className="flex items-center gap-3 mb-3">
+          <div
+            className={`h-9 w-9 rounded-lg ${toneMap.num} flex items-center justify-center font-mono text-sm font-semibold`}
+          >
+            {num}
+          </div>
+          <div>
+            <div className="text-[10.5px] tracking-[0.18em] uppercase text-muted-foreground font-mono">
+              Pass {num.replace(/^0/, '')}
+            </div>
+            <h3 className="text-lg font-semibold tracking-[-0.01em]">{title}</h3>
+          </div>
+        </div>
+        <p className="text-[13px] text-muted-foreground leading-relaxed mb-3">{sub}</p>
+        <div
+          className={`inline-flex items-center gap-1.5 rounded-full border px-2 py-0.5 text-[10.5px] font-mono ${toneMap.runnerPill}`}
+        >
+          {runnerKind === 'tool' ? (
+            <Terminal className="h-3 w-3" />
+          ) : (
+            <Sparkles className="h-3 w-3" />
+          )}
+          {runner}
+        </div>
+      </div>
+
+      {/* payload preview */}
+      <div className="p-5 min-h-[180px] bg-white/20 backdrop-blur-sm">{children}</div>
+
+      {/* in/out signature */}
+      <div className="px-5 py-3 border-t border-zinc-900/[0.08] bg-white/30 backdrop-blur-sm flex items-center justify-between text-[10.5px] font-mono">
+        <span className="inline-flex items-center gap-1.5 text-muted-foreground">
+          <span className="text-muted-foreground/60">in</span>
+          <span className={`inline-flex items-center gap-1 rounded-md border px-1.5 py-0.5 ${toneMap.chip}`}>
+            <span className={`h-1 w-1 rounded-full ${toneMap.dot}`} />
+            {inLabel}
+          </span>
+        </span>
+        <ArrowRight className="h-3 w-3 text-muted-foreground/50" />
+        <span className="inline-flex items-center gap-1.5 text-muted-foreground">
+          <span className="text-muted-foreground/60">out</span>
+          <span className={`inline-flex items-center gap-1 rounded-md border px-1.5 py-0.5 ${toneMap.chip}`}>
+            <span className={`h-1 w-1 rounded-full ${toneMap.dot}`} />
+            {outLabel}
+          </span>
+        </span>
+      </div>
+    </div>
+  );
+}
+
+/* ──────────────────────────────────────────────────────────
+ *  CAPABILITY VISUALS — small illustrative blocks per card
+ * ────────────────────────────────────────────────────────── */
+function CapabilityVisual({ id }: { id: CapabilityVisual }) {
+  if (id === 'meters') return <CapVisualMeters />;
+  if (id === 'bilingual') return <CapVisualBilingual />;
+  if (id === 'dialogue') return <CapVisualDialogue />;
+  return <CapVisualTarget />;
+}
+
+/* 01 · assess — 4 scoring meters (Tavily-ish slim bars) */
+function CapVisualMeters() {
+  const rows = [
+    { k: 'overall', v: 84, c: 'from-emerald-400 to-emerald-500' },
+    { k: 'accuracy', v: 78, c: 'from-emerald-400 to-teal-500' },
+    { k: 'fluency', v: 88, c: 'from-emerald-400 to-emerald-500' },
+    { k: 'rhythm', v: 73, c: 'from-amber-400 to-amber-500' },
+  ];
+  return (
+    <div className="rounded-xl border border-zinc-900/[0.06] bg-white/50 backdrop-blur-sm p-3.5 flex flex-col gap-1.5">
+      {rows.map((r) => (
+        <div key={r.k} className="flex items-center gap-3">
+          <span className="w-[70px] text-[10.5px] font-mono text-muted-foreground">{r.k}</span>
+          <div className="relative flex-1 h-1.5 rounded-full bg-zinc-900/[0.06] overflow-hidden">
+            <div
+              className={`absolute inset-y-0 left-0 rounded-full bg-gradient-to-r ${r.c}`}
+              style={{ width: `${r.v}%` }}
+            />
+          </div>
+          <span className="w-7 text-right text-[11px] font-mono tabular-nums text-foreground/80">{r.v}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/* 02 · languages — CN / EN toggle with pinyin + tone lines */
+function CapVisualBilingual() {
+  return (
+    <div className="rounded-xl border border-zinc-900/[0.06] bg-white/50 backdrop-blur-sm p-3.5">
+      <div className="flex items-center gap-2 mb-3">
+        <span className="inline-flex items-center gap-1.5 rounded-md border border-rose-500/30 bg-rose-500/10 px-2 py-0.5 text-[10.5px] font-mono text-rose-700">
+          <span className="h-1.5 w-1.5 rounded-full bg-rose-500" /> zh-CN
+        </span>
+        <span className="inline-flex items-center gap-1.5 rounded-md border border-sky-500/30 bg-sky-500/10 px-2 py-0.5 text-[10.5px] font-mono text-sky-700">
+          <span className="h-1.5 w-1.5 rounded-full bg-sky-500" /> en-US
+        </span>
+        <span className="ml-auto text-[10px] font-mono text-muted-foreground">one flag</span>
+      </div>
+      <div className="grid grid-cols-2 gap-2">
+        <div className="rounded-lg border border-rose-500/20 bg-rose-500/[0.04] px-2.5 py-2">
+          <div className="flex items-baseline gap-2">
+            <span className="font-zh text-lg text-rose-800">你好</span>
+            <span className="font-pinyin text-[11.5px] text-rose-700">nǐ hǎo</span>
+          </div>
+          <div className="mt-1 flex items-center gap-1 text-rose-600">
+            <svg width="34" height="8" viewBox="0 0 34 8"><path d="M1 6 Q 5 6, 9 3 T 17 1" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" /><path d="M18 6 Q 22 6, 26 3 T 33 1" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" /></svg>
+            <span className="text-[9.5px] font-mono ml-1 text-rose-600/70">tones · pinyin · erhua</span>
+          </div>
+        </div>
+        <div className="rounded-lg border border-sky-500/20 bg-sky-500/[0.04] px-2.5 py-2">
+          <div className="flex items-baseline gap-2">
+            <span className="text-[15px] font-semibold text-sky-900">Hello</span>
+            <span className="font-mono text-[11px] text-sky-700">/həˈloʊ/</span>
+          </div>
+          <div className="mt-1 flex items-center gap-1 text-sky-600">
+            <span className="inline-flex h-1 w-4 bg-sky-400 rounded" />
+            <span className="inline-flex h-1 w-2 bg-sky-300 rounded" />
+            <span className="inline-flex h-1 w-3 bg-sky-400 rounded" />
+            <span className="text-[9.5px] font-mono ml-1 text-sky-600/70">stress · CEFR</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* 03 · converse — 3 chat bubbles with a tiny waveform */
+function CapVisualDialogue() {
+  return (
+    <div className="rounded-xl border border-zinc-900/[0.06] bg-white/50 backdrop-blur-sm p-3.5 flex flex-col gap-2">
+      <div className="flex items-start gap-2">
+        <span className="h-6 w-6 shrink-0 rounded-full bg-violet-500/15 border border-violet-500/30 text-violet-700 text-[10px] font-mono flex items-center justify-center">AI</span>
+        <div className="rounded-lg rounded-tl-sm border border-violet-500/20 bg-violet-500/[0.05] px-2.5 py-1.5 text-[11.5px] text-foreground/85 max-w-[70%]">
+          Describe your hometown in three sentences.
+        </div>
+      </div>
+      <div className="flex items-start gap-2 justify-end">
+        <div className="rounded-lg rounded-tr-sm border border-zinc-900/[0.08] bg-white/70 px-2.5 py-1.5 max-w-[80%]">
+          <div className="flex items-end gap-[2px] h-3.5">
+            {[0.4, 0.8, 0.5, 1, 0.7, 0.9, 0.4, 0.7, 0.55, 0.85, 0.6, 0.3, 0.9, 0.5].map((h, i) => (
+              <span
+                key={i}
+                className="inline-block w-[2.5px] rounded-[1.5px] bg-gradient-to-t from-violet-400/50 to-violet-500"
+                style={{ height: `${h * 100}%` }}
+              />
+            ))}
+          </div>
+          <div className="mt-1 text-[10px] font-mono text-muted-foreground">user · 00:14</div>
+        </div>
+        <span className="h-6 w-6 shrink-0 rounded-full bg-zinc-900/[0.06] border border-zinc-900/10 text-zinc-700 text-[10px] font-mono flex items-center justify-center">U</span>
+      </div>
+      <div className="mt-0.5 flex flex-wrap gap-1">
+        {['fluency 82', 'content 76', 'grammar 88', 'accuracy 79', 'rhythm 81'].map((s) => (
+          <span key={s} className="inline-flex items-center rounded-md border border-violet-500/25 bg-violet-500/[0.06] px-1.5 py-0.5 text-[10px] font-mono text-violet-700">
+            {s}
+          </span>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* 04 · drill — bullseye + LLM chip row */
+function CapVisualTarget() {
+  return (
+    <div className="rounded-xl border border-zinc-900/[0.06] bg-white/50 backdrop-blur-sm p-3.5 flex items-center gap-4">
+      {/* bullseye */}
+      <svg width="72" height="72" viewBox="0 0 72 72" className="shrink-0">
+        <defs>
+          <radialGradient id="capTarget" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stopColor="#f59e0b" stopOpacity="0.6" />
+            <stop offset="100%" stopColor="#f59e0b" stopOpacity="0" />
+          </radialGradient>
+        </defs>
+        <circle cx="36" cy="36" r="34" fill="url(#capTarget)" />
+        <circle cx="36" cy="36" r="28" fill="none" stroke="#f59e0b" strokeOpacity="0.35" strokeWidth="1" />
+        <circle cx="36" cy="36" r="20" fill="none" stroke="#f59e0b" strokeOpacity="0.5" strokeWidth="1" />
+        <circle cx="36" cy="36" r="12" fill="none" stroke="#f59e0b" strokeOpacity="0.7" strokeWidth="1.2" />
+        <circle cx="36" cy="36" r="4" fill="#f59e0b" />
+        {/* arrow */}
+        <line x1="62" y1="12" x2="40" y2="34" stroke="#18181b" strokeWidth="1.5" strokeLinecap="round" />
+        <polygon points="36,36 42,32 40,34" fill="#18181b" />
+      </svg>
+      <div className="flex-1 min-w-0">
+        <div className="text-[10.5px] font-mono uppercase tracking-wider text-amber-700/90 mb-1.5">
+          personalized drill
+        </div>
+        <div className="text-[12.5px] font-mono text-foreground/85 truncate">
+          <span className="text-rose-600">/θ/</span> minimal pairs · <span className="text-muted-foreground">think · sink · thank · sank</span>
+        </div>
+        <div className="mt-2 flex flex-wrap gap-1">
+          {['GPT', 'Claude', 'Gemini', 'Qwen'].map((m) => (
+            <span key={m} className="inline-flex items-center rounded-md border border-zinc-900/[0.08] bg-white/70 px-1.5 py-0.5 text-[10px] font-mono text-foreground/70">
+              {m}
+            </span>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ──────────────────────────────────────────────────────────
+ *  HERO EQ GLYPH — tiny animated equaliser bars flanking
+ *  the italic "the ears of a" line. Uses the `wave-bar`
+ *  keyframe already defined in globals.css.
+ * ────────────────────────────────────────────────────────── */
+function HeroEqGlyph({ side }: { side: 'left' | 'right' }) {
+  const heights = side === 'left' ? [0.45, 0.7, 0.95, 0.7, 0.45] : [0.45, 0.7, 0.95, 0.7, 0.45];
+  const delays = side === 'left'
+    ? ['0s', '0.12s', '0.24s', '0.36s', '0.48s']
+    : ['0.48s', '0.36s', '0.24s', '0.12s', '0s'];
+  return (
+    <span
+      aria-hidden
+      className={`hidden md:inline-flex align-middle ${side === 'left' ? 'mr-3' : 'ml-3'} translate-y-[-0.08em] gap-[3px] items-end h-[0.5em]`}
+    >
+      {heights.map((h, i) => (
+        <span
+          key={i}
+          className="block w-[3px] rounded-full bg-gradient-to-b from-emerald-500 to-teal-600"
+          style={{
+            height: `${h * 100}%`,
+            transformOrigin: 'bottom',
+            animation: `wave-bar 1.1s ease-in-out ${delays[i]} infinite`,
+          }}
+        />
+      ))}
+    </span>
+  );
+}
+
+/* ──────────────────────────────────────────────────────────
+ *  HERO EAR ART — "Mandarin pitch study" illustration.
+ *  A linguistics-professor's analysis sheet: hanzi watermark,
+ *  pinyin with tone marks, and a live-plotted T3 pitch contour
+ *  traced over a five-line pitch grid. On-brand, on-theme.
+ * ────────────────────────────────────────────────────────── */
+function HeroEarArt() {
+  // five horizontal pitch-grid lines (5 = high, 1 = low) — Chao tone-letter scale
+  const GRID_Y = [120, 160, 200, 240, 280];
+
+  // T3 contour for "nǐ" — dip shape: 2 → 1 → 4 on the Chao scale
+  //  starts at (x≈70, y=200), dips to (x≈135, y=280), rises to (x≈180, y=160)
+  const niPath =
+    'M 70 200 C 95 230, 120 278, 135 280 S 165 200, 180 160';
+
+  // T3 contour for "hǎo" — same dip shape, shifted right
+  const haoPath =
+    'M 240 200 C 265 230, 290 278, 305 280 S 335 200, 350 160';
+
+  // full overlay path (used for the animated "tracer" drawing effect)
+  const fullPath = `${niPath} ${haoPath.replace(/^M/, 'M')}`;
+
+  return (
+    <svg
+      viewBox="0 0 420 500"
+      role="img"
+      aria-label="Mandarin pitch contour analysis — nǐ hǎo with T3 + T3 tone curves"
+      className="w-full h-full"
+    >
+      <defs>
+        <radialGradient id="hea-halo" cx="50%" cy="45%" r="60%">
+          <stop offset="0%" stopColor="#d1fae5" stopOpacity="0.9" />
+          <stop offset="55%" stopColor="#ecfdf5" stopOpacity="0.6" />
+          <stop offset="100%" stopColor="#ffffff" stopOpacity="0" />
+        </radialGradient>
+        <linearGradient id="hea-hanzi" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#10b981" stopOpacity="0.18" />
+          <stop offset="100%" stopColor="#047857" stopOpacity="0.1" />
+        </linearGradient>
+        <linearGradient id="hea-curve" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0%" stopColor="#34d399" />
+          <stop offset="55%" stopColor="#10b981" />
+          <stop offset="100%" stopColor="#059669" />
+        </linearGradient>
+        <filter id="hea-glow" x="-20%" y="-20%" width="140%" height="140%">
+          <feGaussianBlur stdDeviation="2.2" result="b" />
+          <feMerge>
+            <feMergeNode in="b" />
+            <feMergeNode in="SourceGraphic" />
+          </feMerge>
+        </filter>
+      </defs>
+
+      {/* soft warm halo backdrop */}
+      <ellipse cx="210" cy="240" rx="200" ry="210" fill="url(#hea-halo)" />
+
+      {/* hanzi watermark — "你好", very subtle, sets the professorial stage */}
+      <text
+        x="210"
+        y="345"
+        textAnchor="middle"
+        fontSize="220"
+        fontWeight="300"
+        fill="url(#hea-hanzi)"
+        style={{
+          fontFamily:
+            '"Noto Sans SC", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif',
+          letterSpacing: '0.02em',
+        }}
+      >
+        你好
+      </text>
+
+      {/* five-line pitch grid (Chao tone-letter scale 1–5) */}
+      <g opacity="0.7">
+        {GRID_Y.map((y, i) => (
+          <line
+            key={y}
+            x1="50"
+            x2="370"
+            y1={y}
+            y2={y}
+            stroke={i === 2 ? '#10b981' : '#a7f3d0'}
+            strokeOpacity={i === 2 ? 0.45 : 0.6}
+            strokeWidth={i === 2 ? 0.8 : 0.6}
+            strokeDasharray={i === 2 ? '3 3' : undefined}
+          />
+        ))}
+        {/* Chao scale labels on the left */}
+        {[5, 4, 3, 2, 1].map((n, i) => (
+          <text
+            key={n}
+            x="38"
+            y={GRID_Y[i] + 3}
+            textAnchor="end"
+            fontSize="9"
+            fill="#047857"
+            opacity="0.55"
+            fontFamily="var(--font-geist-mono, ui-monospace)"
+          >
+            {n}
+          </text>
+        ))}
+      </g>
+
+      {/* pitch contour curves — the "linguistics professor" reading */}
+      <g filter="url(#hea-glow)">
+        {/* ghost/ideal curves behind — dashed */}
+        <path
+          d={niPath}
+          fill="none"
+          stroke="#6ee7b7"
+          strokeWidth="2"
+          strokeDasharray="3 4"
+          strokeLinecap="round"
+          opacity="0.55"
+        />
+        <path
+          d={haoPath}
+          fill="none"
+          stroke="#6ee7b7"
+          strokeWidth="2"
+          strokeDasharray="3 4"
+          strokeLinecap="round"
+          opacity="0.55"
+        />
+
+        {/* animated "tracer" — the professor's pen following the pitch */}
+        <path
+          d={niPath}
+          fill="none"
+          stroke="url(#hea-curve)"
+          strokeWidth="3.4"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          pathLength={100}
+          strokeDasharray="100 100"
+          strokeDashoffset="100"
+        >
+          <animate
+            attributeName="stroke-dashoffset"
+            from="100"
+            to="0"
+            dur="2.4s"
+            begin="0s;trace2.end+0.6s"
+            fill="freeze"
+            id="trace1"
+          />
+          <animate
+            attributeName="opacity"
+            from="1"
+            to="1"
+            begin="trace2.end+3s"
+            dur="0.01s"
+            fill="freeze"
+          />
+        </path>
+        <path
+          d={haoPath}
+          fill="none"
+          stroke="url(#hea-curve)"
+          strokeWidth="3.4"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          pathLength={100}
+          strokeDasharray="100 100"
+          strokeDashoffset="100"
+        >
+          <animate
+            attributeName="stroke-dashoffset"
+            from="100"
+            to="0"
+            dur="2.4s"
+            begin="trace1.end+0.2s"
+            fill="freeze"
+            id="trace2"
+          />
+        </path>
+      </g>
+
+      {/* start / dip / end markers on each curve */}
+      <g>
+        {/* nǐ markers */}
+        <circle cx="70" cy="200" r="3.2" fill="#059669" />
+        <circle cx="135" cy="280" r="4" fill="#ffffff" stroke="#059669" strokeWidth="2">
+          <animate attributeName="r" values="3.6;5;3.6" dur="2s" repeatCount="indefinite" />
+        </circle>
+        <circle cx="180" cy="160" r="3.2" fill="#059669" />
+        {/* hǎo markers */}
+        <circle cx="240" cy="200" r="3.2" fill="#059669" />
+        <circle cx="305" cy="280" r="4" fill="#ffffff" stroke="#059669" strokeWidth="2">
+          <animate
+            attributeName="r"
+            values="3.6;5;3.6"
+            dur="2s"
+            begin="0.6s"
+            repeatCount="indefinite"
+          />
+        </circle>
+        <circle cx="350" cy="160" r="3.2" fill="#059669" />
+      </g>
+
+      {/* tone tags above each contour */}
+      <g fontFamily="var(--font-geist-mono, ui-monospace)" fontSize="10">
+        <g>
+          <rect x="105" y="92" width="54" height="20" rx="10" fill="#ffffff" stroke="#10b981" strokeOpacity="0.35" />
+          <text x="132" y="106" textAnchor="middle" fill="#047857" fontWeight="600">
+            T3 ✓
+          </text>
+        </g>
+        <g>
+          <rect x="275" y="92" width="54" height="20" rx="10" fill="#ffffff" stroke="#10b981" strokeOpacity="0.35" />
+          <text x="302" y="106" textAnchor="middle" fill="#047857" fontWeight="600">
+            T3 ✓
+          </text>
+        </g>
+      </g>
+
+      {/* pinyin labels under the grid — Fraunces-style serif for elegance */}
+      <g>
+        <text
+          x="125"
+          y="315"
+          textAnchor="middle"
+          fontSize="28"
+          fill="#065f46"
+          style={{
+            fontFamily:
+              'var(--font-hero-serif, "Fraunces", "Instrument Serif", Georgia, serif)',
+            fontStyle: 'italic',
+            fontWeight: 500,
+            letterSpacing: '0.01em',
+          }}
+          className="font-pinyin"
+        >
+          nǐ
+        </text>
+        <text
+          x="295"
+          y="315"
+          textAnchor="middle"
+          fontSize="28"
+          fill="#065f46"
+          style={{
+            fontFamily:
+              'var(--font-hero-serif, "Fraunces", "Instrument Serif", Georgia, serif)',
+            fontStyle: 'italic',
+            fontWeight: 500,
+            letterSpacing: '0.01em',
+          }}
+          className="font-pinyin"
+        >
+          hǎo
+        </text>
+      </g>
+
+      {/* IPA phonetic transcription strip — professor's notation */}
+      <g opacity="0.85">
+        <line x1="70" x2="350" y1="360" y2="360" stroke="#10b981" strokeOpacity="0.25" strokeDasharray="2 3" />
+        <text
+          x="210"
+          y="388"
+          textAnchor="middle"
+          fontSize="13"
+          fill="#065f46"
+          fontFamily="var(--font-geist-mono, ui-monospace)"
+          letterSpacing="0.04em"
+        >
+          / ni˨˩˦  xɑʊ̯˨˩˦ /
+        </text>
+        <text
+          x="210"
+          y="407"
+          textAnchor="middle"
+          fontSize="10"
+          fill="#047857"
+          opacity="0.7"
+          fontFamily="var(--font-geist-mono, ui-monospace)"
+          letterSpacing="0.12em"
+        >
+          TONE · RHYTHM · PHONEME
+        </text>
+      </g>
+
+      {/* teacher's red-pen grade in the corner */}
+      <g transform="translate(352 70)">
+        <circle r="22" fill="#ffffff" stroke="#f43f5e" strokeOpacity="0.55" strokeWidth="1.2" />
+        <text
+          textAnchor="middle"
+          y="-3"
+          fontSize="9"
+          fill="#be123c"
+          fontFamily="var(--font-geist-mono, ui-monospace)"
+          letterSpacing="0.1em"
+        >
+          SCORE
+        </text>
+        <text
+          textAnchor="middle"
+          y="13"
+          fontSize="16"
+          fontWeight="700"
+          fill="#be123c"
+          style={{
+            fontFamily:
+              'var(--font-hero-serif, "Fraunces", Georgia, serif)',
+          }}
+        >
+          92
+        </text>
+      </g>
+
+      {/* scattered decorative dots for warmth */}
+      <g fill="#10b981" opacity="0.35">
+        <circle cx="46" cy="78" r="1.6" />
+        <circle cx="388" cy="130" r="1.2" />
+        <circle cx="30" cy="330" r="1.4" />
+        <circle cx="400" cy="370" r="1.6" />
+        <circle cx="60" cy="440" r="1.2" />
+      </g>
+
+      {/* outer concentric ring — continuity with previous design */}
+      <circle
+        cx="210"
+        cy="240"
+        r="200"
+        fill="none"
+        stroke="#10b981"
+        strokeOpacity="0.08"
+        strokeDasharray="2 6"
+      />
+    </svg>
+  );
+}
+
+
+/* ──────────────────────────────────────────────────────────
+ *  HERO WAVEFORM GLYPH — faint brand motif behind the headline
+ * ────────────────────────────────────────────────────────── */
+function HeroWaveGlyph() {
+  // deterministic bars
+  const bars = Array.from({ length: 32 }).map((_, i) => {
+    const t = i / 31;
+    return 0.2 + 0.8 * Math.abs(Math.sin(t * Math.PI * 2.6) * Math.cos(t * Math.PI + 0.7));
+  });
+  return (
+    <svg
+      aria-hidden
+      className="absolute left-[-40px] top-[64%] w-[260px] h-[90px] opacity-[0.35] hidden md:block"
+      viewBox="0 0 260 90"
+      fill="none"
+    >
+      <defs>
+        <linearGradient id="heroWave" x1="0" x2="1" y1="0" y2="0">
+          <stop offset="0%" stopColor="#10b981" stopOpacity="0.9" />
+          <stop offset="50%" stopColor="#8b5cf6" stopOpacity="0.7" />
+          <stop offset="100%" stopColor="#f43f5e" stopOpacity="0" />
+        </linearGradient>
+      </defs>
+      {bars.map((h, i) => {
+        const x = i * 8;
+        const barH = h * 60;
+        const y = (90 - barH) / 2;
+        return (
+          <rect
+            key={i}
+            x={x.toFixed(2)}
+            y={y.toFixed(2)}
+            width={3}
+            height={barH.toFixed(2)}
+            rx={1.5}
+            fill="url(#heroWave)"
+          />
+        );
+      })}
+    </svg>
+  );
+}
+
+/* ──────────────────────────────────────────────────────────
+ *  HERO CAROUSEL — 3 highlights, auto-rotating
+ *    01 Instant setup       · 60-second config
+ *    02 Mandarin moat       · tone-level precision
+ *    03 Fuel for reasoning  · phoneme-level JSON → LLM
+ * ────────────────────────────────────────────────────────── */
+const HERO_SLIDES = [
+  {
+    id: 'setup',
+    label: 'Instant setup',
+    chip: '60 seconds',
+    tone: 'emerald',
+    headline: 'Shipped in one npx command.',
+    sub: 'Drop into Claude, Cursor or any agent — four MCP tools, zero audio code.',
+  },
+  {
+    id: 'mandarin',
+    label: 'Mandarin moat',
+    chip: 'Hard mode',
+    tone: 'rose',
+    headline: 'Tell 睡觉 from 水饺.',
+    sub: 'Tone, sandhi, erhua and retroflex scoring — the moat generic STTs can\u2019t cross.',
+  },
+  {
+    id: 'reasoning',
+    label: 'Fuel for LLM reasoning',
+    chip: 'phoneme-level',
+    tone: 'violet',
+    headline: 'Phoneme-level JSON, not a flat score.',
+    sub: 'Rich chain-of-thought fuel for o1, Sonnet 3.5 and Gemini 2 to reason over.',
+  },
+] as const;
+
+type HeroSlideId = (typeof HERO_SLIDES)[number]['id'];
+
+/* Install terminal — the 60-second "just copy this" CTA.
+ * Given a full chrome, emerald "ready" indicator, and click-to-copy
+ * feedback so it reads as "a real, runnable thing" instead of decoration. */
+function HeroInstallPill() {
+  const [copied, setCopied] = useState(false);
+  const cmd = 'npx -y @chivox/mcp';
+
+  const onCopy = () => {
+    if (!navigator.clipboard) return;
+    navigator.clipboard.writeText(cmd).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1800);
+    });
+  };
+
+  return (
+    <div className="mx-auto max-w-3xl mb-12">
+      {/* label row */}
+      <div className="flex items-center justify-center gap-2 mb-2.5 text-[11px] tracking-[0.14em] uppercase text-muted-foreground">
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/25 px-2 py-0.5 text-[10px] font-mono normal-case tracking-wider text-emerald-700">
+          <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 shadow-[0_0_6px_rgba(16,185,129,0.8)] animate-pulse" />
+          60-second install
+        </span>
+        <span className="text-muted-foreground/60">·</span>
+        <span className="normal-case tracking-normal text-[12px] text-muted-foreground">
+          Copy → paste → your agent hears.
+        </span>
+      </div>
+
+      {/* terminal card with gradient glow */}
+      <div className="relative group">
+        {/* soft colored glow that lights up on hover */}
+        <div
+          aria-hidden
+          className="absolute -inset-[2px] rounded-2xl opacity-70 group-hover:opacity-100 transition-opacity duration-500 blur-md pointer-events-none"
+          style={{
+            background:
+              'linear-gradient(90deg, rgba(16,185,129,0.35), rgba(56,189,248,0.2) 40%, rgba(16,185,129,0.35))',
+          }}
+        />
+
+        <div className="relative rounded-2xl border border-zinc-900/[0.1] bg-white/75 backdrop-blur-xl overflow-hidden shadow-[0_12px_40px_-12px_rgba(0,0,0,0.18),inset_0_1px_0_0_rgba(255,255,255,0.6)]">
+          {/* chrome bar */}
+          <div className="flex items-center justify-between px-3.5 py-2 border-b border-zinc-900/[0.07] bg-gradient-to-b from-white/80 to-zinc-50/60">
+            <div className="flex items-center gap-1.5">
+              <span className="h-2.5 w-2.5 rounded-full bg-red-400/70" />
+              <span className="h-2.5 w-2.5 rounded-full bg-amber-400/70" />
+              <span className="h-2.5 w-2.5 rounded-full bg-emerald-400/70" />
+            </div>
+            <span className="text-[10.5px] font-mono text-zinc-500 tracking-tight">
+              terminal · zsh
+            </span>
+            <span className="inline-flex items-center gap-1 rounded-md border border-emerald-500/30 bg-emerald-500/10 px-1.5 py-0.5 text-[9.5px] font-mono uppercase tracking-wider text-emerald-700">
+              ready
+            </span>
+          </div>
+
+          {/* command row */}
+          <button
+            type="button"
+            onClick={onCopy}
+            aria-label="Copy install command"
+            className="w-full flex items-center gap-2 px-4 py-4 text-left group/cmd focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/40"
+          >
+            <span className="text-emerald-600 font-mono text-[15px] md:text-base shrink-0 select-none">
+              $
+            </span>
+            <code className="flex-1 whitespace-nowrap overflow-x-auto font-mono text-[15px] md:text-base font-medium text-zinc-900 tracking-tight">
+              {cmd}
+            </code>
+            <span
+              className={`inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-[11.5px] font-semibold transition-all duration-200 shrink-0 ${
+                copied
+                  ? 'border-emerald-500/40 bg-emerald-500/15 text-emerald-700'
+                  : 'border-zinc-900/10 bg-white text-zinc-700 group-hover/cmd:border-zinc-900/25 group-hover/cmd:text-zinc-900'
+              }`}
+            >
+              {copied ? (
+                <>
+                  <Check className="h-3.5 w-3.5" />
+                  Copied
+                </>
+              ) : (
+                <>
+                  <Copy className="h-3.5 w-3.5" />
+                  Copy
+                </>
+              )}
+            </span>
+          </button>
+        </div>
+      </div>
+
+      {/* sub-caption — the three clients it works with */}
+      <div className="mt-3 text-center text-[11.5px] text-muted-foreground">
+        Works with <span className="font-medium text-foreground/85">Claude Desktop</span>,{' '}
+        <span className="font-medium text-foreground/85">Cursor</span>,{' '}
+        <span className="font-medium text-foreground/85">Cline</span> &amp; any MCP client.
+      </div>
+    </div>
+  );
+}
+
+function HeroCarousel() {
+  const [active, setActive] = useState<HeroSlideId>('mandarin');
+  const [paused, setPaused] = useState(false);
+
+  useEffect(() => {
+    if (paused) return;
+    const id = setInterval(() => {
+      setActive((cur) => {
+        const i = HERO_SLIDES.findIndex((s) => s.id === cur);
+        return HERO_SLIDES[(i + 1) % HERO_SLIDES.length].id;
+      });
+    }, 5200);
+    return () => clearInterval(id);
+  }, [paused]);
+
+  const activeIdx = HERO_SLIDES.findIndex((s) => s.id === active);
+
+  // position relative to active: 0 = center, -1 = left, +1 = right
+  const positionFor = (idx: number): -1 | 0 | 1 => {
+    const n = HERO_SLIDES.length;
+    const d = ((idx - activeIdx) % n + n) % n;
+    if (d === 0) return 0;
+    if (d === 1) return 1;
+    return -1;
+  };
+
+  return (
+    <div
+      className="relative"
+      onMouseEnter={() => setPaused(true)}
+      onMouseLeave={() => setPaused(false)}
+    >
+      <div className="absolute -inset-4 rounded-3xl bg-foreground/[0.04] blur-2xl pointer-events-none" />
+
+      {/* coverflow stage */}
+      <div className="relative h-[460px] md:h-[500px]">
+        {HERO_SLIDES.map((slide, i) => {
+          const pos = positionFor(i);
+          const isActive = pos === 0;
+          const transform =
+            pos === 0
+              ? 'translate(-50%, 0) scale(1)'
+              : pos === -1
+              ? 'translate(-112%, 4%) scale(0.74)'
+              : 'translate(12%, 4%) scale(0.74)';
+
+          return (
+            <div
+              key={slide.id}
+              role={isActive ? undefined : 'button'}
+              tabIndex={isActive ? -1 : 0}
+              aria-label={isActive ? undefined : `Show slide ${slide.label}`}
+              onClick={isActive ? undefined : () => setActive(slide.id)}
+              onKeyDown={
+                isActive
+                  ? undefined
+                  : (e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        setActive(slide.id);
+                      }
+                    }
+              }
+              className={`absolute left-1/2 top-0 w-[min(100%,680px)] origin-top transition-all duration-[600ms] ease-[cubic-bezier(0.22,0.61,0.36,1)] ${
+                isActive
+                  ? 'z-20 opacity-100 pointer-events-auto cursor-default'
+                  : 'z-10 opacity-55 hover:opacity-80 cursor-pointer'
+              }`}
+              style={{
+                transform,
+                filter: isActive ? undefined : 'blur(0.5px) saturate(0.92)',
+              }}
+            >
+              <HeroSlideCard slide={slide} isActive={isActive} />
+            </div>
+          );
+        })}
+      </div>
+
+      {/* footer — slogan + slide nav */}
+      <div className="mt-1 max-w-[720px] mx-auto px-1">
+        <div className="relative min-h-[76px]">
+          {HERO_SLIDES.map((s, i) => (
+            <div
+              key={s.id}
+              aria-hidden={i !== activeIdx}
+              className={`absolute inset-0 transition-all duration-500 ease-out ${
+                i === activeIdx
+                  ? 'opacity-100 translate-y-0'
+                  : 'opacity-0 translate-y-1 pointer-events-none'
+              }`}
+            >
+              <div className="flex items-start gap-3">
+                <span
+                  className={`mt-1.5 inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-[12px] font-mono font-semibold ${
+                    s.tone === 'emerald'
+                      ? 'bg-emerald-500/10 text-emerald-700 border border-emerald-500/25'
+                      : s.tone === 'rose'
+                      ? 'bg-rose-500/10 text-rose-700 border border-rose-500/25'
+                      : 'bg-violet-500/10 text-violet-700 border border-violet-500/25'
+                  }`}
+                >
+                  0{i + 1}
+                </span>
+                <div className="flex-1 min-w-0">
+                  <div className="text-[22px] md:text-[26px] font-semibold tracking-[-0.02em] leading-[1.2] text-foreground">
+                    {s.headline}
+                  </div>
+                  <div className="mt-1 text-[14px] md:text-[15px] text-muted-foreground leading-snug">
+                    {s.sub}
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div className="mt-2 flex items-center justify-center gap-1.5">
+          {HERO_SLIDES.map((s) => (
+            <button
+              key={s.id}
+              type="button"
+              onClick={() => setActive(s.id)}
+              aria-label={`Show slide ${s.label}`}
+              className={`h-1.5 rounded-full transition-all duration-300 ${
+                s.id === active
+                  ? 'w-6 bg-foreground'
+                  : 'w-1.5 bg-foreground/20 hover:bg-foreground/40'
+              }`}
+            />
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function HeroSlideCard({
+  slide,
+  isActive = false,
+}: {
+  slide: (typeof HERO_SLIDES)[number];
+  isActive?: boolean;
+}) {
+  return (
+    <div
+      className={`overflow-hidden rounded-2xl border shadow-[0_24px_80px_-24px_rgba(0,0,0,0.22)] ${
+        isActive
+          ? 'bg-white border-zinc-900/[0.1]'
+          : 'glass-card'
+      }`}
+    >
+      {/* window chrome */}
+      <div className="flex items-center justify-between px-4 py-2.5 border-b border-zinc-900/[0.08] bg-white/40 backdrop-blur-sm">
+        <div className="flex items-center gap-1.5">
+          <span className="h-2.5 w-2.5 rounded-full bg-red-400/70" />
+          <span className="h-2.5 w-2.5 rounded-full bg-amber-400/70" />
+          <span className="h-2.5 w-2.5 rounded-full bg-emerald-400/70" />
+        </div>
+        <div className="text-[11px] font-mono text-muted-foreground tracking-tight">
+          chivox ·{' '}
+          {slide.id === 'setup'
+            ? 'mcp.config'
+            : slide.id === 'mandarin'
+            ? 'assess.mandarin'
+            : 'assess.phoneme'}
+        </div>
+        <span
+          className={`inline-flex items-center gap-1 rounded-md border px-1.5 py-0.5 text-[10px] font-mono uppercase tracking-wider ${
+            slide.tone === 'emerald'
+              ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300'
+              : slide.tone === 'rose'
+              ? 'border-rose-500/30 bg-rose-500/10 text-rose-700 dark:text-rose-300'
+              : 'border-violet-500/30 bg-violet-500/10 text-violet-700 dark:text-violet-300'
+          }`}
+        >
+          {slide.chip}
+        </span>
+      </div>
+
+      {/* viewport */}
+      <div className="relative min-h-[360px] md:min-h-[400px]">
+        {slide.id === 'setup' && <HeroSlideSetup />}
+        {slide.id === 'mandarin' && <HeroSlideMandarin />}
+        {slide.id === 'reasoning' && <HeroSlideReasoning />}
+      </div>
+    </div>
+  );
+}
+
+/* Slide 01 — Instant setup: minimal config + tools registered */
+function HeroSlideSetup() {
+  return (
+    <div className="h-full p-5 md:p-6 flex flex-col gap-4">
+      <div className="text-[10.5px] uppercase tracking-[0.18em] text-muted-foreground">
+        claude_desktop_config.json
+      </div>
+      <pre className="flex-1 rounded-xl border border-zinc-900/[0.08] bg-white/50 backdrop-blur-sm p-4 font-mono text-[12.5px] leading-[1.7] whitespace-pre text-zinc-800 overflow-hidden">
+<span className="text-zinc-500">{`// drop in, connect.`}</span>{`
+`}<span className="text-zinc-700">{`{`}</span>{`
+  `}<span className="text-sky-700">{`"mcpServers"`}</span><span className="text-zinc-500">{`: {`}</span>{`
+    `}<span className="text-emerald-700">{`"chivox"`}</span><span className="text-zinc-500">{`: {`}</span>{`
+      `}<span className="text-sky-700">{`"command"`}</span><span className="text-zinc-500">{`: `}</span><span className="text-amber-700">{`"npx"`}</span><span className="text-zinc-500">{`,`}</span>{`
+      `}<span className="text-sky-700">{`"args"`}</span><span className="text-zinc-500">{`: [`}</span><span className="text-amber-700">{`"-y"`}</span><span className="text-zinc-500">{`, `}</span><span className="text-amber-700">{`"@chivox/mcp"`}</span><span className="text-zinc-500">{`]`}</span>{`
+    `}<span className="text-zinc-500">{`}`}</span>{`
+  `}<span className="text-zinc-500">{`}`}</span>{`
+`}<span className="text-zinc-700">{`}`}</span>
+      </pre>
+      <div className="rounded-lg border border-zinc-900/[0.08] bg-white/50 backdrop-blur-sm px-3 py-2 flex items-center gap-2 font-mono text-[11.5px]">
+        <Terminal className="h-3.5 w-3.5 text-zinc-500" />
+        <span className="text-zinc-500">$</span>
+        <span className="text-zinc-800">npx -y @chivox/mcp</span>
+        <span className="ml-auto inline-flex items-center gap-1 text-emerald-700">
+          <Check className="h-3 w-3" strokeWidth={3} /> 4 tools registered
+        </span>
+      </div>
+    </div>
+  );
+}
+
+/* Slide 02 — Mandarin moat: tone-error comparison */
+function HeroSlideMandarin() {
+  return (
+    <div className="h-full p-5 md:p-6 flex flex-col gap-4">
+      <div className="text-[10.5px] uppercase tracking-[0.18em] text-muted-foreground">
+        mandarin tone detection
+      </div>
+
+      {/* bad row */}
+      <div className="rounded-xl border border-rose-500/25 bg-rose-500/[0.06] px-4 py-3">
+        <div className="flex items-center justify-between mb-1.5">
+          <span className="text-[10.5px] font-mono uppercase tracking-wider text-rose-600">
+            ❌ generic STT
+          </span>
+          <span className="text-[10.5px] font-mono text-rose-600/80">heard wrong word</span>
+        </div>
+        <div className="flex items-baseline gap-3">
+          <span className="font-pinyin text-[15px] leading-[1.6] text-rose-700">shuì jiào</span>
+          <span className="font-zh text-2xl text-rose-700">睡觉</span>
+          <span className="ml-auto text-[11px] text-rose-600/80">= sleep</span>
+        </div>
+      </div>
+
+      {/* good row */}
+      <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/[0.07] px-4 py-3">
+        <div className="flex items-center justify-between mb-1.5">
+          <span className="text-[10.5px] font-mono uppercase tracking-wider text-emerald-700">
+            ✓ chivox mcp
+          </span>
+          <span className="text-[10.5px] font-mono text-emerald-700/80">tone-level match</span>
+        </div>
+        <div className="flex items-baseline gap-3">
+          <span className="font-pinyin text-[15px] leading-[1.6] text-emerald-800">shuǐ jiǎo</span>
+          <span className="font-zh text-2xl text-emerald-800">水饺</span>
+          <span className="ml-auto text-[11px] text-emerald-700/80">= dumplings</span>
+        </div>
+        {/* tone contour chips */}
+        <div className="mt-2.5 flex items-center gap-2 text-[10.5px] font-mono text-emerald-700/90">
+          <span className="inline-flex items-center gap-1 rounded-md border border-emerald-500/30 bg-white/50 px-1.5 py-0.5">
+            <svg width="18" height="10" viewBox="0 0 18 10"><path d="M1 8 Q 5 8, 9 5 T 17 2" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" /></svg>
+            <span>3rd tone · <span className="font-pinyin">shuǐ</span></span>
+          </span>
+          <span className="inline-flex items-center gap-1 rounded-md border border-emerald-500/30 bg-white/50 px-1.5 py-0.5">
+            <svg width="18" height="10" viewBox="0 0 18 10"><path d="M1 2 Q 5 9, 9 6 T 17 2" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" /></svg>
+            <span>3rd tone · <span className="font-pinyin">jiǎo</span></span>
+          </span>
+        </div>
+      </div>
+
+      <div className="mt-auto text-[11.5px] text-muted-foreground leading-relaxed">
+        Catches tones, erhua, sandhi & the difference between <span className="font-pinyin text-foreground/80">mā</span> (mom) and <span className="font-pinyin text-foreground/80">mǎ</span> (horse).
+      </div>
+    </div>
+  );
+}
+
+/* Slide 03 — Reasoning-ready payload: JSON → agent reply */
+function HeroSlideReasoning() {
+  return (
+    <div className="h-full p-5 md:p-6 flex flex-col gap-3">
+      <div className="text-[10.5px] uppercase tracking-[0.18em] text-muted-foreground">
+        phoneme payload → agent reply
+      </div>
+      <pre className="rounded-xl border border-zinc-900/[0.08] bg-white/55 backdrop-blur-sm p-4 font-mono text-[12px] leading-[1.65] whitespace-pre text-zinc-800 overflow-hidden">
+<span className="text-zinc-700">{`{`}</span>{`
+  `}<span className="text-sky-700">{`"word"`}</span><span className="text-zinc-500">{`: `}</span><span className="text-amber-700">{`"think"`}</span><span className="text-zinc-500">{`,`}</span>{`
+  `}<span className="text-sky-700">{`"score"`}</span><span className="text-zinc-500">{`: `}</span><span className="text-rose-600">{`48`}</span><span className="text-zinc-500">{`,`}</span>{`
+  `}<span className="text-sky-700">{`"phoneme_error"`}</span><span className="text-zinc-500">{`: { `}</span><span className="text-sky-700">{`"expected"`}</span><span className="text-zinc-500">{`: `}</span><span className="text-emerald-700">{`"/θ/"`}</span><span className="text-zinc-500">{`, `}</span><span className="text-sky-700">{`"actual"`}</span><span className="text-zinc-500">{`: `}</span><span className="text-rose-600">{`"/s/"`}</span><span className="text-zinc-500">{` }`}</span>{`
+`}<span className="text-zinc-700">{`}`}</span>
+      </pre>
+
+      <div className="flex items-center justify-center text-muted-foreground/60">
+        <ArrowRight className="h-4 w-4 rotate-90" />
+      </div>
+
+      <div className="rounded-xl border border-violet-500/25 bg-gradient-to-br from-violet-500/[0.06] to-white/40 backdrop-blur-sm p-4">
+        <div className="flex items-center gap-2 mb-1.5">
+          <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-violet-500/15 text-violet-700">
+            <Sparkles className="h-3.5 w-3.5" />
+          </span>
+          <span className="text-[11px] font-mono uppercase tracking-wider text-violet-700">
+            AI tutor · auto-generated
+          </span>
+        </div>
+        <p className="text-[13px] leading-[1.55] text-foreground/85">
+          &ldquo;I noticed you pronounced <strong>think</strong> as <em>sink</em>. Place your tongue between your teeth for the <code className="font-mono text-[12px] px-1 py-0.5 rounded bg-white/60 border border-zinc-900/[0.06]">/θ/</code> sound. Try: <em>&ldquo;Thirty thirsty thinkers thought&hellip;&rdquo;</em>&rdquo;
+        </p>
+      </div>
+    </div>
+  );
+}
+
+/* ── Hero product card — audio → Chivox MCP → JSON scores ─ */
+function HeroProductCard() {
+  // Deterministic-ish waveform bars so every render looks the same.
+  const bars = Array.from({ length: 56 }).map((_, i) => {
+    const x = i / 55;
+    const h = 0.18 + 0.82 * Math.abs(Math.sin(x * Math.PI * 3) * Math.sin(x * Math.PI + 1.1));
+    return Math.max(0.1, Math.min(1, h));
+  });
+
+  return (
+    <div className="relative">
+      {/* decorative glow */}
+      <div className="absolute -inset-4 rounded-3xl bg-foreground/[0.04] blur-2xl pointer-events-none" />
+
+      <div className="relative glass-card overflow-hidden shadow-[0_24px_80px_-24px_rgba(0,0,0,0.18)]">
+        {/* faux window chrome */}
+        <div className="flex items-center justify-between px-4 py-2.5 border-b border-zinc-900/[0.08] bg-white/40 backdrop-blur-sm">
+          <div className="flex items-center gap-1.5">
+            <span className="h-2.5 w-2.5 rounded-full bg-red-400/70" />
+            <span className="h-2.5 w-2.5 rounded-full bg-amber-400/70" />
+            <span className="h-2.5 w-2.5 rounded-full bg-emerald-400/70" />
+          </div>
+          <div className="text-[11px] font-mono text-muted-foreground">chivox · assess_speech</div>
+          <span className="text-[10px] font-mono text-emerald-600 dark:text-emerald-400">live</span>
+        </div>
+
+        {/* input row — waveform + reference text */}
+        <div className="p-5 md:p-6 border-b border-border/60">
+          <div className="text-[10.5px] uppercase tracking-[0.18em] text-muted-foreground mb-2.5">
+            input · audio
+          </div>
+          <div
+            className="rounded-xl px-4 py-4 overflow-hidden border border-zinc-900/[0.08]"
+            style={{
+              background:
+                'linear-gradient(135deg, rgba(24,24,27,0.82) 0%, rgba(39,39,42,0.68) 50%, rgba(24,24,27,0.82) 100%)',
+              backdropFilter: 'blur(16px) saturate(140%)',
+              WebkitBackdropFilter: 'blur(16px) saturate(140%)',
+              boxShadow:
+                'inset 0 1px 0 rgba(255,255,255,0.06), 0 8px 24px -12px rgba(0,0,0,0.3)',
+            }}
+          >
+            <div className="flex items-end gap-[3px] h-14">
+              {bars.map((h, i) => (
+                <span
+                  key={i}
+                  className="inline-block w-[4px] rounded-[2px] bg-gradient-to-t from-emerald-400/40 via-emerald-300/80 to-emerald-200"
+                  style={{
+                    height: `${(h * 100).toFixed(2)}%`,
+                    animation: `wave-bar 1.2s ease-in-out ${i * 25}ms infinite`,
+                    transformOrigin: 'bottom',
+                  }}
+                />
+              ))}
+            </div>
+            <div className="mt-3 flex items-center justify-between text-[11px] font-mono text-zinc-400">
+              <span>00:00.00</span>
+              <span className="text-zinc-500">recording · 16kHz mono</span>
+              <span>00:02.34</span>
+            </div>
+          </div>
+
+          <div className="mt-4 flex items-center gap-2 text-xs">
+            <span className="font-mono text-muted-foreground">reference_text:</span>
+            <span className="text-foreground/90">&quot;The weather is absolutely gorgeous today.&quot;</span>
+          </div>
+        </div>
+
+        {/* output row — structured scores */}
+        <div className="p-5 md:p-6">
+          <div className="flex items-center justify-between mb-3">
+            <div className="text-[10.5px] uppercase tracking-[0.18em] text-muted-foreground">
+              output · json
+            </div>
+            <span className="text-[10.5px] font-mono text-muted-foreground">latency · 187 ms</span>
+          </div>
+
+          {/* 4 score meters */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 mb-4">
+            {[
+              { k: 'overall', v: 82 },
+              { k: 'accuracy', v: 78 },
+              { k: 'fluency', v: 84 },
+              { k: 'rhythm', v: 80 },
+            ].map((s) => (
+              <ScoreMeter key={s.k} label={s.k} value={s.v} />
+            ))}
+          </div>
+
+          {/* phoneme row */}
+          <div className="rounded-lg border border-border/50 bg-muted/30 p-3">
+            <div className="text-[10px] uppercase tracking-wider text-muted-foreground mb-2">
+              words · per-phoneme diagnostics
+            </div>
+            <div className="flex flex-wrap items-center gap-1.5 text-[11px] font-mono">
+              <WordChip word="The" tone="ok" />
+              <WordChip word="weather" tone="ok" />
+              <WordChip word="is" tone="ok" />
+              <WordChip word="absolutely" tone="warn" score={63} />
+              <WordChip word="gorgeous" tone="bad" score={44} />
+              <WordChip word="today" tone="ok" />
+            </div>
+            <div className="mt-3 text-[11px] text-muted-foreground leading-relaxed">
+              <span className="font-mono text-foreground/80">gorgeous</span>{' '}
+              · <span className="font-mono text-rose-500">/ɡɔːdʒəs/</span> → realized as{' '}
+              <span className="font-mono text-rose-500">/gor-ʒuːs/</span>. Practice the soft{' '}
+              <span className="font-mono text-foreground">/dʒ/</span> landing.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ScoreMeter({ label, value }: { label: string; value: number }) {
+  const pct = Math.max(0, Math.min(100, value));
+  const color =
+    pct >= 80 ? 'bg-emerald-500' : pct >= 65 ? 'bg-amber-500' : 'bg-rose-500';
+  return (
+    <div className="rounded-lg border border-border/60 bg-background px-3 py-2.5">
+      <div className="flex items-baseline justify-between mb-1.5">
+        <span className="text-[10.5px] font-mono text-muted-foreground">{label}</span>
+        <span className="text-sm font-semibold tabular-nums">{pct}</span>
+      </div>
+      <div className="h-1 rounded-full bg-muted overflow-hidden">
+        <div
+          className={`h-full ${color} rounded-full transition-[width] duration-700`}
+          style={{ width: `${pct}%` }}
+        />
+      </div>
+    </div>
+  );
+}
+
+function WordChip({ word, tone, score }: { word: string; tone: 'ok' | 'warn' | 'bad'; score?: number }) {
+  const styles: Record<string, string> = {
+    ok: 'border-border/60 bg-background text-foreground/80',
+    warn: 'border-amber-300/70 bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-300 dark:border-amber-500/30',
+    bad: 'border-rose-300/70 bg-rose-50 text-rose-700 dark:bg-rose-500/10 dark:text-rose-300 dark:border-rose-500/30',
+  };
+  return (
+    <span
+      className={`inline-flex items-center gap-1 rounded-md border px-1.5 py-0.5 ${styles[tone]}`}
+    >
+      {word}
+      {score !== undefined ? (
+        <span className="text-[9.5px] opacity-80 tabular-nums">· {score}</span>
+      ) : null}
+    </span>
+  );
+}
+
+/* ── Phoneme breakdown panel (English) ──────────────────── */
+function PhonemePanel() {
+  const phonemes = [
+    { p: 'ɡ', score: 82 },
+    { p: 'ɔː', score: 74 },
+    { p: 'dʒ', score: 44 },
+    { p: 'ə', score: 88 },
+    { p: 's', score: 91 },
+  ];
+  return (
+    <div className="relative rounded-2xl border border-border/60 bg-background p-6 md:p-7 h-full overflow-hidden">
+      {/* subtle accent */}
+      <div className="absolute -top-20 -right-20 h-56 w-56 rounded-full bg-indigo-400/10 blur-3xl pointer-events-none" />
+
+      <div className="flex items-center justify-between mb-5">
+        <div>
+          <div className="inline-flex items-center gap-1.5 rounded-full border border-indigo-200/70 bg-indigo-50/70 dark:bg-indigo-500/10 dark:border-indigo-500/30 px-2 py-0.5 text-[10px] font-medium text-indigo-700 dark:text-indigo-300 tracking-wide uppercase mb-2">
+            English · phoneme alignment
+          </div>
+          <h3 className="text-2xl font-semibold tracking-[-0.015em] leading-tight">
+            &ldquo;gorgeous&rdquo;
+          </h3>
+          <div className="mt-1 font-mono text-sm text-muted-foreground">/ˈɡɔːdʒəs/</div>
+        </div>
+        <ScoreBadge value={63} label="word score" />
+      </div>
+
+      <div className="space-y-2.5">
+        {phonemes.map((ph) => {
+          const tone = ph.score >= 80 ? 'ok' : ph.score >= 65 ? 'warn' : 'bad';
+          const badge = {
+            ok: 'border-emerald-200/70 bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300 dark:border-emerald-500/30',
+            warn: 'border-amber-200/70 bg-amber-50 text-amber-800 dark:bg-amber-500/10 dark:text-amber-300 dark:border-amber-500/30',
+            bad: 'border-rose-300/70 bg-rose-50 text-rose-700 dark:bg-rose-500/10 dark:text-rose-300 dark:border-rose-500/30',
+          }[tone];
+          const bar = {
+            ok: 'bg-emerald-500',
+            warn: 'bg-amber-500',
+            bad: 'bg-rose-500',
+          }[tone];
+          return (
+            <div key={ph.p} className="flex items-center gap-3">
+              <code
+                className={`shrink-0 min-w-[64px] text-center rounded-md border px-2 py-1.5 font-mono text-[13px] ${badge}`}
+              >
+                /{ph.p}/
+              </code>
+              <div className="flex-1 h-2 rounded-full bg-muted overflow-hidden">
+                <div
+                  className={`h-full rounded-full ${bar} transition-[width] duration-700`}
+                  style={{ width: `${ph.score}%` }}
+                />
+              </div>
+              <div className="w-10 text-right text-sm font-semibold tabular-nums">{ph.score}</div>
+            </div>
+          );
+        })}
+      </div>
+
+      <div className="mt-6 rounded-xl border border-indigo-200/60 bg-indigo-50/50 dark:bg-indigo-500/[0.06] dark:border-indigo-500/25 p-3.5 text-xs leading-relaxed">
+        <span className="font-semibold text-indigo-800 dark:text-indigo-200">LLM hint · </span>
+        <span className="text-foreground/85">
+          /dʒ/ realized as a hard /ʒ/. Land the stop before the fricative — drill
+          {' '}
+          <em className="not-italic font-medium text-foreground">judge</em>,{' '}
+          <em className="not-italic font-medium text-foreground">badge</em>,{' '}
+          <em className="not-italic font-medium text-foreground">gorgeous</em>.
+        </span>
+      </div>
+    </div>
+  );
+}
+
+/* ── Tone panel (Mandarin) ─────────────────────────────── */
+function TonePanel() {
+  // Canonical pinyin pitch contours in a 24×24 grid (y inverted so top = high pitch).
+  const CONTOURS: Record<number, string> = {
+    1: 'M2 6 L22 6',
+    2: 'M2 18 Q12 18 22 6',
+    3: 'M2 10 L8 20 L16 18 L22 10',
+    4: 'M2 6 L22 20',
+  };
+  // Per-tone accent color so the sentence strip reads at a glance.
+  const TONE_COLOR: Record<number, { ink: string; bg: string; chip: string }> = {
+    1: {
+      ink: 'text-rose-600 dark:text-rose-300',
+      bg: 'bg-rose-50 dark:bg-rose-500/10',
+      chip: 'border-rose-200/70 text-rose-700 bg-rose-50 dark:bg-rose-500/10 dark:text-rose-300 dark:border-rose-500/30',
+    },
+    2: {
+      ink: 'text-amber-600 dark:text-amber-300',
+      bg: 'bg-amber-50 dark:bg-amber-500/10',
+      chip: 'border-amber-200/70 text-amber-800 bg-amber-50 dark:bg-amber-500/10 dark:text-amber-300 dark:border-amber-500/30',
+    },
+    3: {
+      ink: 'text-sky-600 dark:text-sky-300',
+      bg: 'bg-sky-50 dark:bg-sky-500/10',
+      chip: 'border-sky-200/70 text-sky-700 bg-sky-50 dark:bg-sky-500/10 dark:text-sky-300 dark:border-sky-500/30',
+    },
+    4: {
+      ink: 'text-violet-600 dark:text-violet-300',
+      bg: 'bg-violet-50 dark:bg-violet-500/10',
+      chip: 'border-violet-200/70 text-violet-700 bg-violet-50 dark:bg-violet-500/10 dark:text-violet-300 dark:border-violet-500/30',
+    },
+  };
+
+  const syllables: {
+    hanzi: string;
+    pinyin: string;
+    tone: 1 | 2 | 3 | 4;
+    score: number;
+    ok: boolean;
+  }[] = [
+    { hanzi: '你', pinyin: 'nǐ', tone: 3, score: 85, ok: true },
+    { hanzi: '好', pinyin: 'hǎo', tone: 3, score: 72, ok: true },
+    { hanzi: '今', pinyin: 'jīn', tone: 1, score: 88, ok: true },
+    { hanzi: '天', pinyin: 'tiān', tone: 1, score: 88, ok: true },
+    { hanzi: '天', pinyin: 'tiān', tone: 1, score: 58, ok: false },
+    { hanzi: '气', pinyin: 'qì', tone: 4, score: 91, ok: true },
+  ];
+
+  return (
+    <div className="relative rounded-2xl border border-border/60 bg-background p-6 md:p-7 h-full overflow-hidden">
+      {/* subtle accent */}
+      <div className="absolute -top-20 -left-20 h-56 w-56 rounded-full bg-rose-400/10 blur-3xl pointer-events-none" />
+
+      <div className="flex items-center justify-between mb-5">
+        <div>
+          <div className="inline-flex items-center gap-1.5 rounded-full border border-rose-200/70 bg-rose-50/70 dark:bg-rose-500/10 dark:border-rose-500/30 px-2 py-0.5 text-[10px] font-medium text-rose-700 dark:text-rose-300 tracking-wide uppercase mb-2">
+            Mandarin · tone accuracy
+          </div>
+          <h3 className="text-2xl font-semibold tracking-[-0.015em] leading-tight font-zh">
+            你好，今天天气……
+          </h3>
+          <div className="mt-1 text-sm text-muted-foreground font-pinyin">
+            nǐ hǎo, jīn tiān tiān qì
+          </div>
+        </div>
+        <ScoreBadge value={78} label="sentence score" tone="rose" />
+      </div>
+
+      {/* sentence strip: big hanzi, pinyin, tone glyph, score */}
+      <div className="grid grid-cols-6 gap-1.5">
+        {syllables.map((s, idx) => {
+          const c = TONE_COLOR[s.tone];
+          return (
+            <div
+              key={idx}
+              className={`relative rounded-xl border p-2.5 flex flex-col items-center text-center ${
+                s.ok
+                  ? 'border-border/60 bg-muted/25'
+                  : 'border-rose-300/70 bg-rose-50 dark:bg-rose-500/10 dark:border-rose-500/35'
+              }`}
+            >
+              {/* hanzi */}
+              <div className="font-zh text-3xl md:text-[30px] leading-none font-medium tracking-tight">
+                {s.hanzi}
+              </div>
+              {/* pinyin */}
+              <div className={`font-pinyin text-[13px] mt-1.5 leading-[1.35] ${c.ink}`}>
+                {s.pinyin}
+              </div>
+              {/* tone contour glyph */}
+              <div className={`mt-2 inline-flex items-center gap-1 rounded-md border px-1.5 py-0.5 text-[10px] font-mono ${c.chip}`}>
+                <svg viewBox="0 0 24 24" className="h-3 w-3.5">
+                  <path
+                    d={CONTOURS[s.tone]}
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    fill="none"
+                    strokeLinecap="round"
+                  />
+                </svg>
+                T{s.tone}
+              </div>
+              {/* score bar */}
+              <div className="mt-2 w-full h-1 rounded-full bg-muted overflow-hidden">
+                <div
+                  className={`h-full rounded-full ${
+                    s.score >= 80
+                      ? 'bg-emerald-500'
+                      : s.score >= 65
+                        ? 'bg-amber-500'
+                        : 'bg-rose-500'
+                  }`}
+                  style={{ width: `${s.score}%` }}
+                />
+              </div>
+              <div className="mt-1 text-[11px] font-semibold tabular-nums">{s.score}</div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* tone legend */}
+      <div className="mt-5 flex items-center flex-wrap gap-x-4 gap-y-1.5 text-[11px]">
+        <span className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">tones</span>
+        {[1, 2, 3, 4].map((t) => {
+          const c = TONE_COLOR[t as 1 | 2 | 3 | 4];
+          return (
+            <span key={t} className={`inline-flex items-center gap-1 ${c.ink}`}>
+              <svg viewBox="0 0 24 24" className="h-3 w-4">
+                <path
+                  d={CONTOURS[t]}
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  fill="none"
+                  strokeLinecap="round"
+                />
+              </svg>
+              <span className="font-mono">T{t}</span>
+            </span>
+          );
+        })}
+      </div>
+
+      <div className="mt-4 rounded-xl border border-rose-200/60 bg-rose-50/50 dark:bg-rose-500/[0.06] dark:border-rose-500/25 p-3.5 text-xs leading-relaxed">
+        <span className="font-semibold text-rose-800 dark:text-rose-200">LLM hint · </span>
+        <span className="text-foreground/85">
+          second <em className="not-italic font-medium font-zh text-foreground">天</em>{' '}
+          <span className="font-pinyin">(tiān)</span> collapsed into T4. Keep the pitch high and steady —
+          it&rsquo;s a T1.
+        </span>
+      </div>
+    </div>
+  );
+}
+
+/* ── Reusable: big score badge (top-right of panels) ────── */
+function ScoreBadge({
+  value,
+  label,
+  tone = 'indigo',
+}: {
+  value: number;
+  label: string;
+  tone?: 'indigo' | 'rose';
+}) {
+  const bg =
+    tone === 'rose'
+      ? 'from-rose-500 to-orange-500'
+      : 'from-indigo-500 to-violet-500';
+  return (
+    <div className="text-right">
+      <div
+        className={`inline-flex items-baseline gap-1 bg-gradient-to-br ${bg} bg-clip-text text-transparent`}
+      >
+        <span className="text-4xl md:text-5xl font-semibold tracking-[-0.03em] tabular-nums">
+          {value}
+        </span>
+        <span className="text-xs text-muted-foreground">/100</span>
+      </div>
+      <div className="text-[10.5px] text-muted-foreground -mt-0.5">{label}</div>
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════════
+ *  USE-CASE ARTWORK — inline colorful SVGs, Tavily-style
+ * ═══════════════════════════════════════════════════════════ */
+function UseCaseArtwork({ id }: { id: UseCaseArt }) {
+  switch (id) {
+    case 'mandarin':
+      return <ArtMandarin />;
+    case 'english':
+      return <ArtEnglish />;
+    case 'kids':
+      return <ArtKids />;
+    case 'podcast':
+      return <ArtPodcast />;
+    case 'voice':
+      return <ArtVoice />;
+    case 'ecosystem':
+      return <ArtEcosystem />;
+  }
+}
+
+/* ── AI Mandarin Tutor · 红橙渐变 + 大 汉字 + 声调轮廓 ───── */
+function ArtMandarin() {
+  return (
+    <div className="absolute inset-0 bg-gradient-to-br from-rose-50 via-white to-amber-50 overflow-hidden">
+      <div
+        className="absolute inset-0 opacity-[0.5]"
+        style={{
+          backgroundImage:
+            'linear-gradient(rgba(244,63,94,0.08) 1px, transparent 1px), linear-gradient(90deg, rgba(244,63,94,0.08) 1px, transparent 1px)',
+          backgroundSize: '28px 28px',
+        }}
+      />
+      <div className="absolute -top-16 -right-10 h-56 w-56 rounded-full bg-rose-200/50 blur-3xl" />
+
+      <div className="absolute inset-0 flex items-center justify-center">
+        <span
+          className="font-zh text-rose-400/35 text-[120px] md:text-[140px] font-semibold leading-none"
+          style={{ letterSpacing: '-0.04em' }}
+        >
+          语
+        </span>
+      </div>
+
+      <svg viewBox="0 0 320 180" className="absolute inset-0 w-full h-full">
+        <g stroke="rgb(225,29,72)" strokeWidth="2" fill="none" strokeLinecap="round" opacity="0.55">
+          <path d="M20 40 L110 40" />
+          <path d="M20 150 Q65 150 110 70" />
+          <path d="M210 60 L240 130 L280 120 L310 80" />
+          <path d="M210 40 L310 130" />
+        </g>
+      </svg>
+
+      <div className="absolute left-4 top-4 flex flex-wrap gap-1.5">
+        {[
+          { t: 'nǐ', k: 'T3' },
+          { t: 'hǎo', k: 'T3' },
+          { t: 'jīn', k: 'T1' },
+        ].map((p) => (
+          <span
+            key={p.t}
+            className="rounded-md bg-white/90 backdrop-blur-sm px-2 py-0.5 text-[10px] font-pinyin text-rose-700 border border-rose-200 shadow-sm flex items-center gap-1"
+          >
+            {p.t}
+            <span className="font-mono text-[9px] text-rose-500/80">{p.k}</span>
+          </span>
+        ))}
+      </div>
+
+      <div className="absolute bottom-3 right-3 flex items-center gap-1.5 rounded-md bg-white/90 backdrop-blur-sm px-2 py-1 text-[10px] font-mono text-rose-700 border border-rose-200 shadow-sm">
+        <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+        tone score · 88
+      </div>
+    </div>
+  );
+}
+
+/* ── English Conversation Partner · 蓝紫渐变 + chat + wave ── */
+function ArtEnglish() {
+  const bars = Array.from({ length: 40 }).map((_, i) =>
+    Math.max(0.25, Math.abs(Math.sin(i * 0.55) * Math.cos(i * 0.23 + 1)) + 0.2),
+  );
+  return (
+    <div className="absolute inset-0 bg-gradient-to-br from-indigo-500 via-violet-500 to-sky-500 overflow-hidden">
+      <div className="absolute inset-0 opacity-[0.22] mix-blend-overlay"
+        style={{
+          backgroundImage: 'radial-gradient(rgba(255,255,255,0.6) 1px, transparent 1px)',
+          backgroundSize: '18px 18px',
+        }}
+      />
+      <div className="absolute -top-10 right-10 h-48 w-48 rounded-full bg-white/20 blur-2xl" />
+
+      {/* chat bubbles */}
+      <div className="absolute top-4 left-4 rounded-xl bg-white/90 backdrop-blur-sm px-2.5 py-1.5 text-[11px] text-indigo-800 shadow-md border border-white/70 max-w-[60%]">
+        How would you pronounce <em className="not-italic font-semibold">gorgeous</em>?
+      </div>
+      <div className="absolute top-[55%] right-3 rounded-xl bg-indigo-950/70 backdrop-blur-sm px-2.5 py-1.5 text-[11px] text-white shadow-md border border-white/20">
+        GPT · you said /gor-ʒuːs/
+      </div>
+
+      {/* waveform */}
+      <svg viewBox="0 0 320 60" className="absolute bottom-3 left-3 right-3 w-[calc(100%-1.5rem)] h-12">
+        {bars.map((h, i) => {
+          const x = Number(((i / bars.length) * 320).toFixed(2));
+          const barH = Number((h * 50).toFixed(2));
+          const y = Number((30 - barH / 2).toFixed(2));
+          return (
+            <rect
+              key={i}
+              x={x}
+              y={y}
+              width="4"
+              height={barH}
+              rx="1.5"
+              fill="white"
+              opacity={0.85}
+            />
+          );
+        })}
+      </svg>
+
+      {/* score chip */}
+      <div className="absolute bottom-16 right-3 inline-flex items-center gap-1.5 rounded-md bg-white/90 backdrop-blur-sm px-2 py-1 text-[10px] font-mono text-indigo-700 border border-white/70 shadow-sm">
+        <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
+        fluency · 82
+      </div>
+    </div>
+  );
+}
+
+/* ── Kids' Reading Coach · 粉-桃渐变 + 星星 + 书 + phonics ─── */
+function ArtKids() {
+  return (
+    <div className="absolute inset-0 bg-gradient-to-br from-pink-400 via-fuchsia-400 to-rose-300 overflow-hidden">
+      <div className="absolute inset-0 opacity-[0.2] mix-blend-overlay"
+        style={{
+          backgroundImage: 'radial-gradient(rgba(255,255,255,0.7) 1.2px, transparent 1.2px)',
+          backgroundSize: '20px 20px',
+        }}
+      />
+      <div className="absolute -top-8 -right-8 h-40 w-40 rounded-full bg-yellow-200/40 blur-2xl" />
+
+      {/* book */}
+      <svg viewBox="0 0 200 120" className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[70%] h-[70%]">
+        <defs>
+          <linearGradient id="bookPage" x1="0" x2="0" y1="0" y2="1">
+            <stop offset="0%" stopColor="#ffffff" />
+            <stop offset="100%" stopColor="#fff0f6" />
+          </linearGradient>
+        </defs>
+        <path
+          d="M100 20 C70 10 40 12 20 22 L20 100 C40 90 70 92 100 100 C130 92 160 90 180 100 L180 22 C160 12 130 10 100 20 Z"
+          fill="url(#bookPage)"
+          stroke="white"
+          strokeWidth="2"
+          opacity="0.95"
+        />
+        <line x1="100" y1="20" x2="100" y2="100" stroke="#f9a8d4" strokeWidth="1.5" />
+        {/* text lines */}
+        {[0, 1, 2].map((i) => (
+          <g key={i}>
+            <line x1="30" y1={40 + i * 16} x2="90" y2={40 + i * 16} stroke="#f472b6" strokeWidth="2" opacity="0.65" />
+            <line x1="110" y1={40 + i * 16} x2="170" y2={40 + i * 16} stroke="#f472b6" strokeWidth="2" opacity={i === 1 ? 0.3 : 0.65} />
+          </g>
+        ))}
+      </svg>
+
+      {/* stars */}
+      {[
+        { cx: 30, cy: 30, r: 5 },
+        { cx: 290, cy: 40, r: 7 },
+        { cx: 40, cy: 150, r: 6 },
+        { cx: 280, cy: 160, r: 4 },
+      ].map((s, i) => (
+        <svg
+          key={i}
+          viewBox="0 0 24 24"
+          className="absolute text-yellow-300"
+          style={{ left: s.cx, top: s.cy, width: s.r * 3, height: s.r * 3 }}
+        >
+          <path
+            d="M12 2 L14.5 9 L22 9.5 L16 14 L18 22 L12 17.5 L6 22 L8 14 L2 9.5 L9.5 9 Z"
+            fill="currentColor"
+            stroke="white"
+            strokeWidth="1"
+          />
+        </svg>
+      ))}
+
+      {/* phonics badges */}
+      <div className="absolute bottom-3 left-3 flex gap-1.5">
+        {['/æ/', '/t/', '/s/'].map((p) => (
+          <span
+            key={p}
+            className="rounded-md bg-white/85 backdrop-blur-sm px-2 py-0.5 text-[10px] font-mono text-fuchsia-700 border border-white/60 shadow-sm"
+          >
+            {p}
+          </span>
+        ))}
+      </div>
+      <div className="absolute top-3 right-3 inline-flex items-center gap-1 rounded-full bg-white/90 backdrop-blur-sm px-2 py-0.5 text-[10px] font-mono text-rose-600 border border-white/70 shadow-sm">
+        ⭐ 5 / 5
+      </div>
+    </div>
+  );
+}
+
+/* ── Content QA · 青/绿渐变 + 波形 + 时间轴 + retake 标记 ── */
+function ArtPodcast() {
+  const bars = Array.from({ length: 60 }).map((_, i) =>
+    Math.abs(Math.sin(i * 0.35) * Math.cos(i * 0.7 + 2)) + 0.15,
+  );
+  return (
+    <div className="absolute inset-0 bg-gradient-to-br from-emerald-50 via-white to-teal-50 overflow-hidden">
+      <div className="absolute inset-0 opacity-[0.45]"
+        style={{
+          backgroundImage:
+            'linear-gradient(rgba(16,185,129,0.08) 1px, transparent 1px), linear-gradient(90deg, rgba(16,185,129,0.08) 1px, transparent 1px)',
+          backgroundSize: '40px 40px',
+        }}
+      />
+      <div className="absolute -bottom-12 right-10 h-44 w-44 rounded-full bg-emerald-200/40 blur-3xl" />
+
+      <svg viewBox="0 0 320 100" className="absolute inset-x-4 top-1/2 -translate-y-1/2 w-[calc(100%-2rem)] h-24">
+        {bars.map((h, i) => {
+          const x = Number(((i / bars.length) * 320).toFixed(2));
+          const barH = Number((h * 80).toFixed(2));
+          const y = Number((50 - barH / 2).toFixed(2));
+          return (
+            <rect
+              key={i}
+              x={x}
+              y={y}
+              width="3.5"
+              height={barH}
+              rx="1.5"
+              fill="rgb(5,150,105)"
+              opacity={i >= 28 && i <= 36 ? 0.22 : 0.65}
+            />
+          );
+        })}
+        <rect x={146} y={10} width="44" height="80" rx="4" fill="rgba(5,150,105,0.08)" stroke="rgb(5,150,105)" strokeOpacity="0.55" strokeDasharray="3 3" />
+        <text x={168} y={8} textAnchor="middle" fontSize="9" fontFamily="ui-monospace, monospace" fill="rgb(6,95,70)">
+          retake
+        </text>
+      </svg>
+
+      <div className="absolute bottom-3 inset-x-3 flex justify-between text-[10px] font-mono text-emerald-800">
+        <span>00:00</span>
+        <span className="text-emerald-600/60">·</span>
+        <span className="bg-white/80 rounded px-1.5 py-0.5 border border-emerald-200">01:24 retake</span>
+        <span className="text-emerald-600/60">·</span>
+        <span>02:48</span>
+      </div>
+
+      <div className="absolute top-3 left-3 inline-flex items-center gap-1.5 rounded-md bg-white/90 backdrop-blur-sm px-2 py-1 text-[10px] font-mono text-emerald-700 border border-emerald-200 shadow-sm">
+        <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+        AI QA · live
+      </div>
+    </div>
+  );
+}
+
+/* ── Voice Agents · 紫渐变 + IM 聊天线程 + 语音消息 ──────── */
+function ArtVoice() {
+  return (
+    <div className="absolute inset-0 bg-gradient-to-br from-violet-50 via-white to-sky-50 overflow-hidden">
+      <div className="absolute inset-0 opacity-[0.45]"
+        style={{
+          backgroundImage: 'radial-gradient(rgba(139,92,246,0.10) 1px, transparent 1px)',
+          backgroundSize: '22px 22px',
+        }}
+      />
+      <div className="absolute -top-10 -left-10 h-48 w-48 rounded-full bg-violet-200/50 blur-3xl" />
+
+      <div className="absolute inset-0 p-5 flex flex-col gap-2 justify-center">
+        <div className="flex items-center gap-2 max-w-[82%]">
+          <div className="h-7 w-7 rounded-full bg-gradient-to-br from-violet-300 to-violet-400 shrink-0 shadow-sm" />
+          <div className="rounded-2xl rounded-bl-sm bg-white px-3 py-2 flex items-center gap-2 shadow-sm border border-violet-100">
+            <svg viewBox="0 0 24 24" className="h-4 w-4 text-violet-600" fill="currentColor">
+              <path d="M8 5v14l11-7L8 5z" />
+            </svg>
+            <div className="flex items-end gap-0.5 h-4">
+              {[4, 8, 12, 10, 14, 8, 6, 10, 5].map((h, i) => (
+                <span key={i} className="w-0.5 rounded-full bg-violet-500" style={{ height: `${h}px` }} />
+              ))}
+            </div>
+            <span className="text-[10px] font-mono text-violet-700">0:06</span>
+          </div>
+        </div>
+
+        <div className="flex items-center justify-end gap-2 max-w-[90%] ml-auto">
+          <div className="rounded-2xl rounded-br-sm bg-violet-900/92 backdrop-blur-sm px-3 py-2 flex items-center gap-2 shadow-sm">
+            <span className="text-[11px] text-white/95">Scored</span>
+            <span className="rounded-md bg-emerald-400/25 text-emerald-100 px-1.5 py-0.5 text-[10px] font-mono">overall 84</span>
+            <span className="rounded-md bg-amber-400/25 text-amber-100 px-1.5 py-0.5 text-[10px] font-mono">fluency 78</span>
+          </div>
+          <div className="h-7 w-7 rounded-full bg-gradient-to-br from-violet-400 to-indigo-500 shrink-0 shadow-sm flex items-center justify-center text-[10px] font-bold text-white">
+            ai
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2 max-w-[70%]">
+          <div className="h-7 w-7 rounded-full bg-gradient-to-br from-violet-300 to-violet-400 shrink-0 shadow-sm" />
+          <div className="rounded-2xl rounded-bl-sm bg-white px-3 py-1.5 shadow-sm border border-violet-100 text-[11px] text-violet-800">
+            Try it again, focus on /θ/
+          </div>
+        </div>
+      </div>
+
+      <div className="absolute top-3 right-3 inline-flex items-center gap-1.5 rounded-md bg-white/90 backdrop-blur-sm px-2 py-1 text-[10px] font-mono text-violet-700 border border-violet-200 shadow-sm">
+        <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+        voice · live
+      </div>
+    </div>
+  );
+}
+
+/* ── Dev Ecosystem · 绿渐变 + 中心节点 + 客户端星环 ──────── */
+function ArtEcosystem() {
+  const NODES = [
+    { label: 'Cursor', angle: -90 },
+    { label: 'Claude', angle: -30 },
+    { label: 'Cline', angle: 30 },
+    { label: 'LangChain', angle: 90 },
+    { label: 'Zed', angle: 150 },
+    { label: 'Dify', angle: 210 },
+  ];
+  const rx = 110;
+  const ry = 58;
+  return (
+    <div className="absolute inset-0 bg-gradient-to-br from-sky-50 via-white to-emerald-50 overflow-hidden">
+      <div className="absolute inset-0 opacity-[0.4]"
+        style={{
+          backgroundImage:
+            'linear-gradient(rgba(14,165,233,0.08) 1px, transparent 1px), linear-gradient(90deg, rgba(14,165,233,0.08) 1px, transparent 1px)',
+          backgroundSize: '32px 32px',
+        }}
+      />
+      <div className="absolute -bottom-10 -right-10 h-48 w-48 rounded-full bg-sky-200/40 blur-3xl" />
+
+      <svg viewBox="0 0 320 180" className="absolute inset-0 w-full h-full">
+        <ellipse cx="160" cy="90" rx={rx + 10} ry={ry + 10} stroke="rgb(14,165,233)" strokeOpacity="0.25" strokeDasharray="3 5" fill="none" />
+        <ellipse cx="160" cy="90" rx={rx - 20} ry={ry - 14} stroke="rgb(14,165,233)" strokeOpacity="0.18" strokeDasharray="2 4" fill="none" />
+
+        {NODES.map((n) => {
+          const rad = (n.angle * Math.PI) / 180;
+          const x = 160 + Math.cos(rad) * rx;
+          const y = 90 + Math.sin(rad) * ry;
+          return (
+            <line
+              key={n.label}
+              x1="160"
+              y1="90"
+              x2={x}
+              y2={y}
+              stroke="rgb(14,165,233)"
+              strokeOpacity="0.35"
+              strokeWidth="1"
+            />
+          );
+        })}
+
+        <circle cx="160" cy="90" r="24" fill="white" stroke="rgb(14,165,233)" strokeOpacity="0.35" />
+        <text
+          x="160"
+          y="94"
+          textAnchor="middle"
+          fontSize="11"
+          fontWeight="700"
+          fill="#0369a1"
+          fontFamily="ui-sans-serif, system-ui"
+        >
+          chivox
+        </text>
+
+        {NODES.map((n) => {
+          const rad = (n.angle * Math.PI) / 180;
+          const x = 160 + Math.cos(rad) * rx;
+          const y = 90 + Math.sin(rad) * ry;
+          return (
+            <g key={n.label}>
+              <circle cx={x} cy={y} r="4" fill="rgb(14,165,233)" />
+              <rect
+                x={x - 30}
+                y={y + 8}
+                width="60"
+                height="16"
+                rx="5"
+                fill="white"
+                stroke="rgb(14,165,233)"
+                strokeOpacity="0.25"
+              />
+              <text
+                x={x}
+                y={y + 19}
+                textAnchor="middle"
+                fontSize="9"
+                fontFamily="ui-sans-serif, system-ui"
+                fill="#0369a1"
+                fontWeight="600"
+              >
+                {n.label}
+              </text>
+            </g>
+          );
+        })}
+      </svg>
+
+      <div className="absolute top-3 left-3 inline-flex items-center gap-1.5 rounded-md bg-white/90 backdrop-blur-sm px-2 py-1 text-[10px] font-mono text-sky-700 border border-sky-200 shadow-sm">
+        <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+        MCP · 1 config
+      </div>
+      <div className="absolute bottom-3 right-3 text-[10px] font-mono text-sky-700/80">
+        + LlamaIndex · OpenAI Agents SDK
+      </div>
+    </div>
+  );
+}
+
+/* ── Micro-charts for benchmark tabs ───────────────────── */
+function BenchmarkMicroChart({ id }: { id: string }) {
+  if (id === 'correlation') {
+    return (
+      <svg viewBox="0 0 160 80" className="w-40 h-20 text-foreground">
+        <line x1="0" y1="70" x2="160" y2="70" stroke="currentColor" strokeOpacity="0.2" />
+        <line x1="10" y1="75" x2="10" y2="5" stroke="currentColor" strokeOpacity="0.2" />
+        {Array.from({ length: 40 }).map((_, i) => {
+          const x = 10 + (i / 39) * 140;
+          const base = (i / 39) * 60 + 5;
+          const jitter = (Math.sin(i * 1.7) + 1) * 3;
+          const y = 70 - (base + jitter);
+          return <circle key={i} cx={x} cy={y} r="1.8" fill="currentColor" opacity="0.75" />;
+        })}
+        <line
+          x1="10"
+          y1="65"
+          x2="150"
+          y2="10"
+          stroke="currentColor"
+          strokeWidth="1.3"
+          strokeDasharray="3 3"
+          opacity="0.6"
+        />
+      </svg>
+    );
+  }
+  if (id === 'latency') {
+    const bars = [18, 26, 38, 52, 78, 54, 40, 28, 22, 18];
+    return (
+      <svg viewBox="0 0 160 80" className="w-40 h-20 text-foreground">
+        <line x1="0" y1="70" x2="160" y2="70" stroke="currentColor" strokeOpacity="0.2" />
+        {bars.map((b, i) => {
+          const x = 10 + i * 14;
+          return (
+            <rect
+              key={i}
+              x={x}
+              y={70 - b}
+              width="9"
+              height={b}
+              rx="2"
+              fill="currentColor"
+              opacity={0.25 + (b / 100) * 0.6}
+            />
+          );
+        })}
+      </svg>
+    );
+  }
+  if (id === 'coverage') {
+    const labels = ['word', 'sent', 'para', 'semi', 'open', 'free', 'talk'];
+    return (
+      <svg viewBox="0 0 160 80" className="w-40 h-20 text-foreground">
+        {labels.map((l, i) => {
+          const cx = 12 + i * 21;
+          return (
+            <g key={l}>
+              <circle cx={cx} cy="40" r="7" fill="currentColor" opacity={0.15 + i * 0.12} />
+              <text
+                x={cx}
+                y="70"
+                textAnchor="middle"
+                fontSize="7"
+                fill="currentColor"
+                opacity="0.6"
+                fontFamily="ui-monospace, monospace"
+              >
+                {l}
+              </text>
+            </g>
+          );
+        })}
+      </svg>
+    );
+  }
+  // scale — simple growth line
+  return (
+    <svg viewBox="0 0 160 80" className="w-40 h-20 text-foreground">
+      <line x1="0" y1="70" x2="160" y2="70" stroke="currentColor" strokeOpacity="0.2" />
+      <path
+        d="M5 65 Q40 60 70 52 T120 28 T155 10"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        fill="none"
+      />
+      <path
+        d="M5 65 Q40 60 70 52 T120 28 T155 10 L155 70 L5 70 Z"
+        fill="currentColor"
+        opacity="0.08"
+      />
+    </svg>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════════
+ *  NAV + FOOTER
+ * ═══════════════════════════════════════════════════════════ */
+
+function TopNav() {
+  return (
+    <header className="sticky top-0 z-40 border-b border-border/60 bg-background/85 backdrop-blur-md">
+      <div className="container mx-auto px-6 h-14 flex items-center justify-between">
+        <Link href="/global" className="flex items-center gap-2 font-semibold tracking-tight">
+          <span className="h-6 w-6 rounded-md bg-foreground text-background flex items-center justify-center text-[11px] font-bold">
+            C
+          </span>
+          <span className="text-[15px]">Chivox MCP</span>
+        </Link>
+
+        <nav className="hidden md:flex items-center gap-6 text-sm">
+          <a href="#quickstart" className="text-muted-foreground hover:text-foreground transition-colors">
+            Quickstart
+          </a>
+          <a href="#use-cases" className="text-muted-foreground hover:text-foreground transition-colors">
+            Use cases
+          </a>
+          <Link href="/en/docs" className="text-muted-foreground hover:text-foreground transition-colors">
+            Docs
+          </Link>
+          <Link
+            href="/en/dashboard/plans"
+            className="text-muted-foreground hover:text-foreground transition-colors"
+          >
+            Pricing
+          </Link>
+        </nav>
+
+        <div className="flex items-center gap-2">
+          <Link
+            href="/dev-en/login"
+            className="inline-flex items-center gap-1.5 h-8 px-3.5 text-sm font-semibold rounded-md bg-foreground text-background hover:-translate-y-[1px] transition-all duration-200"
+          >
+            Sign in
+            <ArrowRight className="h-3 w-3" />
+          </Link>
+        </div>
+      </div>
+    </header>
+  );
+}
+
+function SiteFooter() {
+  const year = new Date().getFullYear();
+
+  return (
+    <footer
+      className="border-t border-[#e9e2d2] relative"
+      style={{
+        background:
+          'linear-gradient(180deg, #f8f2e2 0%, #fbf6e9 40%, #fbf6e9 100%)',
+      }}
+    >
+      {/* warm top rule */}
+      <div
+        aria-hidden
+        className="absolute top-0 left-0 right-0 h-px"
+        style={{
+          background:
+            'linear-gradient(90deg, transparent, rgba(209,180,88,0.5), transparent)',
+        }}
+      />
+
+      <div className="container mx-auto px-6 py-14 md:py-16 max-w-6xl">
+        <div className="grid lg:grid-cols-12 gap-10 lg:gap-12">
+          {/* ─── LEFT: brand · stay-connected · email ─── */}
+          <div className="lg:col-span-6">
+            <Link href="/global" className="inline-flex items-center gap-2 font-semibold tracking-tight mb-6 text-zinc-900">
+              <span className="h-6 w-6 rounded-md bg-zinc-900 text-[#fbf6e9] flex items-center justify-center text-[11px] font-bold">
+                C
+              </span>
+              <span>Chivox MCP</span>
+            </Link>
+
+            <div className="text-[13.5px] font-medium text-zinc-800 mb-4">Stay connected with us</div>
+
+            <div className="flex flex-wrap items-center gap-2.5 mb-4">
+              <SocialIcon label="X / Twitter" href="https://x.com/">
+                <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" aria-hidden>
+                  <path d="M17.6 3h3.3l-7.2 8.3L22 21h-6.6l-5.2-6.7L4.3 21H1l7.8-8.9L1 3h6.8l4.7 6.2L17.6 3zm-1.1 16h1.8L7.6 5H5.6l10.9 14z" fill="currentColor" />
+                </svg>
+              </SocialIcon>
+              <SocialIcon label="LinkedIn" href="https://linkedin.com/">
+                <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" aria-hidden>
+                  <path d="M4.98 3.5A2.5 2.5 0 1 1 4.97 8.5a2.5 2.5 0 0 1 .01-5zM3 9.5h4v11H3v-11zm6 0h3.8v1.5h.1c.5-1 1.9-2 3.9-2 4.2 0 5 2.7 5 6.2v5.3h-4v-4.7c0-1.1 0-2.6-1.6-2.6-1.6 0-1.8 1.2-1.8 2.5v4.8H9v-11z" fill="currentColor" />
+                </svg>
+              </SocialIcon>
+              <SocialIcon label="GitHub" href="https://github.com/">
+                <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" aria-hidden>
+                  <path d="M12 2a10 10 0 0 0-3.2 19.5c.5.1.7-.2.7-.5v-1.7c-2.8.6-3.4-1.3-3.4-1.3-.5-1.2-1.1-1.5-1.1-1.5-.9-.6.1-.6.1-.6 1 .1 1.6 1 1.6 1 .9 1.5 2.4 1.1 3 .8.1-.6.3-1.1.6-1.3-2.2-.3-4.6-1.1-4.6-5 0-1.1.4-2 1-2.7-.1-.3-.4-1.3.1-2.7 0 0 .8-.3 2.7 1a9.4 9.4 0 0 1 5 0c1.9-1.3 2.7-1 2.7-1 .5 1.4.2 2.4.1 2.7.6.7 1 1.6 1 2.7 0 3.9-2.4 4.7-4.6 5 .4.3.7.9.7 1.8v2.7c0 .3.2.6.7.5A10 10 0 0 0 12 2z" fill="currentColor" />
+                </svg>
+              </SocialIcon>
+              <SocialIcon label="YouTube" href="https://youtube.com/">
+                <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" aria-hidden>
+                  <path d="M21.6 7.2a2.5 2.5 0 0 0-1.8-1.8C18 5 12 5 12 5s-6 0-7.8.4A2.5 2.5 0 0 0 2.4 7.2 26 26 0 0 0 2 12a26 26 0 0 0 .4 4.8 2.5 2.5 0 0 0 1.8 1.8C6 19 12 19 12 19s6 0 7.8-.4a2.5 2.5 0 0 0 1.8-1.8A26 26 0 0 0 22 12a26 26 0 0 0-.4-4.8zM10 15V9l5.2 3L10 15z" fill="currentColor" />
+                </svg>
+              </SocialIcon>
+              <SocialIcon label="Discord" href="https://discord.com/">
+                <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" aria-hidden>
+                  <path d="M19.7 4.9A17 17 0 0 0 15.4 3.5a.1.1 0 0 0-.1 0c-.2.3-.4.7-.6 1.1a16 16 0 0 0-4.6 0c-.2-.4-.4-.8-.6-1.1a.1.1 0 0 0-.1 0A17 17 0 0 0 5 4.9a.1.1 0 0 0 0 0A17 17 0 0 0 2 14.7a.1.1 0 0 0 0 .1 17 17 0 0 0 5 2.6.1.1 0 0 0 .1 0c.4-.5.7-1 1-1.6a.1.1 0 0 0-.1-.2 12 12 0 0 1-1.7-.8.1.1 0 0 1 0-.2l.3-.2a.1.1 0 0 1 .1 0 12 12 0 0 0 10.5 0 .1.1 0 0 1 .1 0l.3.2a.1.1 0 0 1 0 .2 11 11 0 0 1-1.6.8.1.1 0 0 0-.1.2c.3.6.6 1.1 1 1.6a.1.1 0 0 0 .1 0 17 17 0 0 0 5-2.6.1.1 0 0 0 0-.1 17 17 0 0 0-3-9.8.1.1 0 0 0 0 0zM8.7 13.2c-1 0-1.8-1-1.8-2.1s.8-2.1 1.8-2.1 1.8 1 1.8 2.1-.8 2.1-1.8 2.1zm6.6 0c-1 0-1.8-1-1.8-2.1s.8-2.1 1.8-2.1 1.8 1 1.8 2.1-.8 2.1-1.8 2.1z" fill="currentColor" />
+                </svg>
+              </SocialIcon>
+
+              {/* email pill */}
+              <form
+                onSubmit={(e) => e.preventDefault()}
+                className="inline-flex items-center gap-2 rounded-full border border-zinc-900/20 bg-[#fbf6e9]/60 pl-4 pr-1 py-1 hover:border-zinc-900/40 transition-colors"
+              >
+                <input
+                  type="email"
+                  placeholder="Email"
+                  aria-label="Email"
+                  className="bg-transparent outline-none text-[13px] text-zinc-900 placeholder:text-zinc-500 w-28 sm:w-40"
+                />
+                <button
+                  type="submit"
+                  aria-label="Subscribe"
+                  className="h-7 w-7 rounded-full bg-zinc-900 text-[#fbf6e9] inline-flex items-center justify-center hover:bg-zinc-700 transition-colors"
+                >
+                  <ArrowRight className="h-3.5 w-3.5" />
+                </button>
+              </form>
+            </div>
+
+            <p className="text-[11.5px] text-zinc-600 leading-relaxed max-w-md">
+              By submitting my email address, I agree to receive marketing communications. For more
+              information, please see the{' '}
+              <Link href="/en/privacy" className="underline underline-offset-2 hover:text-zinc-900">
+                Privacy Policy
+              </Link>
+              .
+            </p>
+          </div>
+
+          {/* ─── RIGHT: two link columns ─── */}
+          <div className="lg:col-span-6 grid grid-cols-2 gap-8">
+            <FooterColPlain
+              links={[
+                { label: 'Docs', href: '/en/docs' },
+                { label: 'Live demo', href: '/en/demo' },
+                { label: 'Community', href: 'https://github.com/', external: true },
+                { label: 'Pricing', href: '/en/dashboard/plans' },
+                { label: 'Changelog', href: '/en/docs' },
+                { label: 'Contact sales', href: '/en/contact' },
+              ]}
+            />
+            <FooterColPlain
+              links={[
+                { label: 'Website Terms of Use', href: '/en/terms' },
+                { label: 'Platform Terms of Use', href: '/en/terms' },
+                { label: 'Privacy Policy', href: '/en/privacy' },
+                { label: 'Cookie Notice', href: '/en/privacy' },
+                { label: 'Trust Center', href: '/en/privacy' },
+                { label: 'Cookie Settings', href: '#' },
+              ]}
+            />
+          </div>
+        </div>
+
+        {/* ─── BOTTOM STRIP ─── */}
+        <div className="mt-14 pt-5 border-t border-zinc-900/10 flex flex-col sm:flex-row items-center justify-between gap-3 text-[12px] text-zinc-600">
+          <div className="flex items-center gap-3">
+            <span>Built by speech scientists. Trusted by 10k+ voice-AI builders.</span>
+          </div>
+          <div className="flex items-center gap-4">
+            <Link href="/zh" className="hover:text-zinc-900 transition-colors">
+              中文
+            </Link>
+            <Link href="/en" className="hover:text-zinc-900 transition-colors">
+              English (bilingual)
+            </Link>
+            <span>©{year} Chivox Inc. All rights reserved.</span>
+          </div>
+        </div>
+      </div>
+    </footer>
+  );
+}
+
+function SocialIcon({
+  href,
+  label,
+  children,
+}: {
+  href: string;
+  label: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label={label}
+      title={label}
+      className="h-8 w-8 rounded-full border border-zinc-900/20 text-zinc-700 hover:text-zinc-900 hover:border-zinc-900/50 bg-transparent inline-flex items-center justify-center transition-colors"
+    >
+      {children}
+    </a>
+  );
+}
+
+function FooterColPlain({
+  links,
+}: {
+  links: { label: string; href: string; external?: boolean }[];
+}) {
+  return (
+    <ul className="space-y-3">
+      {links.map((l) => (
+        <li key={l.label}>
+          {l.external ? (
+            <a
+              href={l.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-[13.5px] text-zinc-700 hover:text-zinc-900 transition-colors"
+            >
+              {l.label}
+            </a>
+          ) : (
+            <Link
+              href={l.href}
+              className="text-[13.5px] text-zinc-700 hover:text-zinc-900 transition-colors"
+            >
+              {l.label}
+            </Link>
+          )}
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+/* ── client logos (inline SVG brand marks) ──────────────────
+ * Simplified, monochrome-ready glyphs. Not official artwork — shipped
+ * inline to avoid third-party asset dependencies and keep page weight
+ * low. Hover lifts opacity to give the row a subtle "live" feel.
+ * ────────────────────────────────────────────────────────── */
+function ClientLogo({ name }: { name: string }) {
+  return (
+    <span
+      className="group inline-flex items-center gap-2.5 text-foreground/70 hover:text-foreground transition-colors"
+      title={name}
+    >
+      <span className="h-7 w-7 flex items-center justify-center shrink-0">
+        <LogoMark name={name} />
+      </span>
+      <span className="text-[16px] md:text-[17px] font-semibold tracking-tight whitespace-nowrap">
+        {name}
+      </span>
+    </span>
+  );
+}
+
+function LogoMark({ name }: { name: string }) {
+  const s = 'h-[26px] w-[26px]';
+  switch (name) {
+    case 'Cursor':
+      return (
+        <svg viewBox="0 0 24 24" className={s} aria-hidden>
+          <path d="M4 3l16 9-7.2 2.1L10.5 21 4 3z" fill="currentColor" />
+        </svg>
+      );
+    case 'Claude Desktop':
+      return (
+        <svg viewBox="0 0 24 24" className={s} aria-hidden>
+          <path
+            d="M7.6 17.5l3.2-8.3h1.4l3.2 8.3h-1.6l-.8-2.2h-3l-.8 2.2H7.6zm2.8-3.4h2.2l-1.1-3.2-1.1 3.2z"
+            fill="currentColor"
+          />
+          <circle cx="12" cy="12" r="10.2" fill="none" stroke="currentColor" strokeWidth="1.4" />
+        </svg>
+      );
+    case 'Cline':
+      return (
+        <svg viewBox="0 0 24 24" className={s} aria-hidden>
+          <rect x="2.5" y="4.5" width="19" height="15" rx="2.2" fill="none" stroke="currentColor" strokeWidth="1.6" />
+          <path d="M7 10l2.4 2L7 14M11.5 14.5h5" stroke="currentColor" strokeWidth="1.6" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      );
+    case 'Windsurf':
+      return (
+        <svg viewBox="0 0 24 24" className={s} aria-hidden fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round">
+          <path d="M2 9c2.5-2 5-2 7.5 0s5 2 7.5 0 5-2 5-2" />
+          <path d="M2 14c2.5-2 5-2 7.5 0s5 2 7.5 0 5-2 5-2" />
+          <path d="M2 19c2.5-2 5-2 7.5 0s5 2 7.5 0 5-2 5-2" />
+        </svg>
+      );
+    case 'Zed':
+      return (
+        <svg viewBox="0 0 24 24" className={s} aria-hidden>
+          <path
+            d="M5 5h14v2.5l-9.3 9h9.3V19H5v-2.5l9.3-9H5V5z"
+            fill="currentColor"
+          />
+        </svg>
+      );
+    case 'LangChain':
+      return (
+        <svg viewBox="0 0 24 24" className={s} aria-hidden fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round">
+          <rect x="3.5" y="8" width="8" height="8" rx="4" />
+          <rect x="12.5" y="8" width="8" height="8" rx="4" />
+          <path d="M9 12h6" />
+        </svg>
+      );
+    case 'LlamaIndex':
+      return (
+        <svg viewBox="0 0 24 24" className={s} aria-hidden>
+          <path
+            d="M6 20c-.2-4 .6-7 2.5-9 1.6-1.7 3.4-2 4.8-2 .8 0 1.7.1 2.4.5.4-.6 1-1 1.7-1 1 0 1.8.8 1.8 1.8 0 .7-.4 1.3-1 1.6.2.6.3 1.2.3 1.8 0 3.8-3 7-7.4 7H6z"
+            fill="currentColor"
+          />
+          <circle cx="17.2" cy="10.2" r="0.6" fill="#fff" />
+        </svg>
+      );
+    case 'OpenAI Agents SDK':
+      return (
+        <svg viewBox="0 0 24 24" className={s} aria-hidden fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M12 3.2a4 4 0 013.6 2.2 4 4 0 013.1 6 4 4 0 01-1.5 5.5 4 4 0 01-5.2 2.9A4 4 0 018.4 18a4 4 0 01-3.1-6 4 4 0 011.5-5.5A4 4 0 0112 3.2z" />
+          <path d="M12 8.5v7M8.8 10.2l6.4 3.6M8.8 13.8l6.4-3.6" />
+        </svg>
+      );
+    default:
+      return (
+        <svg viewBox="0 0 24 24" className={s} aria-hidden>
+          <circle cx="12" cy="12" r="4" fill="currentColor" />
+        </svg>
+      );
+  }
+}
+
+/* Suppress unused-import lint for icons kept for potential future sections. */
+void Bot;
+void Baby;
+void GraduationCap;
+void Globe2;

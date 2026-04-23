@@ -1,4 +1,4 @@
-import { Geist, Geist_Mono, Noto_Sans_SC } from 'next/font/google';
+import { Geist, Geist_Mono, Noto_Sans_SC, Fraunces } from 'next/font/google';
 import { ThemeProvider } from '@/components/theme-provider';
 import './globals.css';
 
@@ -21,6 +21,14 @@ const notoSansSC = Noto_Sans_SC({
   display: 'swap',
 });
 
+const fraunces = Fraunces({
+  variable: '--font-hero-serif',
+  subsets: ['latin'],
+  style: ['normal', 'italic'],
+  axes: ['SOFT', 'opsz'],
+  display: 'swap',
+});
+
 export const metadata = {
   title: 'Chivox MCP | Speech Assessment',
   description: 'Multi-dimensional Analysis & LLM Integration',
@@ -31,7 +39,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html
       lang="en"
       suppressHydrationWarning
-      className={`${geistSans.variable} ${geistMono.variable} ${notoSansSC.variable} h-full`}
+      className={`${geistSans.variable} ${geistMono.variable} ${notoSansSC.variable} ${fraunces.variable} h-full`}
     >
       <body className="min-h-full flex flex-col relative">
         <ThemeProvider>{children}</ThemeProvider>

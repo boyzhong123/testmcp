@@ -8,12 +8,17 @@
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans:
+    "PinyinDiacriticFix",
     var(--font-geist-sans),
     var(--font-noto-sc),
     ui-sans-serif, system-ui, -apple-system,
     "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei",
     "Helvetica Neue", Arial, sans-serif;
-  --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, monospace;
+  --font-mono:
+    "PinyinDiacriticFix",
+    var(--font-geist-mono), ui-monospace, SFMono-Regular,
+    var(--font-noto-sc), "PingFang SC", "Hiragino Sans GB",
+    monospace;
   --font-heading: var(--font-sans);
   /* 统一字号节奏，保持与 shadcn 组件兼容 */
   --text-xs: 0.75rem;
@@ -200,6 +205,72 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Pinyin tone-mark font override — pulls Noto Sans SC in for the exact
+   precomposed tone-diacritic codepoints so they render consistently even
+   inside mono/sans containers where Geist can clip or mis-shape them. */
+@font-face {
+  font-family: "PinyinDiacriticFix";
+  src: local("PingFang SC"), local("Hiragino Sans GB"), local("Noto Sans SC"),
+       local("Noto Sans"), local("Microsoft YaHei"), local("Arial Unicode MS"),
+       local("Helvetica"), local("Arial");
+  font-display: swap;
+  font-weight: 100 900;
+  font-style: normal;
+  /* covers ā á ǎ à  ē é ě è  ī í ǐ ì  ō ó ǒ ò  ū ú ǔ ù  ǖ ǘ ǚ ǜ  ḿ ń ň ǹ  and combining diacritics */
+  unicode-range:
+    U+0100-0101, U+00E1, U+01CE-01CF, U+00E0,
+    U+0112-0113, U+00E9, U+011A-011B, U+00E8,
+    U+012A-012B, U+00ED, U+01D0-01D1, U+00EC,
+    U+014C-014D, U+00F3, U+01D2-01D3, U+00F2,
+    U+016A-016B, U+00FA, U+01D4-01D5, U+00F9,
+    U+01D6-01DC,
+    U+1E3E-1E3F, U+0144, U+0148, U+01F9,
+    U+0304, U+0301, U+030C, U+0300;
+}
+@font-face {
+  font-family: "PinyinDiacriticFix";
+  src: local("PingFang SC"), local("Hiragino Sans GB"), local("Noto Sans SC"),
+       local("Noto Sans Italic"), local("Arial Unicode MS"),
+       local("Helvetica"), local("Arial");
+  font-display: swap;
+  font-weight: 100 900;
+  font-style: italic;
+  unicode-range:
+    U+0100-0101, U+00E1, U+01CE-01CF, U+00E0,
+    U+0112-0113, U+00E9, U+011A-011B, U+00E8,
+    U+012A-012B, U+00ED, U+01D0-01D1, U+00EC,
+    U+014C-014D, U+00F3, U+01D2-01D3, U+00F2,
+    U+016A-016B, U+00FA, U+01D4-01D5, U+00F9,
+    U+01D6-01DC,
+    U+1E3E-1E3F, U+0144, U+0148, U+01F9,
+    U+0304, U+0301, U+030C, U+0300;
+}
+/* 中文 / 拼音专用字形：显式拉 Noto Sans SC，避免 Geist
+   因字形覆盖不全导致汉字退化到系统默认字体（渲染模糊）。
+   同时覆盖带声调符号的拉丁字符（ǐ ā ǎ ǒ ǔ 等）。 */
+.font-zh,
+.font-pinyin {
+  font-family:
+    var(--font-noto-sc),
+    "PingFang SC",
+    "Hiragino Sans GB",
+    "Microsoft YaHei",
+    var(--font-geist-sans),
+    sans-serif;
+  font-feature-settings: "palt" 1;
+}
+.font-pinyin {
+  font-variant-ligatures: none;
+  letter-spacing: 0;
+  /* combining-diacritic safety: leave headroom for ǐ / ǎ / ā / ǒ / ǔ marks */
+  line-height: 1.45;
+  font-variant-numeric: tabular-nums;
+  word-spacing: 0.12em;
+}
+/* Prevent line-height collapses on tight layouts (e.g. grid cards) — callers
+   still control their own leading via utility classes where set */
+.font-pinyin * { line-height: inherit; }
+
 @layer utilities {
   .animate-arrow-down {
     animation: arrow-down 2s ease-in-out infinite;
@@ -228,4 +299,49 @@
 @keyframes wave-bar {
   0%, 100% { transform: scaleY(0.35); }
   50%       { transform: scaleY(1); }
+}
+
+@keyframes qd-line-in {
+  0%   { opacity: 0; transform: translateY(4px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+.qd-line-in {
+  animation: qd-line-in 280ms ease-out both;
+}
+
+/* ── Glass cards — Tavily-style warm translucent surfaces ── */
+.glass-card {
+  position: relative;
+  border-radius: 1rem;
+  background:
+    linear-gradient(135deg, rgba(255,255,255,0.85) 0%, rgba(253,247,234,0.55) 50%, rgba(255,255,255,0.75) 100%);
+  border: 1px solid rgba(24, 24, 27, 0.08);
+  backdrop-filter: blur(20px) saturate(140%);
+  -webkit-backdrop-filter: blur(20px) saturate(140%);
+  box-shadow:
+    0 1px 0 0 rgba(255,255,255,0.8) inset,
+    0 24px 60px -30px rgba(139, 92, 246, 0.12),
+    0 12px 32px -12px rgba(0, 0, 0, 0.08);
+}
+.glass-card-dark {
+  position: relative;
+  border-radius: 1rem;
+  background:
+    linear-gradient(135deg, rgba(24,24,27,0.85) 0%, rgba(39,39,42,0.75) 50%, rgba(24,24,27,0.85) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(20px) saturate(140%);
+  -webkit-backdrop-filter: blur(20px) saturate(140%);
+  box-shadow:
+    0 1px 0 0 rgba(255,255,255,0.05) inset,
+    0 24px 60px -30px rgba(0, 0, 0, 0.5),
+    0 12px 32px -12px rgba(0, 0, 0, 0.3);
+}
+.dark .glass-card {
+  background:
+    linear-gradient(135deg, rgba(39,39,42,0.7) 0%, rgba(24,24,27,0.55) 50%, rgba(39,39,42,0.7) 100%);
+  border-color: rgba(255,255,255,0.08);
+  box-shadow:
+    0 1px 0 0 rgba(255,255,255,0.05) inset,
+    0 24px 60px -30px rgba(139, 92, 246, 0.25),
+    0 12px 32px -12px rgba(0, 0, 0, 0.5);
 }
