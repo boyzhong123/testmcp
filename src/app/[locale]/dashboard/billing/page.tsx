@@ -4,7 +4,6 @@ import { useState, useMemo } from 'react';
 import { Receipt, Calculator, CreditCard, Plus, Zap, Headphones } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
 import { generateBillingRecords, calculateCost, PLAN_DETAILS } from '@/lib/mock-data';
-import { SALES_CHAT_URL } from '@/lib/links';
 import { useLocale } from 'next-intl';
 
 export default function BillingPage() {
@@ -220,9 +219,7 @@ export default function BillingPage() {
           <p className="text-xs text-muted-foreground mt-0.5">{t.needQuotaDesc}</p>
         </div>
         <a
-          href={SALES_CHAT_URL}
-          target="_blank"
-          rel="noopener noreferrer"
+          href="mailto:sales@chivox.com"
           className="inline-flex items-center gap-1.5 h-9 px-4 text-xs font-medium rounded-lg bg-foreground text-background hover:bg-foreground/90 transition-colors whitespace-nowrap shrink-0"
         >
           {t.contactSupport}

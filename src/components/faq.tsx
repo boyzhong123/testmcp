@@ -3,14 +3,15 @@
 import { Link } from '@/i18n/routing';
 import { useLocale, useTranslations } from 'next-intl';
 import { useState } from 'react';
-import { ChevronDown, HelpCircle, MessageSquare, BookOpen, ArrowUpRight } from 'lucide-react';
-import { SALES_CHAT_URL } from '@/lib/links';
+import { ChevronDown, HelpCircle, Mail, BookOpen, ArrowUpRight } from 'lucide-react';
+import { DemoRequestModal } from './demo-request-modal';
 
 export function FAQ() {
   const t = useTranslations('FAQ');
   const locale = useLocale();
   const isZh = locale.startsWith('zh');
   const [openIndex, setOpenIndex] = useState<number | null>(0);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const items = [
     { q: t('q1'), a: t('a1') },
@@ -39,23 +40,21 @@ export function FAQ() {
             </p>
 
             <div className="space-y-2.5">
-              <a
-                href={SALES_CHAT_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="group flex items-center justify-between rounded-lg border border-border/60 bg-background hover:bg-muted/40 px-4 py-3 transition-colors"
+              <button
+                onClick={() => setIsModalOpen(true)}
+                className="group flex items-center justify-between rounded-lg border border-border/60 bg-background hover:bg-muted/40 px-4 py-3 transition-colors w-full text-left"
               >
                 <div className="flex items-center gap-3">
                   <div className="h-9 w-9 rounded-md bg-foreground/5 flex items-center justify-center">
-                    <MessageSquare className="h-4 w-4 text-foreground" />
+                    <Mail className="h-4 w-4 text-foreground" />
                   </div>
                   <div>
-                    <div className="text-sm font-semibold">{isZh ? '联系我们' : 'Contact Us'}</div>
+                    <div className="text-sm font-semibold">{isZh ? '申请 DEMO 体验' : 'Request Demo'}</div>
                     <div className="text-xs text-muted-foreground">{isZh ? '商务合作 / 技术咨询' : 'Business / Technical Consulting'}</div>
                   </div>
                 </div>
                 <ArrowUpRight className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors" />
-              </a>
+              </button>
 
               <Link
                 href="/docs"
@@ -132,6 +131,8 @@ export function FAQ() {
           </div>
         </div>
       </div>
+
+      <DemoRequestModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
     </section>
   );
 }

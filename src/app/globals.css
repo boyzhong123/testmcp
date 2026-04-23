@@ -51,6 +51,10 @@
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
+  --color-brand: var(--brand);
+  --color-brand-foreground: var(--brand-foreground);
+  --color-brand-soft: var(--brand-soft);
+  --color-brand-ring: var(--brand-ring);
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
   --radius-lg: var(--radius);
@@ -71,14 +75,20 @@
   --primary-foreground: oklch(0.985 0 0);
   --secondary: oklch(0.96 0 0);
   --secondary-foreground: oklch(0.18 0 0);
-  --muted: oklch(0.96 0 0);
+  --muted: oklch(0.97 0 0);                   /* 次级面板：0.96→0.97，更贴近 Linear/Vercel 的极浅灰 */
   --muted-foreground: oklch(0.30 0 0);        /* 次级文本加深，对比度 ~8:1，提升可读性 */
   --accent: oklch(0.96 0 0);
   --accent-foreground: oklch(0.18 0 0);
   --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.9 0 0);                   /* 分隔线：0.922→0.9，更清晰 */
+  --border: oklch(0.92 0 0);                  /* 分隔线：降回 0.92，避免卡片看起来太"硬" */
   --input: oklch(0.9 0 0);
   --ring: oklch(0.65 0 0);
+
+  /* Brand accent 用作主 CTA / active nav indicator。取 Linear/Stripe 介于二者之间的冷紫，饱和度克制。 */
+  --brand: oklch(0.58 0.16 278);
+  --brand-foreground: oklch(0.99 0 0);
+  --brand-soft: oklch(0.96 0.03 278);         /* 浅层高亮：hover 背景 / chip 背景 */
+  --brand-ring: oklch(0.58 0.16 278 / 0.25);  /* focus-ring 专用 */
   --chart-1: oklch(0.87 0 0);
   --chart-2: oklch(0.556 0 0);
   --chart-3: oklch(0.439 0 0);
@@ -111,7 +121,7 @@
   --primary-foreground: oklch(0.18 0 0);
   --secondary: oklch(0.27 0 0);
   --secondary-foreground: oklch(0.99 0 0);
-  --muted: oklch(0.27 0 0);
+  --muted: oklch(0.22 0 0);                   /* 暗色次级面板：更微妙的分层 */
   --muted-foreground: oklch(0.75 0 0);        /* 暗色次级文本，对比度 ~7:1 */
   --accent: oklch(0.27 0 0);
   --accent-foreground: oklch(0.99 0 0);
@@ -119,6 +129,11 @@
   --border: oklch(1 0 0 / 14%);               /* 分隔线：10%→14%，更可见 */
   --input: oklch(1 0 0 / 18%);
   --ring: oklch(0.62 0 0);
+
+  --brand: oklch(0.68 0.18 278);              /* 暗色下提亮，保证对比度 */
+  --brand-foreground: oklch(0.12 0 0);
+  --brand-soft: oklch(0.28 0.06 278);
+  --brand-ring: oklch(0.68 0.18 278 / 0.35);
   --chart-1: oklch(0.87 0 0);
   --chart-2: oklch(0.556 0 0);
   --chart-3: oklch(0.439 0 0);
@@ -145,12 +160,21 @@
   }
   body {
     @apply bg-background text-foreground overflow-x-hidden;
-    -webkit-font-smoothing: auto;
-    -moz-osx-font-smoothing: auto;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
-    /* 启用常用 OpenType 特性：上下文连字 · 等宽数字 · Geist 风格替代字形 */
+    /* 启用常用 OpenType 特性：上下文连字 · Geist 风格替代字形。
+       注意：tabular-nums 不在 body 全局启用，避免破坏正文行文节奏；
+       仍然通过 Tailwind 的 `tabular-nums` 类在 KPI/表格等数字场景按需开启。 */
     font-feature-settings: "rlig" 1, "calt" 1, "cv11" 1, "ss01" 1;
     font-variant-ligatures: contextual;
+  }
+
+  /* SaaS dashboards 通常把所有 <input type=number>、<select>、数字类元素默认等宽，
+     但留给内容选择。Chip/chart/code 这类小字号的数字手动加 tabular-nums。 */
+  input[type="number"],
+  input[inputmode="decimal"] {
+    font-variant-numeric: tabular-nums;
   }
   html {
     @apply font-sans overflow-x-hidden;

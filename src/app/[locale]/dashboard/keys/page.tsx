@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { Plus, Eye, EyeOff, Copy, RefreshCw, Trash2, X, Check, Info, AlertTriangle, Sparkles, Lock, Headphones, ArrowRight } from 'lucide-react';
-import { SALES_CHAT_URL } from '@/lib/links';
 import {
   type ApiKeyRecord,
   listKeys,
@@ -237,9 +236,7 @@ export default function KeysPage() {
             </div>
           </div>
           <a
-            href={SALES_CHAT_URL}
-            target="_blank"
-            rel="noopener noreferrer"
+            href="mailto:sales@chivox.com"
             className="inline-flex items-center gap-1.5 h-9 px-4 text-xs font-medium rounded-lg bg-gradient-to-br from-blue-600 to-indigo-600 text-white hover:from-blue-500 hover:to-indigo-500 shadow-sm shadow-blue-500/30 transition-all whitespace-nowrap self-start sm:self-auto"
           >
             {t.contactCta}
@@ -355,9 +352,7 @@ export default function KeysPage() {
                               {t.noQuotaHint}
                             </div>
                             <a
-                              href={SALES_CHAT_URL}
-                              target="_blank"
-                              rel="noopener noreferrer"
+                              href="mailto:sales@chivox.com"
                               className="inline-flex items-center gap-1 h-6 px-2 text-[10px] font-medium rounded-md bg-rose-500/10 text-rose-600 dark:text-rose-400 hover:bg-rose-500/20 transition-colors whitespace-nowrap w-fit"
                             >
                               <Headphones className="h-3 w-3" />

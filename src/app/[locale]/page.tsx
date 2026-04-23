@@ -12,7 +12,7 @@ import { ParamsShowcase } from '@/components/params-showcase';
 import { DemoPreview } from '@/components/demo-preview';
 import { JsonSampleTabs } from '@/components/json-sample-tabs';
 import { cn } from '@/lib/utils';
-import { SALES_CHAT_URL } from '@/lib/links';
+import { PricingContactSection } from '@/components/pricing-contact-section';
 
 export default async function HomePage() {
   const locale = await getLocale();
@@ -985,21 +985,7 @@ export default async function HomePage() {
                   {zhEn('告诉我们你的业务场景、预估调用量和并发需求，销售通常在 1 个工作日内回复，提供精准阶梯报价与 PoC 支持。', 'Share your scenario, expected usage and concurrency. Sales typically responds within 1 business day with a tiered quote and PoC support.')}
                 </p>
 
-                <a
-                  href={SALES_CHAT_URL}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center justify-center gap-1.5 h-10 px-4 text-sm font-medium rounded-lg bg-foreground text-background hover:bg-foreground/90 transition-colors w-full"
-                >
-                  {zhEn('在线咨询销售', 'Talk to Sales')} <ArrowUpRight className="h-4 w-4" />
-                </a>
-
-                <a
-                  href="mailto:sales@chivox.com"
-                  className="inline-flex items-center justify-center gap-1.5 h-10 px-4 text-sm font-medium rounded-lg border border-border hover:bg-muted/60 transition-colors w-full mt-2.5"
-                >
-                  {zhEn('发送邮件', 'Email Us')} · sales@chivox.com
-                </a>
+                <PricingContactSection />
 
                 <div className="flex items-center gap-3 my-5">
                   <div className="flex-1 h-px bg-border/60" />
@@ -1112,14 +1098,12 @@ export default async function HomePage() {
 
             {/* CTA + 外链 */}
             <FadeUp delay={0.3} className="flex flex-col sm:flex-row items-center justify-center gap-3">
-              <a
-                href={SALES_CHAT_URL}
-                target="_blank"
-                rel="noopener noreferrer"
+              <Link
+                href="/contact"
                 className="inline-flex items-center justify-center gap-2 h-10 px-6 text-sm font-medium rounded-full bg-foreground text-background hover:bg-foreground/90 transition-all"
               >
                 {zhEn('联系销售 · 获取报价', 'Contact Sales · Get a Quote')} <ArrowRight className="h-3.5 w-3.5" />
-              </a>
+              </Link>
               <a
                 href="https://www.chivox.com/"
                 target="_blank"

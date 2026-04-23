@@ -1,11 +1,12 @@
 'use client';
 
 import Image from 'next/image';
+import { useState } from 'react';
 import { useLocale } from 'next-intl';
 import { useAuth } from '@/lib/auth-context';
-import { Check, ArrowUpRight, Crown, Sparkles } from 'lucide-react';
+import { Check, Crown, Sparkles, Mail } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { SALES_CHAT_URL } from '@/lib/links';
+import { DemoRequestModal } from '@/components/demo-request-modal';
 
 type TierRow = {
   key: 'starter' | 'standard' | 'growth' | 'scale' | 'enterprise';
@@ -89,6 +90,7 @@ export default function PlansPage() {
   const TIERS = uiZh ? TIERS_ZH : TIERS_EN;
   const PLAN_LABEL = uiZh ? PLAN_LABEL_ZH : PLAN_LABEL_EN;
   const COMPARISON = uiZh ? COMPARISON_ZH : COMPARISON_EN;
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   return (
     <div>
@@ -218,21 +220,13 @@ export default function PlansPage() {
                 : 'Share your use case, expected call volume, and concurrency needs — sales will reply within one business day with a quote and PoC options.'}
             </p>
 
-            <a
-              href={SALES_CHAT_URL}
-              target="_blank"
-              rel="noopener noreferrer"
+            <button
+              onClick={() => setIsModalOpen(true)}
               className="inline-flex items-center justify-center gap-1.5 h-10 px-4 text-sm font-medium rounded-lg bg-foreground text-background hover:bg-foreground/90 transition-colors w-full"
             >
-              {uiZh ? '在线咨询销售' : 'Chat with sales'} <ArrowUpRight className="h-4 w-4" />
-            </a>
-
-            <a
-              href="mailto:sales@chivox.com"
-              className="inline-flex items-center justify-center gap-1.5 h-10 px-4 text-sm font-medium rounded-lg border border-border hover:bg-muted/60 transition-colors w-full mt-2.5"
-            >
-              {uiZh ? '发送邮件 · sales@chivox.com' : 'Email sales@chivox.com'}
-            </a>
+              <Mail className="h-4 w-4" />
+              {uiZh ? '申请 DEMO 体验' : 'Request Demo'}
+            </button>
 
             <div className="flex items-center gap-3 my-5">
               <div className="flex-1 h-px bg-border/60" />
@@ -330,15 +324,15 @@ export default function PlansPage() {
             </>
           )}
         </div>
-        <a
-          href={SALES_CHAT_URL}
-          target="_blank"
-          rel="noopener noreferrer"
+        <button
+          onClick={() => setIsModalOpen(true)}
           className="inline-flex items-center gap-1 text-sm font-medium text-foreground hover:opacity-70 transition-opacity"
         >
-          {uiZh ? '联系销售定制' : 'Contact sales'} <ArrowUpRight className="h-3.5 w-3.5" />
-        </a>
+          {uiZh ? '联系销售定制' : 'Contact sales'} <Mail className="h-3.5 w-3.5" />
+        </button>
       </div>
+
+      <DemoRequestModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
     </div>
   );
 }

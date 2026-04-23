@@ -1,8 +1,9 @@
 'use client';
 
 import { Link } from '@/i18n/routing';
-import { ArrowLeft, Mail, MapPin } from 'lucide-react';
+import { ArrowLeft, Mail, MapPin, Phone } from 'lucide-react';
 import { useLocale } from 'next-intl';
+import { ContactForm } from '@/components/contact-form';
 
 export default function ContactPage() {
   const locale = useLocale();
@@ -25,8 +26,17 @@ export default function ContactPage() {
               <Mail className="h-5 w-5 text-muted-foreground mt-0.5" />
               <div>
                 <h3 className="text-sm font-semibold mb-1">{isZh ? '邮箱 / Email' : 'Email'}</h3>
-                <a href="mailto:mcp@chivox.com" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                  mcp@chivox.com
+                <a href="mailto:sales@chivox.com" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                  sales@chivox.com
+                </a>
+              </div>
+            </div>
+            <div className="flex items-start gap-3">
+              <Phone className="h-5 w-5 text-muted-foreground mt-0.5" />
+              <div>
+                <h3 className="text-sm font-semibold mb-1">{isZh ? '电话 / Phone' : 'Phone'}</h3>
+                <a href="tel:0512-62729761" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                  0512-62729761
                 </a>
               </div>
             </div>
@@ -35,8 +45,7 @@ export default function ContactPage() {
               <div>
                 <h3 className="text-sm font-semibold mb-1">{isZh ? '地址 / Address' : 'Address'}</h3>
                 <p className="text-sm text-muted-foreground">
-                  苏州工业园区<br />
-                  Suzhou Industrial Park, China
+                  {isZh ? '苏州工业园区金鸡湖大道人工智能产业园C1-801' : 'C1-801, AI Industrial Park, Jinji Lake Avenue, Suzhou Industrial Park, China'}
                 </p>
               </div>
             </div>
@@ -44,29 +53,11 @@ export default function ContactPage() {
 
           <div className="border border-border/60 rounded-lg p-6">
             <h3 className="text-sm font-semibold mb-4">{isZh ? '发送消息' : 'Send a Message'}</h3>
-            <form className="space-y-4" onSubmit={e => { e.preventDefault(); alert(isZh ? '消息已发送' : 'Message sent'); }}>
-              <input
-                type="text"
-                placeholder={isZh ? '您的姓名' : 'Your Name'}
-                className="w-full h-10 px-3 text-sm rounded-md border border-border bg-background focus:outline-none focus:ring-2 focus:ring-ring/20 focus:border-foreground/30 transition-colors"
-              />
-              <input
-                type="email"
-                placeholder={isZh ? '邮箱' : 'Email'}
-                className="w-full h-10 px-3 text-sm rounded-md border border-border bg-background focus:outline-none focus:ring-2 focus:ring-ring/20 focus:border-foreground/30 transition-colors"
-              />
-              <textarea
-                rows={4}
-                placeholder={isZh ? '您的需求或问题' : 'Your message'}
-                className="w-full px-3 py-2 text-sm rounded-md border border-border bg-background focus:outline-none focus:ring-2 focus:ring-ring/20 focus:border-foreground/30 transition-colors resize-none"
-              />
-              <button
-                type="submit"
-                className="w-full h-10 text-sm font-medium rounded-md bg-foreground text-background hover:bg-foreground/90 transition-colors"
-              >
-                {isZh ? '发送' : 'Send'}
-              </button>
-            </form>
+            <ContactForm
+              source={isZh ? '联系我们页面' : 'Contact Page'}
+              showEmail
+              showMessage
+            />
           </div>
         </div>
       </div>
