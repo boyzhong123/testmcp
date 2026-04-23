@@ -1,6 +1,8 @@
 'use client';
 
 import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
+import { useSearchParams } from 'next/navigation';
+import NextLink from 'next/link';
 import { Link } from '@/i18n/routing';
 import { ArrowLeft } from 'lucide-react';
 
@@ -28,6 +30,18 @@ export function DocsShell({ nav, backLabel, title, subtitle, children }: DocsShe
   const [activeId, setActiveId] = useState<string>(() => defaultActiveId(nav));
   const contentRef = useRef<HTMLDivElement | null>(null);
   const navRef = useRef<HTMLElement | null>(null);
+
+  // Back link is context-aware: when the reader arrived from the developer
+  // dashboard (?from=dev), point them back to the dashboard instead of the
+  // marketing home. Falls back to "/" for regular marketing visits.
+  const searchParams = useSearchParams();
+  const fromDev = searchParams?.get('from') === 'dev';
+  const backHref = fromDev ? '/dev-en/dashboard/overview' : '/';
+  const displayBackLabel = fromDev
+    ? /[\u4e00-\u9fff]/.test(backLabel)
+      ? '返回控制台'
+      : 'Back to dashboard'
+    : backLabel;
 
   const allIds = useMemo(() => {
     const ids: string[] = [];
@@ -161,12 +175,21 @@ export function DocsShell({ nav, backLabel, title, subtitle, children }: DocsShe
   return (
     <main className="w-full min-w-0">
       <div className="container mx-auto px-6 pt-12 md:pt-20 pb-0">
-        <Link
-          href="/"
-          className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors mb-8"
-        >
-          <ArrowLeft className="h-4 w-4" /> {backLabel}
-        </Link>
+        {fromDev ? (
+          <NextLink
+            href={backHref}
+            className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors mb-8"
+          >
+            <ArrowLeft className="h-4 w-4" /> {displayBackLabel}
+          </NextLink>
+        ) : (
+          <Link
+            href="/"
+            className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors mb-8"
+          >
+            <ArrowLeft className="h-4 w-4" /> {displayBackLabel}
+          </Link>
+        )}
 
         <h1 className="text-3xl md:text-4xl font-semibold tracking-[-0.015em] mb-2">{title}</h1>
         <p className="text-muted-foreground mb-10">{subtitle}</p>

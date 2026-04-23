@@ -49,6 +49,7 @@ export async function sendContactEmail(data: ContactFormData): Promise<ContactFo
   }
 
   try {
+    console.log('[DEBUG] SMTP_PASS length:', (process.env.SMTP_PASS || '').length, 'first 4:', (process.env.SMTP_PASS || '').slice(0, 4));
     const smtpUser = getSmtpUser();
     const transporter = createTransporter();
     

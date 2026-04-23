@@ -1098,12 +1098,6 @@ export default async function HomePage() {
 
             {/* CTA + 外链 */}
             <FadeUp delay={0.3} className="flex flex-col sm:flex-row items-center justify-center gap-3">
-              <Link
-                href="/contact"
-                className="inline-flex items-center justify-center gap-2 h-10 px-6 text-sm font-medium rounded-full bg-foreground text-background hover:bg-foreground/90 transition-all"
-              >
-                {zhEn('联系销售 · 获取报价', 'Contact Sales · Get a Quote')} <ArrowRight className="h-3.5 w-3.5" />
-              </Link>
               <a
                 href="https://www.chivox.com/"
                 target="_blank"
