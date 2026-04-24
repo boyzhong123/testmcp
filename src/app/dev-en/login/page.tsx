@@ -103,7 +103,7 @@ export default function DevEnLoginPage() {
         />
 
         <div className="relative z-10 flex flex-col p-10 xl:p-12 w-full">
-          <Link href="/dev-en/login" className="flex items-center gap-2.5 group">
+          <Link href="/global" className="flex items-center gap-2.5 group" aria-label="Back to Chivox MCP home">
             <div className="relative h-8 w-8 rounded-lg bg-white flex items-center justify-center shadow-lg shadow-white/10">
               <AudioWaveform className="h-4 w-4 text-zinc-950" />
               <span className="absolute -bottom-0.5 -right-0.5 h-1.5 w-1.5 rounded-full bg-emerald-400 ring-2 ring-zinc-900" />
@@ -212,7 +212,7 @@ export default function DevEnLoginPage() {
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-muted/50 via-background to-background" />
 
         <div className="w-full max-w-[380px] relative z-10">
-          <Link href="/dev-en/login" className="lg:hidden flex items-center gap-2.5 mb-8">
+          <Link href="/global" className="lg:hidden flex items-center gap-2.5 mb-8" aria-label="Back to Chivox MCP home">
             <div className="relative h-8 w-8 rounded-lg bg-gradient-to-br from-foreground to-foreground/80 flex items-center justify-center shadow-sm ring-1 ring-foreground/10">
               <AudioWaveform className="h-4 w-4 text-background" strokeWidth={2.3} />
               <span className="absolute -bottom-0.5 -right-0.5 h-1.5 w-1.5 rounded-full bg-emerald-500 ring-2 ring-background" />

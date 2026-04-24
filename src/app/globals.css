@@ -301,6 +301,547 @@
   50%       { transform: scaleY(1); }
 }
 
+/* Hero carousel: slide-advance progress (width via scaleX, duration set inline) */
+@keyframes hero-carousel-progress {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+/* ── /global hero ear SVG — two-act animation (must live in global CSS:
+   inline <style> inside SVG <defs> is unreliable in some browsers / bundlers) ── */
+.hero-ear-art {
+  isolation: isolate;
+}
+/* Layered EN labels: hide until keyframes run (avoids “3 ISSUES” + “CORRECTED” overlap) */
+.hero-ear-art .en-cap-bad,
+.hero-ear-art .en-cap-good,
+.hero-ear-art .en-score-bad,
+.hero-ear-art .en-score-good,
+.hero-ear-art .en-state-init,
+.hero-ear-art .en-state-fix,
+.hero-ear-art .en-label-bad {
+  opacity: 0;
+}
+.hero-ear-art .cn-scene,
+.hero-ear-art .en-scene {
+  opacity: 0;
+}
+
+.hero-ear-art .cn-scene {
+  animation: hhCnFade 11s ease-in-out infinite both;
+}
+.hero-ear-art .en-scene {
+  animation: hhEnFade 11s ease-in-out infinite both;
+}
+@keyframes hhCnFade {
+  0% {
+    opacity: 0;
+  }
+  4%,
+  45% {
+    opacity: 1;
+  }
+  52%,
+  95% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes hhEnFade {
+  0%,
+  48% {
+    opacity: 0;
+  }
+  55%,
+  90% {
+    opacity: 1;
+  }
+  97%,
+  100% {
+    opacity: 0;
+  }
+}
+
+.hero-ear-art .cn-trace {
+  stroke-dasharray: 100 100;
+  stroke-dashoffset: 100;
+}
+.hero-ear-art .cn-trace-1 {
+  animation: hhCnTrace1 11s ease-in-out infinite both;
+}
+.hero-ear-art .cn-trace-2 {
+  animation: hhCnTrace2 11s ease-in-out infinite both;
+}
+@keyframes hhCnTrace1 {
+  0%,
+  6% {
+    stroke-dashoffset: 100;
+  }
+  25% {
+    stroke-dashoffset: 0;
+  }
+  48% {
+    stroke-dashoffset: 0;
+  }
+  52%,
+  100% {
+    stroke-dashoffset: 100;
+  }
+}
+@keyframes hhCnTrace2 {
+  0%,
+  26% {
+    stroke-dashoffset: 100;
+  }
+  45% {
+    stroke-dashoffset: 0;
+  }
+  48% {
+    stroke-dashoffset: 0;
+  }
+  52%,
+  100% {
+    stroke-dashoffset: 100;
+  }
+}
+
+.hero-ear-art .cn-pulse {
+  transform-origin: center;
+  transform-box: fill-box;
+}
+.hero-ear-art .cn-pulse-1 {
+  animation: hhPulse 11s ease-in-out infinite;
+}
+.hero-ear-art .cn-pulse-2 {
+  animation: hhPulse 11s ease-in-out infinite;
+  animation-delay: 0.6s;
+}
+@keyframes hhPulse {
+  0%,
+  22% {
+    r: 3.6px;
+  }
+  25% {
+    r: 5px;
+  }
+  32% {
+    r: 3.6px;
+  }
+  38% {
+    r: 5px;
+  }
+  45%,
+  100% {
+    r: 3.6px;
+  }
+}
+
+.hero-ear-art .en-chip {
+  opacity: 0;
+  transform: translateY(6px);
+}
+.hero-ear-art .en-chip-0 {
+  animation: hhChipIn 11s ease-in-out infinite both;
+  animation-delay: 0s;
+}
+.hero-ear-art .en-chip-1 {
+  animation: hhChipIn 11s ease-in-out infinite both;
+  animation-delay: 0.1s;
+}
+.hero-ear-art .en-chip-2 {
+  animation: hhChipIn 11s ease-in-out infinite both;
+  animation-delay: 0.2s;
+}
+.hero-ear-art .en-chip-3 {
+  animation: hhChipIn 11s ease-in-out infinite both;
+  animation-delay: 0.3s;
+}
+@keyframes hhChipIn {
+  0%,
+  53% {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  58% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  94% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  97%,
+  100% {
+    opacity: 0;
+    transform: translateY(-3px);
+  }
+}
+
+.hero-ear-art .en-state-init {
+  animation: hhStateInit 11s ease-in-out infinite both;
+}
+.hero-ear-art .en-state-fix {
+  animation: hhStateFix 11s ease-in-out infinite both;
+}
+@keyframes hhStateInit {
+  0%,
+  56% {
+    opacity: 0;
+  }
+  60%,
+  77% {
+    opacity: 1;
+  }
+  82%,
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes hhStateFix {
+  0%,
+  80% {
+    opacity: 0;
+  }
+  84%,
+  94% {
+    opacity: 1;
+  }
+  97%,
+  100% {
+    opacity: 0;
+  }
+}
+
+.hero-ear-art .en-bar {
+  transform: scaleY(0);
+  transform-origin: 100% 100%;
+  transform-box: fill-box;
+}
+.hero-ear-art .en-bar-theta-init {
+  animation: hhBarThetaInit 11s ease-in-out infinite both;
+}
+.hero-ear-art .en-bar-theta-fix {
+  animation: hhBarThetaFix 11s ease-in-out infinite both;
+}
+@keyframes hhBarThetaInit {
+  0%,
+  58% {
+    transform: scaleY(0);
+    opacity: 1;
+  }
+  64% {
+    transform: scaleY(0.35);
+    opacity: 1;
+  }
+  77% {
+    transform: scaleY(0.35);
+    opacity: 1;
+  }
+  81% {
+    transform: scaleY(0.35);
+    opacity: 0;
+  }
+  100% {
+    transform: scaleY(0);
+    opacity: 0;
+  }
+}
+@keyframes hhBarThetaFix {
+  0%,
+  80% {
+    transform: scaleY(0);
+    opacity: 0;
+  }
+  82% {
+    transform: scaleY(0);
+    opacity: 1;
+  }
+  86% {
+    transform: scaleY(0.95);
+    opacity: 1;
+  }
+  94% {
+    transform: scaleY(0.95);
+    opacity: 1;
+  }
+  97%,
+  100% {
+    transform: scaleY(0);
+    opacity: 0;
+  }
+}
+.hero-ear-art .en-bar-i {
+  animation: hhBarI 11s ease-in-out infinite both;
+}
+@keyframes hhBarI {
+  0%,
+  60% {
+    transform: scaleY(0);
+  }
+  67% {
+    transform: scaleY(0.88);
+  }
+  94% {
+    transform: scaleY(0.88);
+  }
+  97%,
+  100% {
+    transform: scaleY(0);
+  }
+}
+.hero-ear-art .en-bar-ng-init {
+  animation: hhBarNgInit 11s ease-in-out infinite both;
+}
+.hero-ear-art .en-bar-ng-fix {
+  animation: hhBarNgFix 11s ease-in-out infinite both;
+}
+@keyframes hhBarNgInit {
+  0%,
+  59% {
+    transform: scaleY(0);
+    opacity: 1;
+  }
+  66% {
+    transform: scaleY(0.58);
+    opacity: 1;
+  }
+  77% {
+    transform: scaleY(0.58);
+    opacity: 1;
+  }
+  81% {
+    transform: scaleY(0.58);
+    opacity: 0;
+  }
+  100% {
+    transform: scaleY(0);
+    opacity: 0;
+  }
+}
+@keyframes hhBarNgFix {
+  0%,
+  80% {
+    transform: scaleY(0);
+    opacity: 0;
+  }
+  82% {
+    transform: scaleY(0);
+    opacity: 1;
+  }
+  86% {
+    transform: scaleY(0.82);
+    opacity: 1;
+  }
+  94% {
+    transform: scaleY(0.82);
+    opacity: 1;
+  }
+  97%,
+  100% {
+    transform: scaleY(0);
+    opacity: 0;
+  }
+}
+.hero-ear-art .en-bar-k-ghost {
+  animation: hhBarKGhost 11s ease-in-out infinite both;
+}
+.hero-ear-art .en-bar-k-fix {
+  animation: hhBarKFix 11s ease-in-out infinite both;
+}
+@keyframes hhBarKGhost {
+  0%,
+  60% {
+    opacity: 0;
+  }
+  66%,
+  77% {
+    opacity: 1;
+  }
+  81%,
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes hhBarKFix {
+  0%,
+  80% {
+    transform: scaleY(0);
+    opacity: 0;
+  }
+  82% {
+    transform: scaleY(0);
+    opacity: 1;
+  }
+  86% {
+    transform: scaleY(0.8);
+    opacity: 1;
+  }
+  94% {
+    transform: scaleY(0.8);
+    opacity: 1;
+  }
+  97%,
+  100% {
+    transform: scaleY(0);
+    opacity: 0;
+  }
+}
+
+.hero-ear-art .en-label-bad {
+  animation: hhGhostLabel 11s ease-in-out infinite both;
+}
+@keyframes hhGhostLabel {
+  0%,
+  62% {
+    opacity: 0;
+    transform: translateY(3px);
+  }
+  68%,
+  77% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  81%,
+  100% {
+    opacity: 0;
+    transform: translateY(-2px);
+  }
+}
+
+.hero-ear-art .en-arrow {
+  stroke-dasharray: 30 30;
+  stroke-dashoffset: 30;
+  animation: hhArrowDraw 11s ease-in-out infinite both;
+}
+.hero-ear-art .en-arrow-1 {
+  animation-delay: 0s;
+}
+.hero-ear-art .en-arrow-2 {
+  animation-delay: 0.12s;
+}
+.hero-ear-art .en-arrow-3 {
+  animation-delay: 0.24s;
+}
+@keyframes hhArrowDraw {
+  0%,
+  78% {
+    opacity: 0;
+    stroke-dashoffset: 30;
+  }
+  82% {
+    opacity: 1;
+    stroke-dashoffset: 0;
+  }
+  92% {
+    opacity: 1;
+    stroke-dashoffset: 0;
+  }
+  96%,
+  100% {
+    opacity: 0;
+  }
+}
+
+.hero-ear-art .en-score-bad {
+  animation: hhSBad 11s linear infinite both;
+}
+.hero-ear-art .en-score-good {
+  animation: hhSGood 11s linear infinite both;
+}
+@keyframes hhSBad {
+  0%,
+  62% {
+    opacity: 0;
+  }
+  68%,
+  77% {
+    opacity: 1;
+  }
+  81%,
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes hhSGood {
+  0%,
+  82% {
+    opacity: 0;
+  }
+  86%,
+  94% {
+    opacity: 1;
+  }
+  97%,
+  100% {
+    opacity: 0;
+  }
+}
+
+.hero-ear-art .en-cap-bad {
+  animation: hhCapBad 11s ease-in-out infinite both;
+}
+.hero-ear-art .en-cap-good {
+  animation: hhCapGood 11s ease-in-out infinite both;
+}
+@keyframes hhCapBad {
+  0%,
+  60% {
+    opacity: 0;
+  }
+  66%,
+  78% {
+    opacity: 1;
+  }
+  81%,
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes hhCapGood {
+  0%,
+  84% {
+    opacity: 0;
+  }
+  87%,
+  94% {
+    opacity: 1;
+  }
+  97%,
+  100% {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-ear-art .cn-scene,
+  .hero-ear-art .en-scene,
+  .hero-ear-art [class*="cn-"],
+  .hero-ear-art [class*="en-"] {
+    animation: none !important;
+  }
+  .hero-ear-art .cn-scene {
+    opacity: 1;
+  }
+  .hero-ear-art .en-scene {
+    opacity: 0;
+  }
+  .hero-ear-art .cn-trace {
+    stroke-dashoffset: 0 !important;
+  }
+  .hero-ear-art .en-cap-bad,
+  .hero-ear-art .en-cap-good,
+  .hero-ear-art .en-score-bad,
+  .hero-ear-art .en-score-good {
+    opacity: 0 !important;
+  }
+}
+
 @keyframes qd-line-in {
   0%   { opacity: 0; transform: translateY(4px); }
   100% { opacity: 1; transform: translateY(0); }
@@ -345,3 +886,51 @@
     0 24px 60px -30px rgba(139, 92, 246, 0.25),
     0 12px 32px -12px rgba(0, 0, 0, 0.5);
 }
+
+/* ── warm-card ──────────────────────────────────────────────
+ * The emerald-→cream-→peach framed card used to highlight
+ * select modules on /global. Meant to be applied to an outer
+ * wrapper; content sits directly on top of the gradient with
+ * normal padding.
+ * ──────────────────────────────────────────────────────── */
+/* Mirrors the demo page's closer card:
+ *   bg-gradient-to-br from-emerald-500/[0.08] via-amber-500/[0.05] to-white/30
+ *   border-emerald-500/25 + backdrop-blur-xl + inset white highlight */
+.warm-card {
+  position: relative;
+  border-radius: 24px;
+  border: 1px solid rgba(16, 185, 129, 0.25);
+  background:
+    linear-gradient(
+      to bottom right,
+      rgba(16, 185, 129, 0.08) 0%,
+      rgba(245, 158, 11, 0.05) 55%,
+      rgba(255, 255, 255, 0.3) 100%
+    );
+  backdrop-filter: blur(20px) saturate(140%);
+  -webkit-backdrop-filter: blur(20px) saturate(140%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.85);
+}
+
+/* full-bleed variant — same gradient, painted edge-to-edge */
+.warm-card-bleed {
+  position: relative;
+  isolation: isolate;
+}
+.warm-card-bleed::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background:
+    linear-gradient(
+      to bottom right,
+      rgba(16, 185, 129, 0.08) 0%,
+      rgba(245, 158, 11, 0.05) 55%,
+      rgba(255, 255, 255, 0.3) 100%
+    );
+  border-top: 1px solid rgba(16, 185, 129, 0.22);
+  border-bottom: 1px solid rgba(16, 185, 129, 0.22);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7);
+}
+

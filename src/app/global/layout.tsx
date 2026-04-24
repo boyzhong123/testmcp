@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { HtmlLangSync } from '@/components/html-lang-sync';
+import { ForceLightTheme } from './_force-light';
 
 export const metadata = {
   title: 'Chivox MCP — Speech assessment for AI language agents',
@@ -24,6 +25,7 @@ export default function GlobalLayout({ children }: { children: ReactNode }) {
   return (
     <>
       <HtmlLangSync lang="en" />
+      <ForceLightTheme />
       <div translate="no" lang="en" className="min-h-screen flex flex-col bg-background text-foreground">
         {children}
       </div>

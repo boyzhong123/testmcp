@@ -6,6 +6,8 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   ArrowRight,
   ArrowUpRight,
+  AudioWaveform,
+  BookOpen,
   Check,
   Copy,
   MessageSquareText,
@@ -21,8 +23,10 @@ import {
   Mic2,
   ShieldCheck,
   Lightbulb,
+  Play,
   type LucideIcon,
 } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import { FadeUp, StaggerContainer, StaggerItem, CountUp } from '@/components/animated-section';
 
 /* ─────────────────────────────────────────────────────────────
@@ -327,29 +331,38 @@ export default function GlobalLandingPage() {
 
   return (
     <main className="flex-1 flex flex-col relative">
-      {/* warm ambient — cream/peach wash that rides the full scroll so lower sections stay saturated */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0 -z-20"
-        style={{
-          background:
-            'radial-gradient(ellipse 80% 30% at 50% 0%, rgba(253,242,213,0.65), transparent 60%),' +
-            'radial-gradient(ellipse 55% 22% at 8% 18%, rgba(251,207,232,0.28), transparent 65%),' +
-            'radial-gradient(ellipse 55% 22% at 95% 28%, rgba(191,219,254,0.30), transparent 65%),' +
-            'radial-gradient(ellipse 60% 20% at 15% 52%, rgba(254,215,170,0.28), transparent 65%),' +
-            'radial-gradient(ellipse 60% 22% at 90% 62%, rgba(196,181,253,0.28), transparent 65%),' +
-            'radial-gradient(ellipse 70% 22% at 50% 78%, rgba(252,211,170,0.32), transparent 65%),' +
-            'radial-gradient(ellipse 60% 18% at 10% 92%, rgba(167,243,208,0.24), transparent 70%),' +
-            'radial-gradient(ellipse 60% 18% at 90% 96%, rgba(253,186,202,0.24), transparent 70%),' +
-            'linear-gradient(180deg, #fdf8ec 0%, #fdf4e3 22%, #fbf1e1 48%, #fcf4e3 72%, #fdf8ec 100%)',
-        }}
-      />
+      {/* shared warm ambient — matches /global/demo's AmbientBackdrop so the
+          landing + playground read as one continuous cream surface. */}
+      <div aria-hidden className="pointer-events-none fixed inset-0 -z-20">
+        <div
+          className="absolute inset-0"
+          style={{
+            background:
+              'radial-gradient(1100px 560px at 10% -10%, #ecfdf5 0%, transparent 55%),' +
+              'radial-gradient(900px 520px at 95% 10%, #fef3c7 0%, transparent 55%),' +
+              'radial-gradient(800px 520px at 50% 110%, #fde2e4 0%, transparent 60%),' +
+              '#fbf6e9',
+          }}
+        />
+        <div
+          className="absolute inset-0 opacity-[0.05]"
+          style={{
+            backgroundImage:
+              'linear-gradient(rgba(0,0,0,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,0.5) 1px, transparent 1px)',
+            backgroundSize: '56px 56px',
+            maskImage:
+              'radial-gradient(ellipse 70% 60% at 50% 25%, black 30%, transparent 80%)',
+            WebkitMaskImage:
+              'radial-gradient(ellipse 70% 60% at 50% 25%, black 30%, transparent 80%)',
+          }}
+        />
+      </div>
       <TopNav />
 
       {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
        * HERO — "What it does" on the left, "how to plug it in" on the right.
        * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
-      <section className="relative overflow-hidden border-b border-border/60">
+      <section className="relative overflow-hidden border-b border-[#e9e2d2]/70">
         <div className="absolute inset-0 -z-10 pointer-events-none">
           <div
             className="absolute inset-0 opacity-[0.05] dark:opacity-[0.07]"
@@ -368,9 +381,9 @@ export default function GlobalLandingPage() {
           <HeroWaveGlyph />
         </div>
 
-        <div className="container mx-auto px-6 pt-16 pb-12 md:pt-20 md:pb-16 max-w-6xl">
+        <div className="container mx-auto px-5 sm:px-7 lg:px-10 pt-8 pb-12 md:pt-10 md:pb-16 max-w-7xl 2xl:max-w-[min(100%,90rem)]">
           {/* ── two-column hero: text · ear illustration ── */}
-          <div className="grid lg:grid-cols-12 gap-8 lg:gap-10 items-center">
+          <div className="grid lg:grid-cols-12 gap-8 lg:gap-12 xl:gap-14 items-center">
             {/* LEFT COLUMN */}
             <div className="lg:col-span-7">
               <FadeUp>
@@ -385,7 +398,7 @@ export default function GlobalLandingPage() {
 
               <FadeUp delay={0.06}>
                 <h1
-                  className="text-crisp text-[36px] sm:text-[48px] lg:text-[56px] xl:text-[64px] leading-[0.98] mb-6"
+                  className="text-crisp text-[36px] sm:text-[48px] lg:text-[56px] xl:text-[64px] leading-[1.1] mb-9"
                   style={{
                     fontWeight: 680,
                     letterSpacing: '-0.045em',
@@ -393,62 +406,44 @@ export default function GlobalLandingPage() {
                   }}
                 >
                   {/* line 1 */}
-                  <span className="block text-zinc-900">Give your agent</span>
+                  <span className="block text-zinc-900">Your agent can hear them.</span>
 
-                  {/* line 2 — italic serif accent with animated sound-wave flanks */}
+                  {/* line 2 — heavy sans + emerald highlighter swipe on "grade" */}
                   <span
-                    className="block relative text-zinc-700"
-                    style={{
-                      fontFamily:
-                        'var(--font-hero-serif), "Georgia", "Iowan Old Style", serif',
-                      fontStyle: 'italic',
-                      fontWeight: 500,
-                      fontSize: '0.9em',
-                      letterSpacing: '-0.015em',
-                      fontVariationSettings: '"opsz" 48, "SOFT" 50',
-                    }}
+                    className="block text-zinc-900 mt-3"
+                    style={{ fontWeight: 900, letterSpacing: '-0.045em' }}
                   >
-                    <HeroEqGlyph side="left" />
-                    the ears of a
-                    <HeroEqGlyph side="right" />
-                  </span>
-
-                  {/* line 3 — gradient + hand-drawn underline */}
-                  <span className="relative inline-block whitespace-nowrap">
-                    <span className="relative z-10 bg-gradient-to-r from-emerald-700 via-teal-600 to-lime-500 bg-clip-text text-transparent">
-                      linguistics professor.
-                    </span>
-                    <svg
-                      aria-hidden
-                      className="absolute left-0 right-0 -bottom-[0.12em] w-full h-[0.18em] overflow-visible pointer-events-none"
-                      viewBox="0 0 600 20"
-                      preserveAspectRatio="none"
-                    >
-                      <defs>
-                        <linearGradient id="hero-underline" x1="0" x2="1" y1="0" y2="0">
-                          <stop offset="0%" stopColor="#047857" />
-                          <stop offset="55%" stopColor="#14b8a6" />
-                          <stop offset="100%" stopColor="#84cc16" />
-                        </linearGradient>
-                      </defs>
-                      <path
-                        d="M4 14 Q 140 4, 290 10 T 596 8"
-                        stroke="url(#hero-underline)"
-                        strokeWidth="4"
-                        strokeLinecap="round"
-                        fill="none"
-                        opacity="0.9"
+                    Now it can{' '}
+                    <span className="relative inline-block">
+                      {/* highlighter swipe — sits behind the word */}
+                      <span
+                        aria-hidden
+                        className="absolute pointer-events-none"
+                        style={{
+                          left: '-0.08em',
+                          right: '-0.08em',
+                          top: '54%',
+                          bottom: '8%',
+                          background:
+                            'linear-gradient(100deg, rgba(110,231,183,0.55), rgba(52,211,153,0.72))',
+                          borderRadius: '6px',
+                          transform: 'skewX(-6deg)',
+                          zIndex: 0,
+                        }}
                       />
-                    </svg>
+                      <span className="relative z-10">grade</span>
+                    </span>{' '}
+                    them.
                   </span>
                 </h1>
               </FadeUp>
 
               <FadeUp delay={0.14}>
-                <p className="text-[15.5px] md:text-[17px] text-muted-foreground leading-relaxed max-w-[540px] mb-8">
-                  Whisper tells your LLM <em>what</em> was said. Chivox MCP tells it{' '}
-                  <strong className="text-foreground/90 font-semibold">how well</strong> &mdash; a phonetic
-                  matrix your model can reason over, for English and tonal Mandarin.
+                <p className="text-[15.5px] md:text-[17px] text-muted-foreground leading-relaxed max-w-2xl mb-8">
+                  Chivox MCP returns a{' '}
+                  <strong className="text-foreground/90 font-semibold">phoneme-level score matrix</strong>{' '}
+                  for English and Mandarin &mdash; one MCP call, any LLM. Built for language tutors,
+                  reading coaches, and voice-native agents.
                 </p>
               </FadeUp>
 
@@ -464,13 +459,21 @@ export default function GlobalLandingPage() {
                       <ArrowRight className="h-3.5 w-3.5" />
                     </span>
                   </Link>
-                  <a
-                    href="#quickstart"
-                    className="group inline-flex items-center gap-1.5 text-sm font-medium text-zinc-700 hover:text-zinc-900 transition-colors"
+                  <Link
+                    href="/global/demo"
+                    className="group relative inline-flex items-center gap-2 h-11 pl-4 pr-2 text-sm font-semibold rounded-full border border-emerald-500/35 bg-white/70 text-emerald-800 backdrop-blur-sm shadow-[0_8px_22px_-12px_rgba(16,185,129,0.55)] hover:border-emerald-500/60 hover:bg-white hover:-translate-y-px hover:shadow-[0_12px_28px_-12px_rgba(16,185,129,0.7)] transition-all duration-200"
                   >
-                    See it run
-                    <ArrowRight className="h-3.5 w-3.5 group-hover:translate-x-0.5 transition-transform" />
-                  </a>
+                    <span className="inline-flex items-center gap-1.5">
+                      <span className="relative inline-flex h-5 w-5 items-center justify-center rounded-full bg-emerald-500/15">
+                        <span className="absolute inset-0 rounded-full bg-emerald-500/25 animate-ping" aria-hidden />
+                        <Play className="relative h-2.5 w-2.5 fill-emerald-700 text-emerald-700" strokeWidth={0} />
+                      </span>
+                      See it run
+                    </span>
+                    <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-emerald-500/15 group-hover:bg-emerald-500/25 group-hover:translate-x-0.5 transition-all">
+                      <ArrowRight className="h-3.5 w-3.5" />
+                    </span>
+                  </Link>
                 </div>
               </FadeUp>
 
@@ -518,7 +521,7 @@ export default function GlobalLandingPage() {
 
             {/* RIGHT COLUMN — custom ear illustration */}
             <FadeUp delay={0.1} className="lg:col-span-5">
-              <div className="relative aspect-square lg:aspect-[4/5] select-none pointer-events-none">
+              <div className="relative aspect-[420/500] w-full max-w-[min(100%,640px)] ml-auto select-none pointer-events-none">
                 <HeroEarArt />
               </div>
             </FadeUp>
@@ -533,7 +536,7 @@ export default function GlobalLandingPage() {
 
           {/* deep-dive carousel — below the fold */}
           <FadeUp delay={0.4}>
-            <div className="mt-20 max-w-5xl mx-auto">
+            <div className="mt-20 max-w-6xl xl:max-w-7xl mx-auto">
               <HeroCarousel />
             </div>
           </FadeUp>
@@ -543,7 +546,7 @@ export default function GlobalLandingPage() {
       {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
        * CORE CAPABILITIES — what the MCP can do, in 4 tiles
        * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
-      <section className="relative py-16 md:py-20 border-b border-border/60 bg-gradient-to-b from-emerald-50/25 via-sky-50/20 to-violet-50/20">
+      <section className="relative py-16 md:py-20 border-b border-[#e9e2d2]/70">
         <div className="container mx-auto px-6 max-w-6xl">
           <FadeUp className="mb-10 text-center max-w-2xl mx-auto">
             <div className="text-[11px] tracking-[0.2em] uppercase text-muted-foreground mb-3">/what-it-does</div>
@@ -619,7 +622,7 @@ export default function GlobalLandingPage() {
       {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
        * QUICKSTART — 3 steps, dead simple
        * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
-      <section id="quickstart" className="relative py-20 md:py-24 border-b border-border/60 bg-gradient-to-b from-amber-50/40 via-white/40 to-rose-50/30">
+      <section id="quickstart" className="relative py-20 md:py-24 border-b border-[#e9e2d2]/70 scroll-mt-24">
         <div className="container mx-auto px-6 max-w-6xl">
           <FadeUp className="mb-12 text-center">
             <div className="text-[11px] tracking-[0.2em] uppercase text-muted-foreground mb-3">/quickstart</div>
@@ -629,6 +632,15 @@ export default function GlobalLandingPage() {
             <p className="text-muted-foreground max-w-xl mx-auto leading-relaxed">
               Watch it run. Paste config → server connects → your LLM calls a tool and gets structured scores back.
             </p>
+            <div className="mt-4 flex items-center justify-center">
+              <Link
+                href="/global/docs#quickstart"
+                className="group inline-flex items-center gap-1.5 text-[13px] font-medium text-emerald-800 hover:text-emerald-900 transition-colors"
+              >
+                Full docs &amp; API reference
+                <ArrowRight className="h-3.5 w-3.5 group-hover:translate-x-0.5 transition-transform" />
+              </Link>
+            </div>
           </FadeUp>
 
           <QuickstartDemo
@@ -644,7 +656,7 @@ export default function GlobalLandingPage() {
        * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
       <section
         id="mandarin-moat"
-        className="relative py-20 md:py-24 border-b border-border/60 scroll-mt-24 bg-gradient-to-b from-rose-50/35 via-amber-50/25 to-white/40"
+        className="relative py-20 md:py-24 border-b border-[#e9e2d2]/70 scroll-mt-24"
       >
         <div className="container mx-auto px-6 max-w-6xl">
           <FadeUp className="mb-10 max-w-3xl">
@@ -761,9 +773,9 @@ export default function GlobalLandingPage() {
       {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
        * THREE-STAGE PIPELINE — why MCP, not just another eval API
        * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
-      <section id="reasoning-engine-trigger" className="relative py-20 md:py-24 border-b border-border/60 scroll-mt-24 bg-gradient-to-b from-violet-50/25 via-rose-50/20 to-amber-50/20">
-        <div className="container mx-auto px-6 max-w-6xl">
-          <FadeUp className="mb-14 max-w-3xl">
+      <section id="reasoning-engine-trigger" className="relative py-20 md:py-24 border-b border-[#e9e2d2]/70 scroll-mt-24">
+        <div className="container mx-auto px-6 max-w-7xl">
+          <FadeUp className="mb-8 max-w-3xl">
             <div className="text-[11px] tracking-[0.2em] uppercase text-muted-foreground mb-3">
               /reasoning-engine-trigger
             </div>
@@ -773,15 +785,17 @@ export default function GlobalLandingPage() {
               <span className="text-muted-foreground/90">It&apos;s a reasoning engine trigger.</span>
             </h2>
             <p className="text-muted-foreground leading-relaxed">
-              You just saw Mandarin tones scored character-by-character. Now look at the payload behind it. A
-              flat <span className="font-mono text-foreground/80">score: 85</span> is a dead end; the rich
-              phonetic matrix we return &mdash; vowel fullness, affricate quality, pause distribution, rhythm
-              curve &mdash; is{' '}
-              <strong className="text-foreground/90 font-semibold">fuel for an LLM&apos;s chain of thought</strong>.
-              Your model runs two more passes over it: diagnose the pattern, then prescribe the drill. O1,
-              Claude 3.5 Sonnet, Gemini 2 &mdash; they all reason beautifully over this shape.
+              You just saw Mandarin scored tone-by-tone. The MCP response is a <strong className="text-foreground/90">wide JSON surface</strong>: not only
+              overall and <span className="font-mono text-foreground/80">pron.*</span> sub-scores, but fluency (WPM, pauses),{' '}
+              <span className="font-mono text-foreground/80">audio_quality</span> (SNR, clip, level), and a{' '}
+              <span className="font-mono text-foreground/80">details[]</span> array where each word or character carries millisecond
+              windows, <span className="font-mono text-foreground/80">dp_type</span>, stress, liaison, <span className="font-mono text-foreground/80">phonemes[]</span> with IPA, plus Mandarin{' '}
+              <span className="font-mono text-foreground/80">tone</span> objects and confidence distributions. That density is what lets an LLM do secondary diagnosis and
+              tertiary profiling &mdash; not a one-number API.
             </p>
           </FadeUp>
+
+          <PayloadFieldStrip />
 
           <PipelineStages />
 
@@ -837,7 +851,7 @@ export default function GlobalLandingPage() {
       {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
        * USE CASES — with real imagery
        * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
-      <section className="relative py-20 md:py-24 border-b border-border/60 bg-gradient-to-b from-violet-50/25 via-sky-50/20 to-emerald-50/20">
+      <section id="use-cases" className="relative py-20 md:py-24 border-b border-[#e9e2d2]/70 scroll-mt-24">
         <div className="container mx-auto px-6 max-w-6xl">
           <FadeUp className="mb-12 max-w-2xl">
             <div className="text-[11px] tracking-[0.2em] uppercase text-muted-foreground mb-3">/use-cases</div>
@@ -874,8 +888,8 @@ export default function GlobalLandingPage() {
       {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
        * BENCHMARKS — quiet cards with inline micro-charts
        * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
-      <section className="relative py-20 md:py-24 border-b border-border/60 bg-gradient-to-b from-amber-100/30 via-rose-50/25 to-amber-50/20">
-        <div className="container mx-auto px-6 max-w-6xl">
+      <section className="relative py-20 md:py-24 border-b border-[#e9e2d2]/70 warm-card-bleed">
+        <div className="container mx-auto px-6 max-w-6xl relative">
           <FadeUp className="mb-10">
             <div className="text-[11px] tracking-[0.2em] uppercase text-muted-foreground mb-3">/benchmarks</div>
             <h2 className="heading-display text-3xl md:text-4xl tracking-[-0.02em] mb-3">
@@ -964,7 +978,7 @@ export default function GlobalLandingPage() {
       {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
        * FAQ
        * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
-      <section className="relative py-20 md:py-24 border-b border-border/60 bg-gradient-to-b from-rose-50/25 via-amber-50/20 to-violet-50/20">
+      <section className="relative py-20 md:py-24 border-b border-[#e9e2d2]/70">
         <div className="container mx-auto px-6 max-w-4xl">
           <FadeUp className="mb-10 text-center">
             <div className="text-[11px] tracking-[0.2em] uppercase text-muted-foreground mb-3">/faq</div>
@@ -996,7 +1010,7 @@ export default function GlobalLandingPage() {
       {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
        * COMPLIANCE STRIP — stateless streaming, GDPR-aligned (condensed)
        * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
-      <section className="relative py-12 md:py-14 border-b border-border/60">
+      <section className="relative py-12 md:py-14 border-b border-[#e9e2d2]/70">
         <div className="container mx-auto px-6 max-w-6xl">
           <div className="rounded-2xl border border-zinc-900/[0.08] bg-white/55 backdrop-blur-md p-6 md:p-8">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
@@ -1035,36 +1049,45 @@ export default function GlobalLandingPage() {
       {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
        * CTA
        * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
-      <section className="relative py-24 md:py-32 border-b border-border/60 overflow-hidden">
-        <div className="absolute inset-0 -z-10 pointer-events-none">
-          <div className="absolute inset-0 bg-gradient-to-b from-muted/10 via-background to-muted/30" />
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] rounded-full blur-3xl bg-foreground/[0.04]" />
-        </div>
-        <div className="container mx-auto px-6 text-center max-w-3xl">
-          <h2 className="heading-display text-3xl md:text-5xl tracking-[-0.025em] mb-5 leading-[1.1]">
-            Ship a speech-aware agent today.
-          </h2>
-          <p className="text-muted-foreground leading-relaxed mb-9 text-base md:text-lg max-w-2xl mx-auto">
-            Free credits on signup. One config block. No credit card required. Scale into production when
-            you\u2019re ready.
-          </p>
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3">
-            <Link
-              href="/en/register"
-              className="inline-flex items-center justify-center h-12 px-8 text-sm font-semibold rounded-lg gap-2 bg-foreground text-background shadow-lg hover:-translate-y-[2px] transition-all duration-200"
-            >
-              Start free
-              <ArrowRight className="h-4 w-4" />
-            </Link>
-            <Link
-              href="/en/docs"
-              className="inline-flex items-center justify-center h-12 px-8 text-sm font-medium rounded-lg border border-border/70 bg-background hover:border-foreground/30 transition-all duration-200"
-            >
-              Read the docs
-            </Link>
-          </div>
-          <div className="mt-8 text-xs text-muted-foreground">
-            Free trial credits · Cancel anytime · Used in 185 countries
+      <section className="relative py-16 md:py-24">
+        <div className="container mx-auto px-6 max-w-6xl">
+          <div className="warm-card px-8 py-16 md:px-14 md:py-20 text-center">
+            <div className="text-[11px] font-mono tracking-[0.22em] uppercase text-emerald-700 mb-3">
+              Ready to wire it up?
+            </div>
+            <h2 className="heading-display text-3xl md:text-[44px] tracking-[-0.025em] mb-4 leading-[1.1]">
+              Same payload. Your agent. Your production loop.
+            </h2>
+            <p className="text-muted-foreground leading-relaxed mb-8 text-base md:text-[17px] max-w-2xl mx-auto">
+              Drop Chivox MCP into Cursor, Claude Desktop, or any agent SDK. One{' '}
+              <code className="font-mono text-[13px] px-1.5 py-0.5 rounded bg-zinc-900/[0.06] text-foreground/90">
+                npx
+              </code>{' '}
+              and you&rsquo;re reading the same JSON you just saw above.
+            </p>
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3">
+              <a
+                href="#quickstart"
+                className="inline-flex items-center justify-center h-11 px-6 text-sm font-semibold rounded-full gap-2 bg-zinc-900 text-white shadow-[0_10px_24px_-10px_rgba(0,0,0,0.45)] hover:-translate-y-[2px] transition-all duration-200"
+              >
+                <Terminal className="h-4 w-4 opacity-80" />
+                See quickstart
+              </a>
+              <Link
+                href="/global/docs"
+                className="inline-flex items-center justify-center h-11 px-6 text-sm font-semibold rounded-full gap-2 border border-emerald-500/35 bg-white/75 text-emerald-800 backdrop-blur-sm hover:border-emerald-500/60 hover:bg-white hover:-translate-y-[2px] transition-all duration-200 shadow-[0_8px_22px_-12px_rgba(16,185,129,0.55)]"
+              >
+                <BookOpen className="h-4 w-4" />
+                Read the docs
+              </Link>
+              <Link
+                href="/dev-en/login"
+                className="inline-flex items-center justify-center h-11 px-6 text-sm font-semibold rounded-full gap-1.5 border border-zinc-900/15 bg-white/70 backdrop-blur-sm hover:border-zinc-900/40 hover:bg-white transition-all duration-200"
+              >
+                Get your API key
+                <ArrowUpRight className="h-4 w-4 opacity-60" />
+              </Link>
+            </div>
           </div>
         </div>
       </section>
@@ -1077,6 +1100,49 @@ export default function GlobalLandingPage() {
 /* ═══════════════════════════════════════════════════════════════
  *  VISUAL COMPONENTS (drawn inline so no extra assets are needed)
  * ═══════════════════════════════════════════════════════════ */
+
+/** Representative `en.sent.score`-style payload — matches README field groups
+ *  (pron · fluency metrics · audio_quality · details[] with stress, liaison, phonemes, ms range). */
+const SAMPLE_MCP_RICH_JSON = `{
+  "overall": 84,
+  "pron": { "accuracy": 82, "integrity": 95, "fluency": 88, "rhythm": 79 },
+  "fluency": { "overall": 85, "pause": 3, "speed": 128 },
+  "audio_quality": { "snr": 24.1, "clip": 0, "volume": 2402 },
+  "details": [
+    {
+      "word": "gorgeous",
+      "score": 71, "dp_type": "mispron",
+      "start": 420, "end": 980,
+      "stress": { "ref": 1, "score": 62 },
+      "liaison": "none",
+      "phonemes": [
+        { "ipa": "ɡ", "score": 92, "dp_type": "normal" },
+        { "ipa": "ɔː", "score": 64, "dp_type": "mispron" }
+      ]
+    }
+  ]
+}`;
+
+/** Hero slide ④ — same schema story as README, English “think” row + nested pron/audio. */
+const HERO_SLIDE_REASONING_JSON = `{
+  "overall": 48,
+  "pron": { "accuracy": 44, "integrity": 90, "fluency": 72, "rhythm": 65 },
+  "fluency": { "pause": 2, "speed": 118 },
+  "audio_quality": { "snr": 19.2, "clip": 0 },
+  "details": [
+    {
+      "word": "think",
+      "score": 48, "dp_type": "mispron",
+      "start": 2400, "end": 2910,
+      "liaison": "none",
+      "phonemes": [
+        { "ipa": "θ", "score": 35, "dp_type": "mispron" },
+        { "ipa": "ɪ", "score": 88, "dp_type": "normal" }
+      ],
+      "phoneme_error": { "expected": "/θ/", "actual": "/s/" }
+    }
+  ]
+}`;
 
 /* ── Quickstart demo — types config, boots server, runs tool ─
  * A single looping timeline that makes integration feel live:
@@ -1101,6 +1167,7 @@ function QuickstartDemo({
   const [typed, setTyped] = useState(0);
   const [responseChars, setResponseChars] = useState(0);
   const [copied, setCopied] = useState(false);
+  const [hoverStep, setHoverStep] = useState<number | null>(null);
   const prefersReducedMotion = useRef(false);
 
   useEffect(() => {
@@ -1110,24 +1177,7 @@ function QuickstartDemo({
 
   const code = activeInstall.code;
 
-  const RESPONSE = useMemo(
-    () =>
-      `{
-  "overall": 84,
-  "accuracy": 82,
-  "fluency": 88,
-  "rhythm": 79,
-  "words": [
-    { "text": "gorgeous", "score": 71, "phonemes": [
-      { "p": "ɡ", "s": 92 },
-      { "p": "ɔː", "s": 64 },
-      { "p": "dʒ", "s": 58 },
-      { "p": "əs", "s": 80 }
-    ] }
-  ]
-}`,
-    []
-  );
+  const RESPONSE = useMemo(() => SAMPLE_MCP_RICH_JSON, []);
 
   /* restart the timeline whenever the tab changes */
   useEffect(() => {
@@ -1144,6 +1194,9 @@ function QuickstartDemo({
       setPhase(3);
       return;
     }
+
+    // pause auto-advance while a step is being hovered/focused
+    if (hoverStep !== null) return;
 
     let cancelled = false;
 
@@ -1196,36 +1249,67 @@ function QuickstartDemo({
         };
       }
       const t = setTimeout(() => {
-        if (!cancelled) setResponseChars((n) => Math.min(RESPONSE.length, n + 3));
-      }, 14);
+        if (!cancelled) setResponseChars((n) => Math.min(RESPONSE.length, n + 5));
+      }, 12);
       return () => {
         cancelled = true;
         clearTimeout(t);
       };
     }
-  }, [phase, typed, responseChars, code, RESPONSE]);
+  }, [phase, typed, responseChars, code, RESPONSE, hoverStep]);
 
-  const activeStep = phase === 0 ? 1 : phase >= 2 ? 2 : 1; // step 02 during typing, step 03 during call+response
+  /* ── derive a "display snapshot" ──────────────────────────────
+   * When the user hovers/focuses a step card on the left, force
+   * the right panel to render that step's canonical state instead
+   * of whatever the auto-advance is currently on. On leave, the
+   * live state is restored untouched (no jarring rewind).
+   * ─────────────────────────────────────────────────────────── */
+  const snapshot = (() => {
+    if (hoverStep === 0) {
+      // "Grab an API key" — the terminal hasn't been spun up yet. Preview
+      // the full config you'll paste once you have the key. phase = -1 hides
+      // every terminal line (no forever-spinning boot spinner).
+      return { phase: -1, typed: code.length, responseChars: 0, activeStep: 0 };
+    }
+    if (hoverStep === 1) {
+      return { phase: 1, typed: code.length, responseChars: 0, activeStep: 1 };
+    }
+    if (hoverStep === 2) {
+      return { phase: 3, typed: code.length, responseChars: RESPONSE.length, activeStep: 2 };
+    }
+    return {
+      phase,
+      typed,
+      responseChars,
+      activeStep: phase === 0 ? 1 : phase >= 2 ? 2 : 1,
+    };
+  })();
+
+  const dPhase = snapshot.phase;
+  const dTyped = snapshot.typed;
+  const dResponseChars = snapshot.responseChars;
+  const activeStep = snapshot.activeStep;
+
   const steps = [
     {
       n: '01',
       title: 'Grab an API key',
       body: 'Sign up, confirm your email, copy the key. Free trial credits included.',
       cta: { label: 'Get a key', href: '/en/register' },
-      done: true, // always marked done — assume the dev already has a key
+      done: true,
     },
     {
       n: '02',
       title: 'Add one block to your MCP config',
       body: 'Paste the snippet into Cursor, Claude Desktop, or your custom agent — pick a tab on the right.',
-      done: phase >= 1,
+      done: dPhase >= 1,
     },
     {
       n: '03',
       title: 'Call a tool from your LLM',
-      body: 'Hand your model the audio_file_path. It gets back structured scores + per-phoneme diagnostics.',
+      body: 'Hand your model the audio. It gets back nested JSON: pron sub-scores, fluency + WPM, audio SNR, and details[] with ms ranges, stress, liaison and per-phoneme rows.',
       cta: { label: 'API reference', href: '/en/docs' },
-      done: phase >= 3 && responseChars >= RESPONSE.length,
+      done: dPhase >= 3 && dResponseChars >= RESPONSE.length,
     },
   ];
 
@@ -1245,11 +1329,21 @@ function QuickstartDemo({
       <div className="lg:col-span-5 flex flex-col gap-3">
         {steps.map((s, i) => {
           const active = i === activeStep && !s.done;
+          const isHovered = hoverStep === i;
           return (
             <div
               key={s.n}
-              className={`relative rounded-xl border bg-background p-5 flex gap-4 transition-all duration-300 ${
-                active
+              onMouseEnter={() => setHoverStep(i)}
+              onMouseLeave={() => setHoverStep(null)}
+              onFocus={() => setHoverStep(i)}
+              onBlur={() => setHoverStep(null)}
+              tabIndex={0}
+              role="button"
+              aria-label={`Preview step ${s.n}: ${s.title}`}
+              className={`group relative rounded-xl border bg-background p-5 flex gap-4 transition-all duration-300 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/70 hover:-translate-y-px hover:border-emerald-400/60 hover:shadow-[0_10px_30px_-18px_rgba(16,185,129,0.55)] ${
+                isHovered
+                  ? 'border-emerald-400/80 shadow-[0_0_0_3px_rgba(16,185,129,0.10)]'
+                  : active
                   ? 'border-emerald-400/70 shadow-[0_0_0_3px_rgba(16,185,129,0.08)]'
                   : s.done
                   ? 'border-border/60'
@@ -1294,6 +1388,62 @@ function QuickstartDemo({
             </div>
           );
         })}
+
+        {/* ─── Interactive demo CTA — routes to /global/demo (Western-dev showcase) ─── */}
+        <Link
+          href="/global/demo"
+          className="group relative mt-2 rounded-2xl overflow-hidden text-left transition-all hover:-translate-y-0.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/70 shadow-[0_18px_50px_-24px_rgba(16,185,129,0.55)] hover:shadow-[0_24px_60px_-20px_rgba(16,185,129,0.7)]"
+        >
+          {/* solid colorful body */}
+          <span
+            aria-hidden
+            className="absolute inset-0 bg-gradient-to-br from-emerald-600 via-emerald-500 to-teal-600"
+          />
+          {/* soft texture overlay */}
+          <span
+            aria-hidden
+            className="absolute inset-0 opacity-[0.22] mix-blend-overlay"
+            style={{
+              backgroundImage:
+                'radial-gradient(600px 220px at 85% -10%, rgba(253,230,138,0.9), transparent 55%),' +
+                'radial-gradient(500px 260px at 5% 110%, rgba(134,239,172,0.8), transparent 55%)',
+            }}
+          />
+          {/* grid micro texture */}
+          <span
+            aria-hidden
+            className="absolute inset-0 opacity-[0.08]"
+            style={{
+              backgroundImage:
+                'linear-gradient(rgba(255,255,255,0.8) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.8) 1px, transparent 1px)',
+              backgroundSize: '28px 28px',
+            }}
+          />
+
+          <span className="relative p-5 md:p-6 flex gap-4 items-start">
+            <span className="shrink-0 h-12 w-12 rounded-xl bg-white text-emerald-600 flex items-center justify-center shadow-[0_10px_24px_-6px_rgba(0,0,0,0.35)] ring-1 ring-white/50 group-hover:scale-105 transition-transform">
+              <Play className="h-5 w-5 fill-emerald-600" strokeWidth={0} />
+            </span>
+            <span className="flex-1 min-w-0">
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-white/20 backdrop-blur-sm border border-white/30 px-2 py-0.5 text-[10px] font-mono uppercase tracking-[0.16em] text-white mb-2">
+                <span className="h-1.5 w-1.5 rounded-full bg-white shadow-[0_0_8px_rgba(255,255,255,0.9)] animate-pulse" />
+                Live playground · no mic
+              </span>
+              <span className="block text-[17px] md:text-[18px] font-bold tracking-[-0.015em] text-white mb-1 leading-tight">
+                Run a real Mandarin + English demo
+              </span>
+              <span className="block text-[13px] text-emerald-50/90 leading-relaxed">
+                Watch raw JSON → teacher diagnosis → auto-generated drill. No signup, no setup.
+              </span>
+              <span className="mt-3 inline-flex items-center gap-1.5 text-[13px] font-semibold text-white">
+                Open the playground
+                <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-white/25 group-hover:bg-white/40 group-hover:translate-x-0.5 transition-all">
+                  <ArrowUpRight className="h-3 w-3" />
+                </span>
+              </span>
+            </span>
+          </span>
+        </Link>
       </div>
 
       {/* ─── RIGHT: live editor + terminal ─── */}
@@ -1342,7 +1492,7 @@ function QuickstartDemo({
               <span className="hidden xl:inline-flex items-center gap-1.5 text-[10.5px] font-mono text-zinc-500 tracking-wider">
                 <span
                   className={`h-1.5 w-1.5 rounded-full ${
-                    phase === 0 ? 'bg-amber-400 animate-pulse' : 'bg-emerald-400'
+                    dPhase === 0 ? 'bg-amber-400 animate-pulse' : 'bg-emerald-400'
                   }`}
                 />
                 {activeInstall.filename}
@@ -1368,39 +1518,43 @@ function QuickstartDemo({
 
           {/* code viewport — typed config */}
           <pre className="text-[12.5px] leading-[1.7] font-mono p-6 whitespace-pre overflow-hidden min-h-[190px]">
-            {code.slice(0, typed)}
-            {phase === 0 && (
+            {code.slice(0, dTyped)}
+            {dPhase === 0 && hoverStep === null && (
               <span className="inline-block w-[7px] h-[1.1em] translate-y-[2px] bg-emerald-400/90 animate-pulse align-middle" />
             )}
           </pre>
 
-          {/* live terminal transcript */}
-          <div className="border-t border-white/[0.08] bg-black/30 backdrop-blur-sm px-5 py-4 font-mono text-[11.5px] leading-[1.7] text-zinc-300 space-y-1 min-h-[130px]">
+          {/* live terminal transcript — hidden while previewing step 1
+               (no server has been spun up yet, so nothing to show) */}
+          <div
+            className="border-t border-white/[0.08] bg-black/30 backdrop-blur-sm px-5 py-4 font-mono text-[11.5px] leading-[1.7] text-zinc-300 space-y-1 min-h-[130px]"
+            style={dPhase < 0 ? { display: 'none' } : undefined}
+          >
             {/* boot line */}
             <TerminalLine
-              visible={phase >= 0}
+              visible={dPhase >= 0}
               prefix="$"
               prefixClass="text-zinc-500"
-              running={phase === 0 || phase === 1}
-              done={phase >= 2}
+              running={dPhase === 0 || dPhase === 1}
+              done={dPhase >= 2}
             >
               <span className="text-zinc-100">npx</span>
               <span className="text-zinc-400"> -y @chivox/mcp</span>
-              {phase === 1 && (
+              {dPhase === 1 && (
                 <span className="ml-2 text-emerald-400">✓ connected · 4 tools registered</span>
               )}
-              {phase >= 2 && (
+              {dPhase >= 2 && (
                 <span className="ml-2 text-emerald-400">✓ ready</span>
               )}
             </TerminalLine>
 
             {/* LLM call */}
             <TerminalLine
-              visible={phase >= 2}
+              visible={dPhase >= 2}
               prefix="→"
               prefixClass="text-sky-400"
-              running={phase === 2}
-              done={phase >= 3}
+              running={dPhase === 2}
+              done={dPhase >= 3}
             >
               <span className="text-sky-300">llm.tool_call</span>
               <span className="text-zinc-500">(</span>
@@ -1411,13 +1565,13 @@ function QuickstartDemo({
             </TerminalLine>
 
             {/* response stream */}
-            {phase >= 3 && (
+            {dPhase >= 3 && (
               <div className="pt-1">
                 <div className="flex items-start gap-2">
                   <span className="text-emerald-400 shrink-0">←</span>
                   <pre className="font-mono text-[11.5px] leading-[1.65] text-emerald-200/90 whitespace-pre overflow-hidden">
-                    {RESPONSE.slice(0, responseChars)}
-                    {responseChars < RESPONSE.length && (
+                    {RESPONSE.slice(0, dResponseChars)}
+                    {dResponseChars < RESPONSE.length && hoverStep === null && (
                       <span className="inline-block w-[6px] h-[0.95em] translate-y-[1px] bg-emerald-300/80 animate-pulse align-middle" />
                     )}
                   </pre>
@@ -1500,20 +1654,11 @@ const diag = await openai.chat.completions.create({
   }, {
     role: "user",
     content: JSON.stringify(assessment)
-    // ↓ the payload Chivox MCP just returned
-    // {
-    //   "overall": 72,
-    //   "syllables": [
-    //     { "pinyin": "nǐ",    "tone": 3, "score": 88 },
-    //     { "pinyin": "hǎo",   "tone": 3, "score": 63,
-    //       "flag": "tone_collapse_to_t2" },
-    //     { "pinyin": "shàng", "tone": 4, "score": 58,
-    //       "flag": "initial_sh_retroflex_weak" },
-    //     { "pinyin": "hǎi",   "tone": 3, "score": 81 }
-    //   ],
-    //   "sandhi_violations": ["T3+T3 on 你好"],
-    //   "code_switch": null
-    // }
+    // ↓ the payload Chivox MCP just returned (same wide schema as
+    // English: pron, fluency, audio_quality, details[]; zh adds tone maps)
+    // { "pron":{...,"tone":76}, "details":[
+    //     { "char":"上","pinyin":"shang4","tone":{"ref":4,"detected":3,"score":58,"confidence":[...]}}
+    // ] }
   }]
 });`,
   drill: `// pass 3 — turn the diagnosis into a targeted practice
@@ -1565,9 +1710,10 @@ shí sì bú yào shuō sì shí.
 > forty is forty — don't say "forty" for "fourteen".
 
 **Targets:**
-• /sh/ × 6 (shì, shí, shuō)
+• /ʂ/ × 6 (shì, shí, shuō)
 • /s/ × 6  (sì) — force the contrast
-• T3→T2 sandhi × 2  (十四)
+• T2 ↔ T4 minimal pair (shí ↔ sì)
+• Bù → Bú sandhi × 1 (不要)
 
 ⏱ 45 s · repeat 3× · record and compare to
 the reference MCP score.`,
@@ -1706,6 +1852,48 @@ function ReasoningDemo() {
   );
 }
 
+/* ── Field overview — one screenful listing what “rich payload” means ─ */
+function PayloadFieldStrip() {
+  return (
+    <div className="mb-10 md:mb-12 rounded-2xl border border-violet-200/60 bg-gradient-to-br from-violet-500/[0.05] via-white/85 to-amber-500/[0.04] p-4 md:p-6 shadow-[0_1px_0_rgba(255,255,255,0.9)_inset]">
+      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 mb-4">
+        <div>
+          <p className="text-[11px] font-mono uppercase tracking-[0.16em] text-violet-700 mb-1">Dense metadata · one response</p>
+          <p className="text-[15px] font-semibold text-foreground tracking-tight">Structured for LLM reasoning, not a leaderboard cell</p>
+        </div>
+        <span className="shrink-0 self-start text-[10px] font-mono text-muted-foreground border border-dashed border-violet-300/50 rounded-md px-2 py-0.5">
+          en + zh code paths
+        </span>
+      </div>
+      <ul className="grid sm:grid-cols-2 gap-2.5 text-[12.5px] leading-snug">
+        {[
+          {
+            k: 'Session + audio QA',
+            v: 'overall · refText / session id · audio_quality: snr, clip, volume (UGC & mic checks)',
+          },
+          {
+            k: 'pron + fluency blocks',
+            v: 'accuracy, integrity, fluency, rhythm; tone row for Chinese; WPM, pause count, broader fluency',
+          },
+          {
+            k: 'details[] entries',
+            v: 'per word or 汉字: start/end ms, dp_type, stress, liaison, char-level tone + confidence[], phonemes[] with IPA & scores',
+          },
+          {
+            k: 'Error hooks',
+            v: 'phoneme_error, omissions, affricate quality — the signals agents turn into feedback without custom DSP',
+          },
+        ].map((row) => (
+          <li key={row.k} className="rounded-xl border border-zinc-900/[0.08] bg-white/75 px-3 py-2.5">
+            <div className="font-mono text-[11px] text-violet-800 mb-0.5">{row.k}</div>
+            <div className="text-muted-foreground">{row.v}</div>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
 /* ── Three-pass pipeline: assess → diagnose → drill ──────────
  * The differentiator. Most eval APIs stop at pass ①. Chivox
  * MCP hands the downstream LLM everything it needs to run
@@ -1735,21 +1923,8 @@ function PipelineStages() {
             inLabel="audio_file_path"
             outLabel="scores.json"
           >
-            <pre className="font-mono text-[11px] leading-[1.55] text-zinc-700 dark:text-zinc-300 whitespace-pre overflow-hidden">
-{`{
-  "overall":   84,
-  "accuracy": 82,
-  "fluency":  88,
-  "rhythm":   79,
-  "words": [{
-    "text": "gorgeous",
-    "score": 71,
-    "phonemes": [
-      { "p": "ɔː", "s": 64 },
-      { "p": "dʒ", "s": 58 }
-    ]
-  }]
-}`}
+            <pre className="font-mono text-[10px] leading-[1.5] text-zinc-700 dark:text-zinc-300 whitespace-pre overflow-x-auto max-h-[200px] overflow-y-auto">
+              {SAMPLE_MCP_RICH_JSON}
             </pre>
           </StageCard>
         </StaggerItem>
@@ -1800,7 +1975,7 @@ function PipelineStages() {
                   /ɔː/ minimal pairs
                 </div>
                 <div className="font-mono text-[12px] text-zinc-800 dark:text-zinc-200">
-                  caught · cot · court · cot
+                  caught · cot · bought · pot
                 </div>
               </div>
               <div className="rounded-lg bg-violet-500/5 border border-violet-500/20 p-2.5">
@@ -2110,50 +2285,67 @@ function HeroEqGlyph({ side }: { side: 'left' | 'right' }) {
 }
 
 /* ──────────────────────────────────────────────────────────
- *  HERO EAR ART — "Mandarin pitch study" illustration.
- *  A linguistics-professor's analysis sheet: hanzi watermark,
- *  pinyin with tone marks, and a live-plotted T3 pitch contour
- *  traced over a five-line pitch grid. On-brand, on-theme.
+ *  HERO EAR ART — animated two-act linguistics illustration.
+ *
+ *  Act 1 (CN, ~0–5.5s)  : Mandarin pitch-contour tracing for
+ *                          nǐ-hǎo, tone-sandhi rule detected
+ *                          (T3 + T3 → T2 + T3).
+ *  Act 2 (EN, ~5.5–10.5s): Phoneme-level scoring of "think"
+ *                          with 4 outcomes — /θ/ mispronounced
+ *                          (heard /s/), /ɪ/ good, /ŋ/ weak,
+ *                          /k/ dropped — then corrected.
+ *
+ *  CSS lives in globals.css (`.hero-ear-art`); inline SVG <style> is unreliable
+ *  in some bundlers. Honours prefers-reduced-motion.
  * ────────────────────────────────────────────────────────── */
+
 function HeroEarArt() {
-  // five horizontal pitch-grid lines (5 = high, 1 = low) — Chao tone-letter scale
-  const GRID_Y = [120, 160, 200, 240, 280];
-
-  // T3 contour for "nǐ" — dip shape: 2 → 1 → 4 on the Chao scale
-  //  starts at (x≈70, y=200), dips to (x≈135, y=280), rises to (x≈180, y=160)
-  const niPath =
-    'M 70 200 C 95 230, 120 278, 135 280 S 165 200, 180 160';
-
-  // T3 contour for "hǎo" — same dip shape, shifted right
-  const haoPath =
-    'M 240 200 C 265 230, 290 278, 305 280 S 335 200, 350 160';
-
-  // full overlay path (used for the animated "tracer" drawing effect)
-  const fullPath = `${niPath} ${haoPath.replace(/^M/, 'M')}`;
+  const pinyinStyle = {
+    fontFamily:
+      'var(--font-hero-serif, "Fraunces", "Instrument Serif", Georgia, serif)',
+    fontStyle: 'italic' as const,
+    fontWeight: 500,
+    letterSpacing: '0.01em',
+  };
+  const serifStyle = {
+    fontFamily: 'var(--font-hero-serif, "Fraunces", Georgia, serif)',
+  };
 
   return (
     <svg
       viewBox="0 0 420 500"
       role="img"
-      aria-label="Mandarin pitch contour analysis — nǐ hǎo with T3 + T3 tone curves"
-      className="w-full h-full"
+      aria-label="Mandarin pitch contour and English phoneme-diagnosis — the listening layer for voice-native agents"
+      className="hero-ear-art w-full h-full"
     >
       <defs>
-        <radialGradient id="hea-halo" cx="50%" cy="45%" r="60%">
+        <radialGradient id="hh-halo" cx="50%" cy="45%" r="60%">
           <stop offset="0%" stopColor="#d1fae5" stopOpacity="0.9" />
           <stop offset="55%" stopColor="#ecfdf5" stopOpacity="0.6" />
           <stop offset="100%" stopColor="#ffffff" stopOpacity="0" />
         </radialGradient>
-        <linearGradient id="hea-hanzi" x1="0" y1="0" x2="0" y2="1">
+        <linearGradient id="hh-hanzi" x1="0" y1="0" x2="0" y2="1">
           <stop offset="0%" stopColor="#10b981" stopOpacity="0.18" />
           <stop offset="100%" stopColor="#047857" stopOpacity="0.1" />
         </linearGradient>
-        <linearGradient id="hea-curve" x1="0" y1="0" x2="1" y2="0">
+        <linearGradient id="hh-think" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#10b981" stopOpacity="0.14" />
+          <stop offset="100%" stopColor="#047857" stopOpacity="0.08" />
+        </linearGradient>
+        <linearGradient id="hh-curve" x1="0" y1="0" x2="1" y2="0">
           <stop offset="0%" stopColor="#34d399" />
           <stop offset="55%" stopColor="#10b981" />
           <stop offset="100%" stopColor="#059669" />
         </linearGradient>
-        <filter id="hea-glow" x="-20%" y="-20%" width="140%" height="140%">
+        <linearGradient id="hh-bar" x1="0" y1="1" x2="0" y2="0">
+          <stop offset="0%" stopColor="#34d399" />
+          <stop offset="100%" stopColor="#047857" />
+        </linearGradient>
+        <linearGradient id="hh-bar-bad" x1="0" y1="1" x2="0" y2="0">
+          <stop offset="0%" stopColor="#fb7185" />
+          <stop offset="100%" stopColor="#e11d48" />
+        </linearGradient>
+        <filter id="hh-glow" x="-20%" y="-20%" width="140%" height="140%">
           <feGaussianBlur stdDeviation="2.2" result="b" />
           <feMerge>
             <feMergeNode in="b" />
@@ -2162,266 +2354,273 @@ function HeroEarArt() {
         </filter>
       </defs>
 
-      {/* soft warm halo backdrop */}
-      <ellipse cx="210" cy="240" rx="200" ry="210" fill="url(#hea-halo)" />
+      {/* shared backdrop */}
+      <ellipse cx="210" cy="240" rx="200" ry="210" fill="url(#hh-halo)" />
 
-      {/* hanzi watermark — "你好", very subtle, sets the professorial stage */}
-      <text
-        x="210"
-        y="345"
-        textAnchor="middle"
-        fontSize="220"
-        fontWeight="300"
-        fill="url(#hea-hanzi)"
-        style={{
-          fontFamily:
-            '"Noto Sans SC", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif',
-          letterSpacing: '0.02em',
-        }}
-      >
-        你好
-      </text>
-
-      {/* five-line pitch grid (Chao tone-letter scale 1–5) */}
+      {/* shared 5-line pitch grid */}
       <g opacity="0.7">
-        {GRID_Y.map((y, i) => (
-          <line
-            key={y}
-            x1="50"
-            x2="370"
-            y1={y}
-            y2={y}
-            stroke={i === 2 ? '#10b981' : '#a7f3d0'}
-            strokeOpacity={i === 2 ? 0.45 : 0.6}
-            strokeWidth={i === 2 ? 0.8 : 0.6}
-            strokeDasharray={i === 2 ? '3 3' : undefined}
-          />
-        ))}
-        {/* Chao scale labels on the left */}
-        {[5, 4, 3, 2, 1].map((n, i) => (
-          <text
-            key={n}
-            x="38"
-            y={GRID_Y[i] + 3}
-            textAnchor="end"
-            fontSize="9"
-            fill="#047857"
-            opacity="0.55"
-            fontFamily="var(--font-geist-mono, ui-monospace)"
-          >
-            {n}
-          </text>
-        ))}
+        <line x1="50" x2="370" y1="120" y2="120" stroke="#a7f3d0" strokeWidth="0.6" />
+        <line x1="50" x2="370" y1="160" y2="160" stroke="#a7f3d0" strokeWidth="0.6" />
+        <line x1="50" x2="370" y1="200" y2="200" stroke="#10b981" strokeOpacity="0.45" strokeWidth="0.8" strokeDasharray="3 3" />
+        <line x1="50" x2="370" y1="240" y2="240" stroke="#a7f3d0" strokeWidth="0.6" />
+        <line x1="50" x2="370" y1="280" y2="280" stroke="#a7f3d0" strokeWidth="0.6" />
+      </g>
+      <g opacity="0.55" fontFamily="var(--font-geist-mono, ui-monospace)" fontSize="9" fill="#047857">
+        <text x="38" y="123" textAnchor="end">5</text>
+        <text x="38" y="163" textAnchor="end">4</text>
+        <text x="38" y="203" textAnchor="end">3</text>
+        <text x="38" y="243" textAnchor="end">2</text>
+        <text x="38" y="283" textAnchor="end">1</text>
       </g>
 
-      {/* pitch contour curves — the "linguistics professor" reading */}
-      <g filter="url(#hea-glow)">
-        {/* ghost/ideal curves behind — dashed */}
-        <path
-          d={niPath}
-          fill="none"
-          stroke="#6ee7b7"
-          strokeWidth="2"
-          strokeDasharray="3 4"
-          strokeLinecap="round"
-          opacity="0.55"
-        />
-        <path
-          d={haoPath}
-          fill="none"
-          stroke="#6ee7b7"
-          strokeWidth="2"
-          strokeDasharray="3 4"
-          strokeLinecap="round"
-          opacity="0.55"
-        />
-
-        {/* animated "tracer" — the professor's pen following the pitch */}
-        <path
-          d={niPath}
-          fill="none"
-          stroke="url(#hea-curve)"
-          strokeWidth="3.4"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          pathLength={100}
-          strokeDasharray="100 100"
-          strokeDashoffset="100"
-        >
-          <animate
-            attributeName="stroke-dashoffset"
-            from="100"
-            to="0"
-            dur="2.4s"
-            begin="0s;trace2.end+0.6s"
-            fill="freeze"
-            id="trace1"
-          />
-          <animate
-            attributeName="opacity"
-            from="1"
-            to="1"
-            begin="trace2.end+3s"
-            dur="0.01s"
-            fill="freeze"
-          />
-        </path>
-        <path
-          d={haoPath}
-          fill="none"
-          stroke="url(#hea-curve)"
-          strokeWidth="3.4"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          pathLength={100}
-          strokeDasharray="100 100"
-          strokeDashoffset="100"
-        >
-          <animate
-            attributeName="stroke-dashoffset"
-            from="100"
-            to="0"
-            dur="2.4s"
-            begin="trace1.end+0.2s"
-            fill="freeze"
-            id="trace2"
-          />
-        </path>
-      </g>
-
-      {/* start / dip / end markers on each curve */}
-      <g>
-        {/* nǐ markers */}
-        <circle cx="70" cy="200" r="3.2" fill="#059669" />
-        <circle cx="135" cy="280" r="4" fill="#ffffff" stroke="#059669" strokeWidth="2">
-          <animate attributeName="r" values="3.6;5;3.6" dur="2s" repeatCount="indefinite" />
-        </circle>
-        <circle cx="180" cy="160" r="3.2" fill="#059669" />
-        {/* hǎo markers */}
-        <circle cx="240" cy="200" r="3.2" fill="#059669" />
-        <circle cx="305" cy="280" r="4" fill="#ffffff" stroke="#059669" strokeWidth="2">
-          <animate
-            attributeName="r"
-            values="3.6;5;3.6"
-            dur="2s"
-            begin="0.6s"
-            repeatCount="indefinite"
-          />
-        </circle>
-        <circle cx="350" cy="160" r="3.2" fill="#059669" />
-      </g>
-
-      {/* tone tags above each contour */}
-      <g fontFamily="var(--font-geist-mono, ui-monospace)" fontSize="10">
-        <g>
-          <rect x="105" y="92" width="54" height="20" rx="10" fill="#ffffff" stroke="#10b981" strokeOpacity="0.35" />
-          <text x="132" y="106" textAnchor="middle" fill="#047857" fontWeight="600">
-            T3 ✓
-          </text>
-        </g>
-        <g>
-          <rect x="275" y="92" width="54" height="20" rx="10" fill="#ffffff" stroke="#10b981" strokeOpacity="0.35" />
-          <text x="302" y="106" textAnchor="middle" fill="#047857" fontWeight="600">
-            T3 ✓
-          </text>
-        </g>
-      </g>
-
-      {/* pinyin labels under the grid — Fraunces-style serif for elegance */}
-      <g>
+      {/* ░░░░░ CN SCENE ░░░░░ */}
+      <g className="cn-scene">
         <text
-          x="125"
-          y="315"
-          textAnchor="middle"
-          fontSize="28"
-          fill="#065f46"
+          x="210" y="345" textAnchor="middle" fontSize="220" fontWeight="700"
+          fill="url(#hh-hanzi)"
           style={{
             fontFamily:
-              'var(--font-hero-serif, "Fraunces", "Instrument Serif", Georgia, serif)',
-            fontStyle: 'italic',
-            fontWeight: 500,
-            letterSpacing: '0.01em',
+              '"Noto Sans SC", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif',
+            letterSpacing: '0.02em',
           }}
-          className="font-pinyin"
         >
+          你好
+        </text>
+
+        {/* ghost / ideal curves */}
+        <path
+          d="M 70 200 C 95 230, 120 278, 135 280 S 165 200, 180 160"
+          fill="none" stroke="#6ee7b7" strokeWidth="2"
+          strokeDasharray="3 4" strokeLinecap="round" opacity="0.55"
+        />
+        <path
+          d="M 240 200 C 265 230, 290 278, 305 280 S 335 200, 350 160"
+          fill="none" stroke="#6ee7b7" strokeWidth="2"
+          strokeDasharray="3 4" strokeLinecap="round" opacity="0.55"
+        />
+
+        {/* animated tracers */}
+        <g filter="url(#hh-glow)">
+          <path
+            className="cn-trace cn-trace-1"
+            d="M 70 200 C 95 230, 120 278, 135 280 S 165 200, 180 160"
+            fill="none" stroke="url(#hh-curve)" strokeWidth="2.6"
+            strokeLinecap="round" strokeLinejoin="round" pathLength={100}
+          />
+          <path
+            className="cn-trace cn-trace-2"
+            d="M 240 200 C 265 230, 290 278, 305 280 S 335 200, 350 160"
+            fill="none" stroke="url(#hh-curve)" strokeWidth="2.6"
+            strokeLinecap="round" strokeLinejoin="round" pathLength={100}
+          />
+        </g>
+
+        {/* dip markers */}
+        <g>
+          <circle cx="70" cy="200" r="3.2" fill="#059669" />
+          <circle className="cn-pulse cn-pulse-1" cx="135" cy="280" r="4" fill="#ffffff" stroke="#059669" strokeWidth="2" />
+          <circle cx="180" cy="160" r="3.2" fill="#059669" />
+          <circle cx="240" cy="200" r="3.2" fill="#059669" />
+          <circle className="cn-pulse cn-pulse-2" cx="305" cy="280" r="4" fill="#ffffff" stroke="#059669" strokeWidth="2" />
+          <circle cx="350" cy="160" r="3.2" fill="#059669" />
+        </g>
+
+        {/* tone tags */}
+        <g fontFamily="var(--font-geist-mono, ui-monospace)" fontSize="10">
+          <g>
+            <rect x="105" y="92" width="54" height="20" rx="10" fill="#ffffff" stroke="#10b981" strokeOpacity="0.35" />
+            <text x="132" y="106" textAnchor="middle" fill="#047857" fontWeight="600">
+              T3 ✓
+            </text>
+          </g>
+          <g>
+            <rect x="275" y="92" width="54" height="20" rx="10" fill="#ffffff" stroke="#10b981" strokeOpacity="0.35" />
+            <text x="302" y="106" textAnchor="middle" fill="#047857" fontWeight="600">
+              T3 ✓
+            </text>
+          </g>
+        </g>
+
+        {/* pinyin */}
+        <text x="125" y="315" textAnchor="middle" fontSize="28" fill="#065f46" className="font-pinyin" style={pinyinStyle}>
           nǐ
         </text>
-        <text
-          x="295"
-          y="315"
-          textAnchor="middle"
-          fontSize="28"
-          fill="#065f46"
-          style={{
-            fontFamily:
-              'var(--font-hero-serif, "Fraunces", "Instrument Serif", Georgia, serif)',
-            fontStyle: 'italic',
-            fontWeight: 500,
-            letterSpacing: '0.01em',
-          }}
-          className="font-pinyin"
-        >
+        <text x="295" y="315" textAnchor="middle" fontSize="28" fill="#065f46" className="font-pinyin" style={pinyinStyle}>
           hǎo
         </text>
-      </g>
 
-      {/* IPA phonetic transcription strip — professor's notation */}
-      <g opacity="0.85">
+        {/* bottom: tone-sandhi rule */}
         <line x1="70" x2="350" y1="360" y2="360" stroke="#10b981" strokeOpacity="0.25" strokeDasharray="2 3" />
         <text
-          x="210"
-          y="388"
-          textAnchor="middle"
-          fontSize="13"
-          fill="#065f46"
-          fontFamily="var(--font-geist-mono, ui-monospace)"
-          letterSpacing="0.04em"
+          x="210" y="390" textAnchor="middle" fontSize="15" fontWeight="600" fill="#065f46"
+          fontFamily="var(--font-geist-mono, ui-monospace)" letterSpacing="0.06em"
         >
-          / ni˨˩˦  xɑʊ̯˨˩˦ /
+          T3 + T3 → T2 + T3
         </text>
         <text
-          x="210"
-          y="407"
-          textAnchor="middle"
-          fontSize="10"
-          fill="#047857"
-          opacity="0.7"
-          fontFamily="var(--font-geist-mono, ui-monospace)"
-          letterSpacing="0.12em"
+          x="210" y="409" textAnchor="middle" fontSize="10" fill="#047857" opacity="0.7"
+          fontFamily="var(--font-geist-mono, ui-monospace)" letterSpacing="0.14em"
         >
-          TONE · RHYTHM · PHONEME
+          TONE SANDHI · DETECTED
         </text>
+
+        {/* teacher score badge */}
+        <g transform="translate(352 70)">
+          <circle r="22" fill="#ffffff" stroke="#f43f5e" strokeOpacity="0.55" strokeWidth="1.2" />
+          <text textAnchor="middle" y="-3" fontSize="9" fill="#be123c"
+                fontFamily="var(--font-geist-mono, ui-monospace)" letterSpacing="0.1em">
+            SCORE
+          </text>
+          <text textAnchor="middle" y="13" fontSize="16" fontWeight="700" fill="#be123c" style={serifStyle}>
+            92
+          </text>
+        </g>
       </g>
 
-      {/* teacher's red-pen grade in the corner */}
-      <g transform="translate(352 70)">
-        <circle r="22" fill="#ffffff" stroke="#f43f5e" strokeOpacity="0.55" strokeWidth="1.2" />
+      {/* ░░░░░ EN SCENE — diagnosis + correction ░░░░░ */}
+      <g className="en-scene">
         <text
-          textAnchor="middle"
-          y="-3"
-          fontSize="9"
-          fill="#be123c"
-          fontFamily="var(--font-geist-mono, ui-monospace)"
-          letterSpacing="0.1em"
+          x="210" y="330" textAnchor="middle" fontSize="180" fontWeight="500" fill="url(#hh-think)"
+          style={{ ...serifStyle, fontStyle: 'italic', letterSpacing: '-0.015em' }}
         >
-          SCORE
+          think
         </text>
-        <text
-          textAnchor="middle"
-          y="13"
-          fontSize="16"
-          fontWeight="700"
-          fill="#be123c"
-          style={{
-            fontFamily:
-              'var(--font-hero-serif, "Fraunces", Georgia, serif)',
-          }}
-        >
-          92
-        </text>
+
+        {/* top column tags */}
+        <g fontFamily="var(--font-geist-mono, ui-monospace)" fontSize="10">
+          <rect x="70" y="56" width="62" height="20" rx="10" fill="#ffffff" stroke="#10b981" strokeOpacity="0.28" />
+          <text x="101" y="70" textAnchor="middle" fill="#047857" fontWeight="600">PHONEME</text>
+          <rect x="240" y="56" width="68" height="20" rx="10" fill="#ffffff" stroke="#10b981" strokeOpacity="0.28" />
+          <text x="274" y="70" textAnchor="middle" fill="#047857" fontWeight="600">ACCURACY</text>
+        </g>
+
+        {/* score bars */}
+        <rect className="en-bar en-bar-theta-init" x="82"  y="120" width="24" height="160" rx="3" fill="url(#hh-bar-bad)" />
+        <rect className="en-bar en-bar-theta-fix"  x="82"  y="120" width="24" height="160" rx="3" fill="url(#hh-bar)" />
+        <rect className="en-bar en-bar-i"          x="162" y="120" width="24" height="160" rx="3" fill="url(#hh-bar)" />
+        <rect className="en-bar en-bar-ng-init"    x="242" y="120" width="24" height="160" rx="3" fill="#f59e0b" />
+        <rect className="en-bar en-bar-ng-fix"     x="242" y="120" width="24" height="160" rx="3" fill="url(#hh-bar)" />
+        <g className="en-bar-k-ghost">
+          <rect
+            x="322" y="120" width="24" height="160" rx="3"
+            fill="#fff1f2" fillOpacity="0.4"
+            stroke="#f43f5e" strokeOpacity="0.55"
+            strokeWidth="1.2" strokeDasharray="3 3"
+          />
+          <line x1="322" x2="346" y1="278" y2="278" stroke="#f43f5e" strokeWidth="2" />
+        </g>
+        <rect className="en-bar en-bar-k-fix" x="322" y="120" width="24" height="160" rx="3" fill="url(#hh-bar)" />
+
+        {/* diagnostic labels */}
+        <g className="en-label-bad" fontFamily="var(--font-geist-mono, ui-monospace)" fontWeight="700">
+          <text x="94"  y="105" textAnchor="middle" fontSize="9"  fill="#be123c" letterSpacing="0.14em">HEARD</text>
+          <text x="94"  y="120" textAnchor="middle" fontSize="13" fill="#be123c" style={serifStyle}>/s/</text>
+          <text x="254" y="162" textAnchor="middle" fontSize="9"  fill="#b45309" letterSpacing="0.18em">WEAK</text>
+          <text x="334" y="105" textAnchor="middle" fontSize="9"  fill="#be123c" letterSpacing="0.16em">DROPPED</text>
+          <text x="334" y="120" textAnchor="middle" fontSize="13" fill="#be123c" style={serifStyle}>—</text>
+        </g>
+
+        {/* phoneme chips — outer <g> carries the static translate,
+            inner animated <g> is free to apply CSS translateY without
+            clobbering the position. */}
+        <g fontFamily="var(--font-geist-mono, ui-monospace)" fontSize="13" fontWeight="600">
+          {/* /θ/ chip */}
+          <g transform="translate(94 298)">
+            <g className="en-chip en-chip-0">
+              <g className="en-state-init">
+                <rect x="-22" y="0" width="44" height="22" rx="11" fill="#fff1f2" stroke="#f43f5e" strokeOpacity="0.55" />
+                <text x="0" y="15" textAnchor="middle" fill="#be123c">/s/</text>
+              </g>
+              <g className="en-state-fix">
+                <rect x="-22" y="0" width="44" height="22" rx="11" fill="#ecfdf5" stroke="#10b981" strokeOpacity="0.6" />
+                <text x="0" y="15" textAnchor="middle" fill="#047857">/θ/</text>
+              </g>
+            </g>
+          </g>
+          {/* /ɪ/ chip — always good */}
+          <g transform="translate(174 298)">
+            <g className="en-chip en-chip-1">
+              <rect x="-22" y="0" width="44" height="22" rx="11" fill="#ecfdf5" stroke="#10b981" strokeOpacity="0.55" />
+              <text x="-3" y="15" textAnchor="middle" fill="#047857">/ɪ/</text>
+              <text x="14" y="15" textAnchor="middle" fill="#10b981" fontSize="11">✓</text>
+            </g>
+          </g>
+          {/* /ŋ/ chip */}
+          <g transform="translate(254 298)">
+            <g className="en-chip en-chip-2">
+              <g className="en-state-init">
+                <rect x="-22" y="0" width="44" height="22" rx="11" fill="#fffbeb" stroke="#f59e0b" strokeOpacity="0.6" />
+                <text x="0" y="15" textAnchor="middle" fill="#b45309">/ŋ/</text>
+              </g>
+              <g className="en-state-fix">
+                <rect x="-22" y="0" width="44" height="22" rx="11" fill="#ecfdf5" stroke="#10b981" strokeOpacity="0.6" />
+                <text x="0" y="15" textAnchor="middle" fill="#047857">/ŋ/</text>
+              </g>
+            </g>
+          </g>
+          {/* /k/ chip */}
+          <g transform="translate(334 298)">
+            <g className="en-chip en-chip-3">
+              <g className="en-state-init">
+                <rect x="-22" y="0" width="44" height="22" rx="11" fill="#fff1f2" fillOpacity="0.4" stroke="#f43f5e" strokeOpacity="0.6" strokeDasharray="3 3" />
+                <text x="0" y="15" textAnchor="middle" fill="#be123c" opacity="0.8">/k/</text>
+              </g>
+              <g className="en-state-fix">
+                <rect x="-22" y="0" width="44" height="22" rx="11" fill="#ecfdf5" stroke="#10b981" strokeOpacity="0.6" />
+                <text x="0" y="15" textAnchor="middle" fill="#047857">/k/</text>
+              </g>
+            </g>
+          </g>
+        </g>
+
+        {/* correction arrows */}
+        <g fill="none" stroke="#10b981" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" pathLength={30}>
+          <g className="en-arrow en-arrow-1">
+            <path d="M 60 250 C 60 270, 85 282, 94 280" />
+            <path d="M 90 277 L 94 280 L 91 283" />
+          </g>
+          <g className="en-arrow en-arrow-2">
+            <path d="M 220 250 C 230 274, 245 282, 254 280" />
+            <path d="M 250 277 L 254 280 L 251 283" />
+          </g>
+          <g className="en-arrow en-arrow-3">
+            <path d="M 380 250 C 370 272, 345 282, 334 280" />
+            <path d="M 337 277 L 334 280 L 336 283" />
+          </g>
+        </g>
+
+        {/* bottom caption swap */}
+        <line x1="70" x2="350" y1="360" y2="360" stroke="#10b981" strokeOpacity="0.25" strokeDasharray="2 3" />
+        <g className="en-cap-bad" fontFamily="var(--font-geist-mono, ui-monospace)">
+          <text x="210" y="390" textAnchor="middle" fontSize="15" fontWeight="700" fill="#be123c" letterSpacing="0.06em">
+            3 ISSUES · DETECTED
+          </text>
+          <text x="210" y="409" textAnchor="middle" fontSize="10" fill="#b91c1c" opacity="0.85" letterSpacing="0.14em">
+            MISSING · WEAK · MISPRONOUNCED
+          </text>
+        </g>
+        <g className="en-cap-good" fontFamily="var(--font-geist-mono, ui-monospace)">
+          <text x="210" y="390" textAnchor="middle" fontSize="15" fontWeight="700" fill="#065f46" letterSpacing="0.06em">
+            ALL CORRECTED
+          </text>
+          <text x="210" y="409" textAnchor="middle" fontSize="10" fill="#047857" opacity="0.85" letterSpacing="0.14em">
+            PHONEME DIAGNOSIS · SUPERVISED
+          </text>
+        </g>
+
+        {/* score badge 58 → 92 */}
+        <g transform="translate(352 70)">
+          <circle r="22" fill="#ffffff" stroke="#10b981" strokeOpacity="0.5" strokeWidth="1.2" />
+          <text textAnchor="middle" y="-3" fontSize="9" fill="#047857"
+                fontFamily="var(--font-geist-mono, ui-monospace)" letterSpacing="0.1em">
+            SCORE
+          </text>
+          <text className="en-score-bad"  textAnchor="middle" y="13" fontSize="16" fontWeight="700" fill="#be123c" style={serifStyle}>58</text>
+          <text className="en-score-good" textAnchor="middle" y="13" fontSize="16" fontWeight="700" fill="#047857" style={serifStyle}>92</text>
+        </g>
       </g>
 
-      {/* scattered decorative dots for warmth */}
+      {/* scattered decorative dots */}
       <g fill="#10b981" opacity="0.35">
         <circle cx="46" cy="78" r="1.6" />
         <circle cx="388" cy="130" r="1.2" />
@@ -2429,20 +2628,12 @@ function HeroEarArt() {
         <circle cx="400" cy="370" r="1.6" />
         <circle cx="60" cy="440" r="1.2" />
       </g>
-
-      {/* outer concentric ring — continuity with previous design */}
-      <circle
-        cx="210"
-        cy="240"
-        r="200"
-        fill="none"
-        stroke="#10b981"
-        strokeOpacity="0.08"
-        strokeDasharray="2 6"
-      />
+      {/* outer dashed ring */}
+      <circle cx="210" cy="240" r="200" fill="none" stroke="#10b981" strokeOpacity="0.08" strokeDasharray="2 6" />
     </svg>
   );
 }
+
 
 
 /* ──────────────────────────────────────────────────────────
@@ -2498,26 +2689,34 @@ const HERO_SLIDES = [
   {
     id: 'setup',
     label: 'Instant setup',
-    chip: '60 seconds',
+    chip: 'npx · 60 s',
     tone: 'emerald',
-    headline: 'Shipped in one npx command.',
-    sub: 'Drop into Claude, Cursor or any agent — four MCP tools, zero audio code.',
+    headline: 'Ship voice scoring in one npx.',
+    sub: 'Four MCP tools. Works inside Claude, Cursor, Cline — zero audio plumbing.',
   },
   {
     id: 'mandarin',
     label: 'Mandarin moat',
-    chip: 'Hard mode',
+    chip: 'Tonal · hard mode',
     tone: 'rose',
     headline: 'Tell 睡觉 from 水饺.',
-    sub: 'Tone, sandhi, erhua and retroflex scoring — the moat generic STTs can\u2019t cross.',
+    sub: 'Tone · sandhi · erhua · retroflex — the Mandarin moat Whisper just shrugs at.',
+  },
+  {
+    id: 'phoneme',
+    label: 'Phoneme-level listening',
+    chip: 'Beyond STT',
+    tone: 'violet',
+    headline: 'Hears phonemes, not just words.',
+    sub: 'Per-phoneme accuracy, stress and liaison — a linguistics professor\u2019s ear, on-demand.',
   },
   {
     id: 'reasoning',
-    label: 'Fuel for LLM reasoning',
-    chip: 'phoneme-level',
-    tone: 'violet',
-    headline: 'Phoneme-level JSON, not a flat score.',
-    sub: 'Rich chain-of-thought fuel for o1, Sonnet 3.5 and Gemini 2 to reason over.',
+    label: 'Rich data for LLM reasoning',
+    chip: 'Agent-ready',
+    tone: 'amber',
+    headline: 'A payload your LLM can reason over.',
+    sub: 'Dozens of top-level and per-token fields: pron, fluency, audio_quality, and details[] with stress, liaison, ms ranges & phonemes.',
   },
 ] as const;
 
@@ -2539,7 +2738,7 @@ function HeroInstallPill() {
   };
 
   return (
-    <div className="mx-auto max-w-3xl mb-12">
+    <div className="mx-auto max-w-5xl mb-12">
       {/* label row */}
       <div className="flex items-center justify-center gap-2 mb-2.5 text-[11px] tracking-[0.14em] uppercase text-muted-foreground">
         <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/25 px-2 py-0.5 text-[10px] font-mono normal-case tracking-wider text-emerald-700">
@@ -2626,37 +2825,95 @@ function HeroInstallPill() {
   );
 }
 
+/** Time between auto-advances; progress bar uses the same duration. */
+const HERO_CAROUSEL_MS = 3500;
+
 function HeroCarousel() {
   const [active, setActive] = useState<HeroSlideId>('mandarin');
-  const [paused, setPaused] = useState(false);
+  const [reduceMotion, setReduceMotion] = useState(false);
+
+  // Progress is intentionally NOT React state — writing it every frame via
+  // setState would re-render the entire carousel (including all slide
+  // children) 60×/s, which is what caused the visible "freeze" stutters
+  // under load. Instead we mutate a ref and write transform directly to
+  // the DOM. React only owns the rare slide change.
+  const progressRef = useRef(0);
+  const barRef = useRef<HTMLDivElement | null>(null);
+  const pausedRef = useRef(false);
+
+  const writeBar = (v: number) => {
+    const el = barRef.current;
+    if (el) el.style.transform = `scaleX(${reduceMotion ? 0 : v})`;
+  };
 
   useEffect(() => {
-    if (paused) return;
-    const id = setInterval(() => {
-      setActive((cur) => {
-        const i = HERO_SLIDES.findIndex((s) => s.id === cur);
-        return HERO_SLIDES[(i + 1) % HERO_SLIDES.length].id;
-      });
-    }, 5200);
-    return () => clearInterval(id);
-  }, [paused]);
+    const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const apply = () => setReduceMotion(mq.matches);
+    apply();
+    mq.addEventListener('change', apply);
+    return () => mq.removeEventListener('change', apply);
+  }, []);
+
+  // Reset progress whenever the active slide changes (manual click or auto).
+  useEffect(() => {
+    progressRef.current = 0;
+    writeBar(0);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [active, reduceMotion]);
+
+  // One rAF loop for the lifetime of the component. It reads `pausedRef`
+  // so mouse hover/leave doesn't tear the loop down — no cleanup thrash,
+  // no missed frames, no drift.
+  useEffect(() => {
+    if (reduceMotion) {
+      writeBar(0);
+      return;
+    }
+    let raf = 0;
+    let last = performance.now();
+    const tick = (now: number) => {
+      // Backgrounded tabs can deliver huge dt spikes; clamp so a wake-up
+      // doesn't fling the bar a full slide forward.
+      const dt = Math.min(100, now - last);
+      last = now;
+      if (!pausedRef.current) {
+        const next = Math.min(1, progressRef.current + dt / HERO_CAROUSEL_MS);
+        progressRef.current = next;
+        writeBar(next);
+        if (next >= 1) {
+          progressRef.current = 0;
+          writeBar(0);
+          setActive((cur) => {
+            const i = HERO_SLIDES.findIndex((s) => s.id === cur);
+            return HERO_SLIDES[(i + 1) % HERO_SLIDES.length].id;
+          });
+        }
+      }
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [reduceMotion]);
 
   const activeIdx = HERO_SLIDES.findIndex((s) => s.id === active);
 
-  // position relative to active: 0 = center, -1 = left, +1 = right
-  const positionFor = (idx: number): -1 | 0 | 1 => {
+  // position relative to active: 0 = center, -1 = prev (left peek),
+  // +1 = next (right peek), 2 = parked out of view.
+  const positionFor = (idx: number): -1 | 0 | 1 | 2 => {
     const n = HERO_SLIDES.length;
     const d = ((idx - activeIdx) % n + n) % n;
     if (d === 0) return 0;
     if (d === 1) return 1;
-    return -1;
+    if (d === n - 1) return -1;
+    return 2;
   };
 
   return (
     <div
       className="relative"
-      onMouseEnter={() => setPaused(true)}
-      onMouseLeave={() => setPaused(false)}
+      onMouseEnter={() => { pausedRef.current = true; }}
+      onMouseLeave={() => { pausedRef.current = false; }}
     >
       <div className="absolute -inset-4 rounded-3xl bg-foreground/[0.04] blur-2xl pointer-events-none" />
 
@@ -2665,22 +2922,26 @@ function HeroCarousel() {
         {HERO_SLIDES.map((slide, i) => {
           const pos = positionFor(i);
           const isActive = pos === 0;
+          const isParked = pos === 2;
           const transform =
             pos === 0
               ? 'translate(-50%, 0) scale(1)'
               : pos === -1
               ? 'translate(-112%, 4%) scale(0.74)'
-              : 'translate(12%, 4%) scale(0.74)';
+              : pos === 1
+              ? 'translate(12%, 4%) scale(0.74)'
+              : 'translate(-50%, 6%) scale(0.6)'; // parked
 
           return (
             <div
               key={slide.id}
-              role={isActive ? undefined : 'button'}
-              tabIndex={isActive ? -1 : 0}
-              aria-label={isActive ? undefined : `Show slide ${slide.label}`}
-              onClick={isActive ? undefined : () => setActive(slide.id)}
+              role={isActive || isParked ? undefined : 'button'}
+              tabIndex={isActive || isParked ? -1 : 0}
+              aria-hidden={isParked || undefined}
+              aria-label={isActive || isParked ? undefined : `Show slide ${slide.label}`}
+              onClick={isActive || isParked ? undefined : () => setActive(slide.id)}
               onKeyDown={
-                isActive
+                isActive || isParked
                   ? undefined
                   : (e) => {
                       if (e.key === 'Enter' || e.key === ' ') {
@@ -2692,6 +2953,8 @@ function HeroCarousel() {
               className={`absolute left-1/2 top-0 w-[min(100%,680px)] origin-top transition-all duration-[600ms] ease-[cubic-bezier(0.22,0.61,0.36,1)] ${
                 isActive
                   ? 'z-20 opacity-100 pointer-events-auto cursor-default'
+                  : isParked
+                  ? 'z-0 opacity-0 pointer-events-none'
                   : 'z-10 opacity-55 hover:opacity-80 cursor-pointer'
               }`}
               style={{
@@ -2705,8 +2968,19 @@ function HeroCarousel() {
         })}
       </div>
 
-      {/* footer — slogan + slide nav */}
+      {/* footer — auto-advance progress + slogan + slide nav */}
       <div className="mt-1 max-w-[720px] mx-auto px-1">
+        <div className="mb-3 h-1 w-full rounded-full bg-foreground/[0.07] overflow-hidden" aria-hidden>
+          <div
+            ref={barRef}
+            className="h-full w-full origin-left rounded-full will-change-transform"
+            style={{
+              transform: `scaleX(${reduceMotion ? 0 : 0})`,
+              background:
+                'linear-gradient(90deg, #10b981 0%, #34d399 50%, #fbbf24 100%)',
+            }}
+          />
+        </div>
         <div className="relative min-h-[76px]">
           {HERO_SLIDES.map((s, i) => (
             <div
@@ -2725,6 +2999,8 @@ function HeroCarousel() {
                       ? 'bg-emerald-500/10 text-emerald-700 border border-emerald-500/25'
                       : s.tone === 'rose'
                       ? 'bg-rose-500/10 text-rose-700 border border-rose-500/25'
+                      : s.tone === 'amber'
+                      ? 'bg-amber-500/10 text-amber-700 border border-amber-500/30'
                       : 'bg-violet-500/10 text-violet-700 border border-violet-500/25'
                   }`}
                 >
@@ -2791,7 +3067,9 @@ function HeroSlideCard({
             ? 'mcp.config'
             : slide.id === 'mandarin'
             ? 'assess.mandarin'
-            : 'assess.phoneme'}
+            : slide.id === 'phoneme'
+            ? 'phoneme.diagnose'
+            : 'agent.reasoning'}
         </div>
         <span
           className={`inline-flex items-center gap-1 rounded-md border px-1.5 py-0.5 text-[10px] font-mono uppercase tracking-wider ${
@@ -2799,6 +3077,8 @@ function HeroSlideCard({
               ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300'
               : slide.tone === 'rose'
               ? 'border-rose-500/30 bg-rose-500/10 text-rose-700 dark:text-rose-300'
+              : slide.tone === 'amber'
+              ? 'border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-300'
               : 'border-violet-500/30 bg-violet-500/10 text-violet-700 dark:text-violet-300'
           }`}
         >
@@ -2810,6 +3090,7 @@ function HeroSlideCard({
       <div className="relative min-h-[360px] md:min-h-[400px]">
         {slide.id === 'setup' && <HeroSlideSetup />}
         {slide.id === 'mandarin' && <HeroSlideMandarin />}
+        {slide.id === 'phoneme' && <HeroSlidePhoneme />}
         {slide.id === 'reasoning' && <HeroSlideReasoning />}
       </div>
     </div>
@@ -2846,92 +3127,292 @@ function HeroSlideSetup() {
   );
 }
 
-/* Slide 02 — Mandarin moat: tone-error comparison */
+/* Slide 02 — Mandarin moat: pitch-contour visualization.
+ * Hero visual is an F0 trace plot. Text annotations sit at
+ * the top and bottom; the "generic-STT mishears it as 睡觉"
+ * fact becomes a small side-note rather than a competing
+ * red box. Conveys "we see pitch, not just phonemes". */
 function HeroSlideMandarin() {
+  // Pitch plot layout (viewBox 0-360 × 0-150)
+  //   y=10  → high (5)
+  //   y=140 → low  (1)
+  const y = (v: number) => 10 + ((5 - v) * 130) / 4; // v ∈ [1..5]
+
   return (
-    <div className="h-full p-5 md:p-6 flex flex-col gap-4">
-      <div className="text-[10.5px] uppercase tracking-[0.18em] text-muted-foreground">
-        mandarin tone detection
+    <div className="h-full p-5 md:p-6 flex flex-col gap-4 relative">
+      {/* Header row */}
+      <div className="flex items-center justify-between">
+        <div className="text-[10.5px] uppercase tracking-[0.18em] text-muted-foreground">
+          pitch trace · F0 contour
+        </div>
+        <span className="inline-flex items-center gap-1 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2 py-0.5 text-[10px] font-mono uppercase tracking-wider text-emerald-700">
+          <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+          locked to tone
+        </span>
       </div>
 
-      {/* bad row */}
-      <div className="rounded-xl border border-rose-500/25 bg-rose-500/[0.06] px-4 py-3">
-        <div className="flex items-center justify-between mb-1.5">
-          <span className="text-[10.5px] font-mono uppercase tracking-wider text-rose-600">
-            ❌ generic STT
-          </span>
-          <span className="text-[10.5px] font-mono text-rose-600/80">heard wrong word</span>
-        </div>
+      {/* Target word, big and quiet */}
+      <div className="flex items-end justify-between gap-4">
         <div className="flex items-baseline gap-3">
-          <span className="font-pinyin text-[15px] leading-[1.6] text-rose-700">shuì jiào</span>
-          <span className="font-zh text-2xl text-rose-700">睡觉</span>
-          <span className="ml-auto text-[11px] text-rose-600/80">= sleep</span>
+          <span className="font-zh text-[44px] leading-none tracking-tight text-zinc-900">水饺</span>
+          <div className="flex flex-col">
+            <span className="font-pinyin text-[15px] text-zinc-700">shuǐ jiǎo</span>
+            <span className="text-[10.5px] font-mono text-zinc-500">= dumplings</span>
+          </div>
+        </div>
+        <div className="text-right">
+          <div className="text-[10px] font-mono uppercase tracking-wider text-zinc-400">target tones</div>
+          <div className="font-mono text-[13px] text-zinc-800 tabular-nums">T3 + T3</div>
+          <div className="text-[10px] font-mono text-emerald-700">→ sandhi: T2 + T3</div>
         </div>
       </div>
 
-      {/* good row */}
-      <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/[0.07] px-4 py-3">
-        <div className="flex items-center justify-between mb-1.5">
-          <span className="text-[10.5px] font-mono uppercase tracking-wider text-emerald-700">
-            ✓ chivox mcp
+      {/* Pitch-contour plot */}
+      <div className="relative rounded-xl border border-zinc-900/[0.08] bg-gradient-to-br from-white/70 via-white/50 to-emerald-50/40 backdrop-blur-sm px-3 pt-3 pb-2">
+        <svg viewBox="0 0 360 150" className="w-full h-[150px]" aria-hidden>
+          <defs>
+            <linearGradient id="traceGrad" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0%" stopColor="#10b981" />
+              <stop offset="55%" stopColor="#10b981" />
+              <stop offset="55%" stopColor="#059669" />
+              <stop offset="100%" stopColor="#047857" />
+            </linearGradient>
+          </defs>
+
+          {/* gridlines — tone levels 1..5 */}
+          {[1, 2, 3, 4, 5].map((lvl) => (
+            <g key={lvl}>
+              <line x1="24" x2="348" y1={y(lvl)} y2={y(lvl)} stroke="rgba(24,24,27,0.06)" strokeWidth="1" />
+              <text x="10" y={y(lvl) + 3} fontSize="8" fontFamily="ui-monospace, monospace" fill="rgba(24,24,27,0.35)">
+                {lvl}
+              </text>
+            </g>
+          ))}
+
+          {/* syllable dividers */}
+          <line x1="184" x2="184" y1="10" y2="140" stroke="rgba(24,24,27,0.08)" strokeDasharray="3 3" />
+
+          {/* Actual (produced) contour — solid emerald */}
+          {/* shuǐ → rises 3→5 (sandhi T2), jiǎo → 2-1-4 dip-rise (T3) */}
+          <path
+            d="M 30 90  C 70 88, 110 48, 170 18
+               L 184 18
+               M 198 62  C 230 62, 246 138, 268 134
+               C 290 130, 310 90, 340 28"
+            fill="none"
+            stroke="url(#traceGrad)"
+            strokeWidth="2.6"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+
+          {/* Citation (target) contour — dashed, light */}
+          {/* Both syllables drawn as full T3 (2-1-4) to show what citation would be */}
+          <path
+            d="M 30 62  C 60 130, 110 138, 140 90  C 158 66, 172 30, 184 22
+               M 198 62  C 228 130, 260 138, 290 90  C 308 66, 322 30, 336 22"
+            fill="none"
+            stroke="rgba(16,185,129,0.35)"
+            strokeWidth="1.4"
+            strokeDasharray="3 3"
+            strokeLinecap="round"
+          />
+
+          {/* syllable labels */}
+          <text x="100" y="145" fontSize="9.5" fontFamily="ui-monospace, monospace" fill="rgba(16,185,129,0.85)" textAnchor="middle">
+            shuǐ · rising
+          </text>
+          <text x="265" y="145" fontSize="9.5" fontFamily="ui-monospace, monospace" fill="rgba(16,185,129,0.85)" textAnchor="middle">
+            jiǎo · dip–rise
+          </text>
+
+          {/* end dot */}
+          <circle cx="340" cy="28" r="3.5" fill="#059669" />
+          <circle cx="340" cy="28" r="6" fill="#10b981" opacity="0.18" />
+        </svg>
+
+        {/* legend */}
+        <div className="flex items-center gap-3 px-1 pt-1 text-[10px] font-mono text-zinc-500">
+          <span className="inline-flex items-center gap-1.5">
+            <span className="inline-block h-[2px] w-4 rounded-full bg-emerald-600" />
+            produced
           </span>
-          <span className="text-[10.5px] font-mono text-emerald-700/80">tone-level match</span>
-        </div>
-        <div className="flex items-baseline gap-3">
-          <span className="font-pinyin text-[15px] leading-[1.6] text-emerald-800">shuǐ jiǎo</span>
-          <span className="font-zh text-2xl text-emerald-800">水饺</span>
-          <span className="ml-auto text-[11px] text-emerald-700/80">= dumplings</span>
-        </div>
-        {/* tone contour chips */}
-        <div className="mt-2.5 flex items-center gap-2 text-[10.5px] font-mono text-emerald-700/90">
-          <span className="inline-flex items-center gap-1 rounded-md border border-emerald-500/30 bg-white/50 px-1.5 py-0.5">
-            <svg width="18" height="10" viewBox="0 0 18 10"><path d="M1 8 Q 5 8, 9 5 T 17 2" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" /></svg>
-            <span>3rd tone · <span className="font-pinyin">shuǐ</span></span>
+          <span className="inline-flex items-center gap-1.5">
+            <span className="inline-block h-[2px] w-4 rounded-full border-t border-dashed border-emerald-500/60" />
+            citation
           </span>
-          <span className="inline-flex items-center gap-1 rounded-md border border-emerald-500/30 bg-white/50 px-1.5 py-0.5">
-            <svg width="18" height="10" viewBox="0 0 18 10"><path d="M1 2 Q 5 9, 9 6 T 17 2" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" /></svg>
-            <span>3rd tone · <span className="font-pinyin">jiǎo</span></span>
-          </span>
+          <span className="ml-auto">F0 · 5-level Chao</span>
         </div>
       </div>
 
-      <div className="mt-auto text-[11.5px] text-muted-foreground leading-relaxed">
-        Catches tones, erhua, sandhi & the difference between <span className="font-pinyin text-foreground/80">mā</span> (mom) and <span className="font-pinyin text-foreground/80">mǎ</span> (horse).
+      {/* generic-STT side-note — deliberately small, so the plot stays king */}
+      <div className="rounded-lg border border-zinc-900/[0.06] bg-white/50 px-3 py-2 flex items-center gap-2.5">
+        <span className="text-[10px] font-mono uppercase tracking-wider text-zinc-400 shrink-0">
+          generic STT
+        </span>
+        <span className="text-[12px] text-zinc-600">
+          heard <span className="font-zh text-zinc-800">睡觉</span>{' '}
+          <span className="font-pinyin">(shuì jiào · sleep)</span>
+        </span>
+        <span className="ml-auto text-[10px] font-mono text-rose-500">✕ tone miss</span>
+      </div>
+
+      <div className="text-[11px] text-zinc-500 leading-relaxed">
+        Catches tones, erhua, neutral tone &amp; sandhi — the difference between{' '}
+        <span className="font-pinyin text-zinc-700">mā</span> (mom) and{' '}
+        <span className="font-pinyin text-zinc-700">mǎ</span> (horse).
       </div>
     </div>
   );
 }
 
 /* Slide 03 — Reasoning-ready payload: JSON → agent reply */
+/* ── Hero slide 3 — phoneme-level diagnostics.
+ *    What the listening layer actually *hears* — per-phoneme
+ *    accuracy bars plus supra-segmental cues (stress, liaison,
+ *    intonation). Intentionally granular; no prose.
+ * ───────────────────────────────────────────────────────── */
+function HeroSlidePhoneme() {
+  const phones: Array<{
+    ipa: string;
+    v: number;
+    status: 'ok' | 'weak' | 'bad' | 'dropped';
+    note?: string;
+  }> = [
+    { ipa: '/θ/', v: 35, status: 'bad', note: 'heard /s/' },
+    { ipa: '/ɪ/', v: 92, status: 'ok' },
+    { ipa: '/ŋ/', v: 54, status: 'weak', note: 'weak release' },
+    { ipa: '/k/', v: 0,  status: 'dropped', note: 'dropped' },
+  ];
+  const barCls = (s: (typeof phones)[number]['status']) =>
+    s === 'ok'      ? 'bg-gradient-to-t from-emerald-400 to-emerald-600'
+    : s === 'weak'  ? 'bg-gradient-to-t from-amber-300 to-amber-500'
+    : s === 'bad'   ? 'bg-gradient-to-t from-rose-400 to-rose-600'
+    :                 'bg-transparent border border-dashed border-rose-400';
+  const chipCls = (s: (typeof phones)[number]['status']) =>
+    s === 'ok'      ? 'bg-emerald-50 text-emerald-700 border-emerald-500/30'
+    : s === 'weak'  ? 'bg-amber-50 text-amber-700 border-amber-500/40'
+    :                 'bg-rose-50 text-rose-700 border-rose-500/30';
+  return (
+    <div className="h-full p-5 md:p-6 flex flex-col gap-3">
+      <div className="flex items-center justify-between text-[10.5px] uppercase tracking-[0.18em] text-muted-foreground">
+        <span>word · <span className="font-mono normal-case tracking-normal text-foreground/85">think</span></span>
+        <span className="font-mono text-[11px] normal-case tracking-normal">/θɪŋk/</span>
+      </div>
+
+      {/* phoneme grid */}
+      <div className="rounded-xl border border-zinc-900/[0.08] bg-white/60 backdrop-blur-sm p-4">
+        <div className="grid grid-cols-4 gap-3">
+          {phones.map((p, i) => (
+            <div key={i} className="flex flex-col items-center gap-2">
+              {/* bar */}
+              <div className="relative h-[90px] w-full flex items-end">
+                <div className="absolute inset-x-0 top-0 h-px bg-zinc-900/[0.06]" />
+                <div className="absolute inset-x-0 top-1/3 h-px bg-zinc-900/[0.04]" />
+                <div className="absolute inset-x-0 top-2/3 h-px bg-zinc-900/[0.06]" />
+                <div
+                  className={`mx-auto w-7 rounded-t-[4px] ${barCls(p.status)}`}
+                  style={{ height: `${Math.max(p.v, p.status === 'dropped' ? 100 : 0)}%`, minHeight: p.status === 'dropped' ? '100%' : '4px' }}
+                />
+              </div>
+              {/* phoneme label */}
+              <div
+                className="font-mono text-[13px] font-semibold tabular-nums"
+                style={{ fontFamily: 'var(--font-hero-serif, "Fraunces", Georgia, serif)' }}
+              >
+                {p.ipa}
+              </div>
+              {/* score / note */}
+              <div className={`text-[10px] font-mono uppercase tracking-wider px-1.5 py-0.5 rounded-md border ${chipCls(p.status)}`}>
+                {p.status === 'dropped' ? '—' : `${p.v}%`}
+              </div>
+              <div className="min-h-[14px] text-[10px] font-mono text-muted-foreground text-center">
+                {p.note ?? '\u00A0'}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* supra-segmental strip */}
+        <div className="mt-4 pt-3 border-t border-zinc-900/[0.06] grid grid-cols-3 gap-2 text-[11px] font-mono">
+          <SupraCell label="STRESS"     state="ok"   value="syllable 1 · ok" />
+          <SupraCell label="LIAISON"    state="ok"   value="n/a · ok" />
+          <SupraCell label="INTONATION" state="ok"   value="↘ falling · ok" />
+        </div>
+      </div>
+
+      {/* footer caption */}
+      <div className="rounded-xl border border-violet-500/25 bg-gradient-to-br from-violet-500/[0.06] to-white/40 backdrop-blur-sm px-3.5 py-2.5 flex items-center gap-2.5">
+        <span className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-violet-500/15 text-violet-700">
+          <Waves className="h-3.5 w-3.5" />
+        </span>
+        <p className="text-[12px] leading-[1.5] text-foreground/85">
+          <span className="font-mono font-semibold text-violet-700">60+ phonemes</span> scored for accuracy, stress
+          and intonation — not a single opaque number.
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function SupraCell({
+  label,
+  state,
+  value,
+}: {
+  label: string;
+  state: 'ok' | 'warn' | 'bad';
+  value: string;
+}) {
+  const cls =
+    state === 'ok'
+      ? 'text-emerald-700 before:bg-emerald-500'
+      : state === 'warn'
+      ? 'text-amber-700 before:bg-amber-500'
+      : 'text-rose-700 before:bg-rose-500';
+  return (
+    <div className="flex flex-col gap-0.5 min-w-0">
+      <span className={`inline-flex items-center gap-1.5 uppercase tracking-[0.14em] text-[10px] ${cls} before:inline-block before:h-1.5 before:w-1.5 before:rounded-full`}>
+        {label}
+      </span>
+      <span className="text-[11px] text-foreground/80 truncate">{value}</span>
+    </div>
+  );
+}
+
 function HeroSlideReasoning() {
   return (
     <div className="h-full p-5 md:p-6 flex flex-col gap-3">
-      <div className="text-[10.5px] uppercase tracking-[0.18em] text-muted-foreground">
-        phoneme payload → agent reply
+      <div className="flex items-center justify-between text-[10.5px] uppercase tracking-[0.18em] text-muted-foreground">
+        <span>full matrix → agent reasoning</span>
+        <span className="font-mono normal-case tracking-normal text-amber-700">not one score</span>
       </div>
-      <pre className="rounded-xl border border-zinc-900/[0.08] bg-white/55 backdrop-blur-sm p-4 font-mono text-[12px] leading-[1.65] whitespace-pre text-zinc-800 overflow-hidden">
-<span className="text-zinc-700">{`{`}</span>{`
-  `}<span className="text-sky-700">{`"word"`}</span><span className="text-zinc-500">{`: `}</span><span className="text-amber-700">{`"think"`}</span><span className="text-zinc-500">{`,`}</span>{`
-  `}<span className="text-sky-700">{`"score"`}</span><span className="text-zinc-500">{`: `}</span><span className="text-rose-600">{`48`}</span><span className="text-zinc-500">{`,`}</span>{`
-  `}<span className="text-sky-700">{`"phoneme_error"`}</span><span className="text-zinc-500">{`: { `}</span><span className="text-sky-700">{`"expected"`}</span><span className="text-zinc-500">{`: `}</span><span className="text-emerald-700">{`"/θ/"`}</span><span className="text-zinc-500">{`, `}</span><span className="text-sky-700">{`"actual"`}</span><span className="text-zinc-500">{`: `}</span><span className="text-rose-600">{`"/s/"`}</span><span className="text-zinc-500">{` }`}</span>{`
-`}<span className="text-zinc-700">{`}`}</span>
+      <pre className="rounded-xl border border-zinc-900/[0.08] bg-white/55 backdrop-blur-sm p-3 font-mono text-[10.5px] sm:text-[11px] leading-[1.5] whitespace-pre text-zinc-800 max-h-[min(200px,38vh)] overflow-auto">
+        {HERO_SLIDE_REASONING_JSON}
       </pre>
 
       <div className="flex items-center justify-center text-muted-foreground/60">
         <ArrowRight className="h-4 w-4 rotate-90" />
       </div>
 
-      <div className="rounded-xl border border-violet-500/25 bg-gradient-to-br from-violet-500/[0.06] to-white/40 backdrop-blur-sm p-4">
-        <div className="flex items-center gap-2 mb-1.5">
-          <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-violet-500/15 text-violet-700">
-            <Sparkles className="h-3.5 w-3.5" />
-          </span>
-          <span className="text-[11px] font-mono uppercase tracking-wider text-violet-700">
-            AI tutor · auto-generated
+      <div className="rounded-xl border border-amber-500/30 bg-gradient-to-br from-amber-500/[0.07] to-white/40 backdrop-blur-sm p-4">
+        <div className="flex items-center justify-between mb-1.5">
+          <div className="flex items-center gap-2">
+            <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-amber-500/15 text-amber-700">
+              <Sparkles className="h-3.5 w-3.5" />
+            </span>
+            <span className="text-[11px] font-mono uppercase tracking-wider text-amber-700">
+              Agent reply · auto-generated
+            </span>
+          </div>
+          <span className="text-[10px] font-mono uppercase tracking-[0.14em] text-muted-foreground">
+            o1 · Sonnet · Gemini
           </span>
         </div>
         <p className="text-[13px] leading-[1.55] text-foreground/85">
-          &ldquo;I noticed you pronounced <strong>think</strong> as <em>sink</em>. Place your tongue between your teeth for the <code className="font-mono text-[12px] px-1 py-0.5 rounded bg-white/60 border border-zinc-900/[0.06]">/θ/</code> sound. Try: <em>&ldquo;Thirty thirsty thinkers thought&hellip;&rdquo;</em>&rdquo;
+          &ldquo;I noticed you pronounced <strong>think</strong> as <em>sink</em>. Place your tongue between your teeth for the{' '}
+          <code className="font-mono text-[12px] px-1 py-0.5 rounded bg-white/60 border border-zinc-900/[0.06]">/θ/</code>{' '}
+          sound. Try: <em>&ldquo;Thirty thirsty thinkers thought&hellip;&rdquo;</em>&rdquo;
         </p>
       </div>
     </div>
@@ -3042,9 +3523,10 @@ function HeroProductCard() {
             </div>
             <div className="mt-3 text-[11px] text-muted-foreground leading-relaxed">
               <span className="font-mono text-foreground/80">gorgeous</span>{' '}
-              · <span className="font-mono text-rose-500">/ɡɔːdʒəs/</span> → realized as{' '}
-              <span className="font-mono text-rose-500">/gor-ʒuːs/</span>. Practice the soft{' '}
-              <span className="font-mono text-foreground">/dʒ/</span> landing.
+              · <span className="font-mono text-rose-500">/ˈɡɔːrdʒəs/</span> → realized as{' '}
+              <span className="font-mono text-rose-500">/ˈɡɔːrʒəs/</span>. Land the{' '}
+              <span className="font-mono text-foreground">/d/</span> stop before the{' '}
+              <span className="font-mono text-foreground">/ʒ/</span> fricative.
             </div>
           </div>
         </div>
@@ -3153,7 +3635,7 @@ function PhonemePanel() {
       <div className="mt-6 rounded-xl border border-indigo-200/60 bg-indigo-50/50 dark:bg-indigo-500/[0.06] dark:border-indigo-500/25 p-3.5 text-xs leading-relaxed">
         <span className="font-semibold text-indigo-800 dark:text-indigo-200">LLM hint · </span>
         <span className="text-foreground/85">
-          /dʒ/ realized as a hard /ʒ/. Land the stop before the fricative — drill
+          /dʒ/ collapsed to a plain /ʒ/ — the stop onset was lost. Land the stop before the fricative — drill
           {' '}
           <em className="not-italic font-medium text-foreground">judge</em>,{' '}
           <em className="not-italic font-medium text-foreground">badge</em>,{' '}
@@ -3769,73 +4251,128 @@ function ArtEcosystem() {
 
 /* ── Micro-charts for benchmark tabs ───────────────────── */
 function BenchmarkMicroChart({ id }: { id: string }) {
+  // All charts share a single axis colour + emerald/amber/sky palette so
+  // they feel related to the rest of the landing page, while each tab still
+  // gets its own distinctive visual identity.
+  const axis = 'rgba(15, 23, 42, 0.18)';
+
   if (id === 'correlation') {
     return (
-      <svg viewBox="0 0 160 80" className="w-40 h-20 text-foreground">
-        <line x1="0" y1="70" x2="160" y2="70" stroke="currentColor" strokeOpacity="0.2" />
-        <line x1="10" y1="75" x2="10" y2="5" stroke="currentColor" strokeOpacity="0.2" />
-        {Array.from({ length: 40 }).map((_, i) => {
-          const x = 10 + (i / 39) * 140;
-          const base = (i / 39) * 60 + 5;
-          const jitter = (Math.sin(i * 1.7) + 1) * 3;
-          const y = 70 - (base + jitter);
-          return <circle key={i} cx={x} cy={y} r="1.8" fill="currentColor" opacity="0.75" />;
-        })}
-        <line
-          x1="10"
-          y1="65"
-          x2="150"
-          y2="10"
-          stroke="currentColor"
-          strokeWidth="1.3"
-          strokeDasharray="3 3"
-          opacity="0.6"
-        />
-      </svg>
-    );
-  }
-  if (id === 'latency') {
-    const bars = [18, 26, 38, 52, 78, 54, 40, 28, 22, 18];
-    return (
-      <svg viewBox="0 0 160 80" className="w-40 h-20 text-foreground">
-        <line x1="0" y1="70" x2="160" y2="70" stroke="currentColor" strokeOpacity="0.2" />
-        {bars.map((b, i) => {
-          const x = 10 + i * 14;
+      <svg viewBox="0 0 180 96" className="w-48 h-24">
+        <defs>
+          <linearGradient id="corr-trend" x1="0" y1="1" x2="1" y2="0">
+            <stop offset="0%" stopColor="#10b981" />
+            <stop offset="100%" stopColor="#fbbf24" />
+          </linearGradient>
+          <radialGradient id="corr-dot" cx="0.5" cy="0.5" r="0.5">
+            <stop offset="0%" stopColor="#34d399" stopOpacity="1" />
+            <stop offset="100%" stopColor="#059669" stopOpacity="0.85" />
+          </radialGradient>
+        </defs>
+        <line x1="0" y1="86" x2="180" y2="86" stroke={axis} />
+        <line x1="12" y1="90" x2="12" y2="6" stroke={axis} />
+        {Array.from({ length: 42 }).map((_, i) => {
+          const x = 12 + (i / 41) * 158;
+          const base = (i / 41) * 72 + 4;
+          const jitter = (Math.sin(i * 1.7) + 1) * 3.4;
+          const y = 84 - (base + jitter);
           return (
-            <rect
+            <circle
               key={i}
-              x={x}
-              y={70 - b}
-              width="9"
-              height={b}
-              rx="2"
-              fill="currentColor"
-              opacity={0.25 + (b / 100) * 0.6}
+              cx={x}
+              cy={y}
+              r="2.2"
+              fill="url(#corr-dot)"
+              opacity="0.9"
             />
           );
         })}
+        <line
+          x1="12"
+          y1="78"
+          x2="170"
+          y2="10"
+          stroke="url(#corr-trend)"
+          strokeWidth="2"
+          strokeDasharray="4 3"
+          strokeLinecap="round"
+        />
+        <text x="170" y="18" textAnchor="end" fontSize="8" fill="#059669" fontWeight={600}>
+          r ≈ 0.95
+        </text>
       </svg>
     );
   }
-  if (id === 'coverage') {
-    const labels = ['word', 'sent', 'para', 'semi', 'open', 'free', 'talk'];
+
+  if (id === 'latency') {
+    const bars = [18, 26, 40, 58, 88, 62, 44, 30, 22, 18];
     return (
-      <svg viewBox="0 0 160 80" className="w-40 h-20 text-foreground">
-        {labels.map((l, i) => {
-          const cx = 12 + i * 21;
+      <svg viewBox="0 0 180 96" className="w-48 h-24">
+        <defs>
+          <linearGradient id="lat-grad" x1="0" y1="1" x2="0" y2="0">
+            <stop offset="0%" stopColor="#60a5fa" />
+            <stop offset="55%" stopColor="#34d399" />
+            <stop offset="100%" stopColor="#10b981" />
+          </linearGradient>
+        </defs>
+        <line x1="0" y1="86" x2="180" y2="86" stroke={axis} />
+        {bars.map((b, i) => {
+          const x = 12 + i * 16;
+          const peak = i === 4;
           return (
-            <g key={l}>
-              <circle cx={cx} cy="40" r="7" fill="currentColor" opacity={0.15 + i * 0.12} />
+            <g key={i}>
+              <rect
+                x={x}
+                y={86 - b}
+                width="10"
+                height={b}
+                rx="3"
+                fill="url(#lat-grad)"
+                opacity={0.55 + (b / 100) * 0.45}
+              />
+              {peak && (
+                <circle cx={x + 5} cy={86 - b - 4} r="2" fill="#fbbf24" />
+              )}
+            </g>
+          );
+        })}
+        <text x="172" y="14" textAnchor="end" fontSize="8" fill="#0369a1" fontWeight={600}>
+          p50 · 240 ms
+        </text>
+      </svg>
+    );
+  }
+
+  if (id === 'coverage') {
+    // One hue per task type — a compact rainbow walks from cool to warm,
+    // so "7 task types" reads at a glance as a spectrum of capability.
+    const items: Array<{ l: string; c: string }> = [
+      { l: 'word', c: '#6366f1' },   // indigo
+      { l: 'sent', c: '#3b82f6' },   // blue
+      { l: 'para', c: '#0ea5e9' },   // sky
+      { l: 'semi', c: '#10b981' },   // emerald
+      { l: 'open', c: '#22c55e' },   // green
+      { l: 'free', c: '#fbbf24' },   // amber
+      { l: 'talk', c: '#f43f5e' },   // rose
+    ];
+    return (
+      <svg viewBox="0 0 180 96" className="w-48 h-24">
+        {items.map((it, i) => {
+          const cx = 14 + i * 24;
+          return (
+            <g key={it.l}>
+              <circle cx={cx} cy="40" r="12" fill={it.c} opacity="0.18" />
+              <circle cx={cx} cy="40" r="8" fill={it.c} />
               <text
                 x={cx}
-                y="70"
+                y="78"
                 textAnchor="middle"
-                fontSize="7"
-                fill="currentColor"
-                opacity="0.6"
+                fontSize="8"
+                fill="#0f172a"
+                opacity="0.65"
                 fontFamily="ui-monospace, monospace"
               >
-                {l}
+                {it.l}
               </text>
             </g>
           );
@@ -3843,21 +4380,36 @@ function BenchmarkMicroChart({ id }: { id: string }) {
       </svg>
     );
   }
-  // scale — simple growth line
+
+  // scale — growth curve with emerald fill and an amber "now" marker
   return (
-    <svg viewBox="0 0 160 80" className="w-40 h-20 text-foreground">
-      <line x1="0" y1="70" x2="160" y2="70" stroke="currentColor" strokeOpacity="0.2" />
+    <svg viewBox="0 0 180 96" className="w-48 h-24">
+      <defs>
+        <linearGradient id="scale-fill" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#10b981" stopOpacity="0.48" />
+          <stop offset="100%" stopColor="#10b981" stopOpacity="0.04" />
+        </linearGradient>
+        <linearGradient id="scale-stroke" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0%" stopColor="#10b981" />
+          <stop offset="100%" stopColor="#fbbf24" />
+        </linearGradient>
+      </defs>
+      <line x1="0" y1="86" x2="180" y2="86" stroke={axis} />
       <path
-        d="M5 65 Q40 60 70 52 T120 28 T155 10"
-        stroke="currentColor"
-        strokeWidth="1.6"
+        d="M6 78 Q44 72 80 62 T138 30 T174 8 L174 86 L6 86 Z"
+        fill="url(#scale-fill)"
+      />
+      <path
+        d="M6 78 Q44 72 80 62 T138 30 T174 8"
+        stroke="url(#scale-stroke)"
+        strokeWidth="2.2"
+        strokeLinecap="round"
         fill="none"
       />
-      <path
-        d="M5 65 Q40 60 70 52 T120 28 T155 10 L155 70 L5 70 Z"
-        fill="currentColor"
-        opacity="0.08"
-      />
+      <circle cx="174" cy="8" r="3.5" fill="#fbbf24" stroke="#ffffff" strokeWidth="1.5" />
+      <text x="168" y="22" textAnchor="end" fontSize="8" fill="#b45309" fontWeight={600}>
+        9.2B / yr
+      </text>
     </svg>
   );
 }
@@ -3866,46 +4418,207 @@ function BenchmarkMicroChart({ id }: { id: string }) {
  *  NAV + FOOTER
  * ═══════════════════════════════════════════════════════════ */
 
-function TopNav() {
+/** Brand lockup — same as `src/components/logo-link.tsx` (main Chivox product). */
+function ChivoxMcpBrand({ className, onWarm = false }: { className?: string; onWarm?: boolean }) {
   return (
-    <header className="sticky top-0 z-40 border-b border-border/60 bg-background/85 backdrop-blur-md">
-      <div className="container mx-auto px-6 h-14 flex items-center justify-between">
-        <Link href="/global" className="flex items-center gap-2 font-semibold tracking-tight">
-          <span className="h-6 w-6 rounded-md bg-foreground text-background flex items-center justify-center text-[11px] font-bold">
-            C
-          </span>
-          <span className="text-[15px]">Chivox MCP</span>
-        </Link>
+    <span className={cn('flex items-center gap-2.5 shrink-0', className)}>
+      <span className="relative h-8 w-8 rounded-lg bg-gradient-to-br from-zinc-900 to-zinc-800 flex items-center justify-center shadow-sm ring-1 ring-zinc-900/10">
+        <AudioWaveform className="h-[18px] w-[18px] text-[#fbf6e9]" strokeWidth={2.3} />
+        <span
+          className={cn(
+            'absolute -bottom-0.5 -right-0.5 h-1.5 w-1.5 rounded-full bg-emerald-500 ring-2',
+            onWarm ? 'ring-[#fbf6e9]' : 'ring-background',
+          )}
+        />
+      </span>
+      <span className="font-bold tracking-[-0.02em] text-lg leading-none flex items-baseline gap-1">
+        <span className={onWarm ? 'text-zinc-900' : 'text-foreground'}>Chivox</span>
+        <span className="bg-gradient-to-r from-indigo-500 via-sky-500 to-emerald-500 bg-clip-text text-transparent">
+          MCP
+        </span>
+      </span>
+    </span>
+  );
+}
 
-        <nav className="hidden md:flex items-center gap-6 text-sm">
-          <a href="#quickstart" className="text-muted-foreground hover:text-foreground transition-colors">
-            Quickstart
-          </a>
-          <a href="#use-cases" className="text-muted-foreground hover:text-foreground transition-colors">
-            Use cases
-          </a>
-          <Link href="/en/docs" className="text-muted-foreground hover:text-foreground transition-colors">
-            Docs
-          </Link>
-          <Link
-            href="/en/dashboard/plans"
-            className="text-muted-foreground hover:text-foreground transition-colors"
-          >
-            Pricing
-          </Link>
-        </nav>
+type NavItem = {
+  href: string;
+  label: string;
+  /** If true, this item navigates to another page instead of scrolling to an in-page section. */
+  external?: boolean;
+};
 
-        <div className="flex items-center gap-2">
-          <Link
-            href="/dev-en/login"
-            className="inline-flex items-center gap-1.5 h-8 px-3.5 text-sm font-semibold rounded-md bg-foreground text-background hover:-translate-y-[1px] transition-all duration-200"
+const NAV_ITEMS: readonly NavItem[] = [
+  { href: '#quickstart', label: 'Quickstart' },
+  { href: '#mandarin-moat', label: 'Mandarin' },
+  { href: '#reasoning-engine-trigger', label: 'Reasoning' },
+  { href: '#use-cases', label: 'Use cases' },
+  { href: '/global/docs', label: 'Docs', external: true },
+] as const;
+
+function TopNav() {
+  // Scroll-linked pill: three visible reactions to page scroll —
+  //   1) width/height contracts,
+  //   2) surface becomes more opaque + shadow deepens,
+  //   3) a thin emerald progress bar below fills with scroll %.
+  // Plus: the currently visible section gets an active pill + dot.
+  const [scrolled, setScrolled] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [active, setActive] = useState<string>('');
+
+  useEffect(() => {
+    const onScroll = () => {
+      const y = window.scrollY;
+      setScrolled(y > 40);
+      const doc = document.documentElement;
+      const max = doc.scrollHeight - doc.clientHeight;
+      setProgress(max > 0 ? Math.min(1, Math.max(0, y / max)) : 0);
+    };
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
+  useEffect(() => {
+    const ids = NAV_ITEMS.filter((i) => !i.external && i.href.startsWith('#')).map(
+      (i) => i.href.slice(1),
+    );
+    const targets = ids
+      .map((id) => document.getElementById(id))
+      .filter((el): el is HTMLElement => !!el);
+    if (targets.length === 0) return;
+
+    const io = new IntersectionObserver(
+      (entries) => {
+        const visible = entries
+          .filter((e) => e.isIntersecting)
+          .sort((a, b) => b.intersectionRatio - a.intersectionRatio);
+        if (visible[0]) setActive(`#${visible[0].target.id}`);
+      },
+      { rootMargin: '-30% 0px -55% 0px', threshold: [0, 0.25, 0.5, 0.75, 1] },
+    );
+    targets.forEach((t) => io.observe(t));
+    return () => io.disconnect();
+  }, []);
+
+  return (
+    <>
+      <div aria-hidden className="h-[84px] shrink-0" />
+      <header className="fixed inset-x-0 top-0 z-40 w-full pointer-events-none">
+        <div className="mx-auto px-3 sm:px-4 pt-3 pointer-events-auto">
+          <div
+            className={cn(
+              'mx-auto flex items-center gap-3 rounded-full border',
+              'transition-[max-width,height,padding,background-color,box-shadow,border-color] duration-[420ms] ease-[cubic-bezier(0.22,0.61,0.36,1)]',
+              scrolled
+                ? 'h-[58px] max-w-[min(calc(100%-0.5rem),76rem)] pl-4 pr-1.5 border-zinc-900/[0.08]'
+                : 'h-[68px] max-w-[min(calc(100%-0.5rem),92rem)] pl-5 pr-2 border-white/60',
+            )}
+            style={{
+              backgroundColor: scrolled ? 'rgba(255,255,255,0.7)' : 'rgba(255,255,255,0.36)',
+              backdropFilter: scrolled
+                ? 'blur(28px) saturate(200%)'
+                : 'blur(18px) saturate(160%)',
+              WebkitBackdropFilter: scrolled
+                ? 'blur(28px) saturate(200%)'
+                : 'blur(18px) saturate(160%)',
+              boxShadow: scrolled
+                ? 'inset 0 1px 0 rgba(255,255,255,0.92), inset 0 -1px 0 rgba(24,24,27,0.05), 0 22px 50px -22px rgba(24,24,27,0.32), 0 4px 12px -6px rgba(24,24,27,0.12)'
+                : 'inset 0 1px 0 rgba(255,255,255,0.78), inset 0 -1px 0 rgba(24,24,27,0.03), 0 16px 36px -20px rgba(24,24,27,0.18), 0 3px 10px -8px rgba(24,24,27,0.06)',
+            }}
           >
-            Sign in
-            <ArrowRight className="h-3 w-3" />
-          </Link>
+            <Link
+              href="/global"
+              className="shrink-0 rounded-lg outline-offset-2 focus-visible:ring-2 focus-visible:ring-zinc-400/40"
+              aria-label="Chivox MCP home"
+            >
+              <ChivoxMcpBrand />
+            </Link>
+
+            <nav
+              className="hidden md:flex items-center justify-end flex-1 min-w-0 gap-0.5 lg:gap-1 text-[13.5px] font-medium tracking-[-0.005em] text-zinc-700"
+              aria-label="Page sections"
+            >
+              {NAV_ITEMS.map((item) => {
+                const isActive = !item.external && active === item.href;
+                const commonClass = cn(
+                  'relative inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 transition-all duration-300',
+                  isActive
+                    ? 'text-zinc-900 bg-gradient-to-b from-emerald-50 to-white shadow-[inset_0_0_0_1px_rgba(16,185,129,0.25)]'
+                    : 'hover:text-zinc-900 hover:bg-zinc-900/[0.04]',
+                );
+
+                if (item.external) {
+                  return (
+                    <Link key={item.href} href={item.href} className={commonClass}>
+                      {item.label}
+                    </Link>
+                  );
+                }
+
+                return (
+                  <a
+                    key={item.href}
+                    href={item.href}
+                    aria-current={isActive ? 'true' : undefined}
+                    className={commonClass}
+                  >
+                    {isActive && (
+                      <span
+                        aria-hidden
+                        className="h-1.5 w-1.5 rounded-full bg-emerald-500 shadow-[0_0_0_3px_rgba(16,185,129,0.18)]"
+                      />
+                    )}
+                    {item.label}
+                  </a>
+                );
+              })}
+              <a
+                href="https://github.com/"
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-1 rounded-full px-3 py-1.5 hover:text-zinc-900 hover:bg-zinc-900/[0.04] transition-colors"
+              >
+                GitHub
+                <ArrowUpRight className="h-3.5 w-3.5 opacity-55" />
+              </a>
+            </nav>
+
+            <div className="flex items-center gap-2 shrink-0 ml-auto md:ml-0">
+              <Link
+                href="/dev-en/login"
+                className={cn(
+                  'inline-flex items-center gap-1.5 pl-4 pr-3.5 text-sm font-semibold rounded-full bg-zinc-900 text-zinc-50 hover:-translate-y-px transition-all duration-300',
+                  scrolled
+                    ? 'h-9 shadow-[0_6px_16px_-8px_rgba(0,0,0,0.5)]'
+                    : 'h-10 shadow-[0_8px_20px_-10px_rgba(0,0,0,0.45)]',
+                )}
+              >
+                Sign in
+                <ArrowRight className="h-3.5 w-3.5 opacity-90" />
+              </Link>
+            </div>
+
+            {/* scroll progress — emerald hairline across the bottom edge */}
+            <div
+              aria-hidden
+              className="absolute left-4 right-4 bottom-0 h-[2px] rounded-full overflow-hidden"
+              style={{ opacity: scrolled ? 1 : 0, transition: 'opacity 300ms ease' }}
+            >
+              <div
+                className="h-full rounded-full"
+                style={{
+                  width: `${progress * 100}%`,
+                  background:
+                    'linear-gradient(90deg, #10b981 0%, #34d399 50%, #fbbf24 100%)',
+                  transition: 'width 120ms linear',
+                }}
+              />
+            </div>
+          </div>
         </div>
-      </div>
-    </header>
+      </header>
+    </>
   );
 }
 
@@ -3914,31 +4627,33 @@ function SiteFooter() {
 
   return (
     <footer
-      className="border-t border-[#e9e2d2] relative"
+      className="relative"
       style={{
         background:
-          'linear-gradient(180deg, #f8f2e2 0%, #fbf6e9 40%, #fbf6e9 100%)',
+          'linear-gradient(to bottom right, rgba(16,185,129,0.10) 0%, rgba(245,158,11,0.06) 55%, rgba(255,255,255,0.35) 100%)',
+        borderTop: '1px solid rgba(16,185,129,0.22)',
       }}
     >
-      {/* warm top rule */}
+      {/* emerald top rule */}
       <div
         aria-hidden
         className="absolute top-0 left-0 right-0 h-px"
         style={{
           background:
-            'linear-gradient(90deg, transparent, rgba(209,180,88,0.5), transparent)',
+            'linear-gradient(90deg, transparent, rgba(16,185,129,0.5), transparent)',
         }}
       />
 
       <div className="container mx-auto px-6 py-14 md:py-16 max-w-6xl">
-        <div className="grid lg:grid-cols-12 gap-10 lg:gap-12">
+        <div className="grid lg:grid-cols-12 gap-10 lg:gap-12 items-start">
           {/* ─── LEFT: brand · stay-connected · email ─── */}
-          <div className="lg:col-span-6">
-            <Link href="/global" className="inline-flex items-center gap-2 font-semibold tracking-tight mb-6 text-zinc-900">
-              <span className="h-6 w-6 rounded-md bg-zinc-900 text-[#fbf6e9] flex items-center justify-center text-[11px] font-bold">
-                C
-              </span>
-              <span>Chivox MCP</span>
+          <div className="lg:col-span-7">
+            <Link
+              href="/global"
+              className="inline-block mb-6 rounded-lg outline-offset-2 focus-visible:ring-2 focus-visible:ring-zinc-400/30"
+              aria-label="Chivox MCP"
+            >
+              <ChivoxMcpBrand onWarm />
             </Link>
 
             <div className="text-[13.5px] font-medium text-zinc-800 mb-4">Stay connected with us</div>
@@ -3973,7 +4688,7 @@ function SiteFooter() {
               {/* email pill */}
               <form
                 onSubmit={(e) => e.preventDefault()}
-                className="inline-flex items-center gap-2 rounded-full border border-zinc-900/20 bg-[#fbf6e9]/60 pl-4 pr-1 py-1 hover:border-zinc-900/40 transition-colors"
+                className="inline-flex items-center gap-2 rounded-full border border-emerald-500/25 bg-white/60 backdrop-blur-sm pl-4 pr-1 py-1 hover:border-emerald-500/45 transition-colors"
               >
                 <input
                   type="email"
@@ -3984,7 +4699,7 @@ function SiteFooter() {
                 <button
                   type="submit"
                   aria-label="Subscribe"
-                  className="h-7 w-7 rounded-full bg-zinc-900 text-[#fbf6e9] inline-flex items-center justify-center hover:bg-zinc-700 transition-colors"
+                  className="h-7 w-7 rounded-full bg-zinc-900 text-white inline-flex items-center justify-center hover:bg-zinc-700 transition-colors"
                 >
                   <ArrowRight className="h-3.5 w-3.5" />
                 </button>
@@ -3992,54 +4707,49 @@ function SiteFooter() {
             </div>
 
             <p className="text-[11.5px] text-zinc-600 leading-relaxed max-w-md">
-              By submitting my email address, I agree to receive marketing communications. For more
-              information, please see the{' '}
-              <Link href="/en/privacy" className="underline underline-offset-2 hover:text-zinc-900">
-                Privacy Policy
-              </Link>
-              .
+              By submitting your email, you agree to receive occasional product updates from the
+              Chivox MCP team. No spam. Unsubscribe anytime.
             </p>
           </div>
 
-          {/* ─── RIGHT: two link columns ─── */}
-          <div className="lg:col-span-6 grid grid-cols-2 gap-8">
-            <FooterColPlain
-              links={[
-                { label: 'Docs', href: '/en/docs' },
-                { label: 'Live demo', href: '/en/demo' },
-                { label: 'Community', href: 'https://github.com/', external: true },
-                { label: 'Pricing', href: '/en/dashboard/plans' },
-                { label: 'Changelog', href: '/en/docs' },
-                { label: 'Contact sales', href: '/en/contact' },
-              ]}
-            />
-            <FooterColPlain
-              links={[
-                { label: 'Website Terms of Use', href: '/en/terms' },
-                { label: 'Platform Terms of Use', href: '/en/terms' },
-                { label: 'Privacy Policy', href: '/en/privacy' },
-                { label: 'Cookie Notice', href: '/en/privacy' },
-                { label: 'Trust Center', href: '/en/privacy' },
-                { label: 'Cookie Settings', href: '#' },
-              ]}
-            />
+          {/* ─── RIGHT: minimal developer links ─── */}
+          <div className="lg:col-span-5 lg:pl-6">
+            <div className="text-[13.5px] font-medium text-zinc-800 mb-4">Developers</div>
+            <ul className="flex flex-col gap-3 text-[14px] text-zinc-700">
+              <li>
+                <Link href="#quickstart" className="hover:text-zinc-900 transition-colors">
+                  Quickstart
+                </Link>
+              </li>
+              <li>
+                <Link href="#mandarin-moat" className="hover:text-zinc-900 transition-colors">
+                  Mandarin moat
+                </Link>
+              </li>
+              <li>
+                <Link href="#reasoning-engine-trigger" className="hover:text-zinc-900 transition-colors">
+                  Agent reasoning
+                </Link>
+              </li>
+              <li>
+                <a
+                  href="https://github.com/"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-1 hover:text-zinc-900 transition-colors"
+                >
+                  GitHub
+                  <ArrowUpRight className="h-3.5 w-3.5 opacity-60" />
+                </a>
+              </li>
+            </ul>
           </div>
         </div>
 
         {/* ─── BOTTOM STRIP ─── */}
         <div className="mt-14 pt-5 border-t border-zinc-900/10 flex flex-col sm:flex-row items-center justify-between gap-3 text-[12px] text-zinc-600">
-          <div className="flex items-center gap-3">
-            <span>Built by speech scientists. Trusted by 10k+ voice-AI builders.</span>
-          </div>
-          <div className="flex items-center gap-4">
-            <Link href="/zh" className="hover:text-zinc-900 transition-colors">
-              中文
-            </Link>
-            <Link href="/en" className="hover:text-zinc-900 transition-colors">
-              English (bilingual)
-            </Link>
-            <span>©{year} Chivox Inc. All rights reserved.</span>
-          </div>
+          <span>Built by speech scientists. Trusted by 10k+ voice-AI builders.</span>
+          <span>©{year} Chivox Inc. All rights reserved.</span>
         </div>
       </div>
     </footer>
@@ -4066,38 +4776,6 @@ function SocialIcon({
     >
       {children}
     </a>
-  );
-}
-
-function FooterColPlain({
-  links,
-}: {
-  links: { label: string; href: string; external?: boolean }[];
-}) {
-  return (
-    <ul className="space-y-3">
-      {links.map((l) => (
-        <li key={l.label}>
-          {l.external ? (
-            <a
-              href={l.href}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-[13.5px] text-zinc-700 hover:text-zinc-900 transition-colors"
-            >
-              {l.label}
-            </a>
-          ) : (
-            <Link
-              href={l.href}
-              className="text-[13.5px] text-zinc-700 hover:text-zinc-900 transition-colors"
-            >
-              {l.label}
-            </Link>
-          )}
-        </li>
-      ))}
-    </ul>
   );
 }
 
