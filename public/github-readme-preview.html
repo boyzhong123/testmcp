@@ -374,8 +374,15 @@
   }
   .hero-grid {
     position: relative; z-index: 2;
-    display: grid; grid-template-columns: minmax(300px, 0.85fr) 1.6fr; gap: 40px; align-items: start;
+    display: grid; grid-template-columns: minmax(340px, 1.25fr) 1fr; gap: 36px; align-items: start;
   }
+  .hero-banner { position: relative; }
+  .hero-banner .banner-play{
+    position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
+    z-index: 50; border:0; background:transparent; padding:0; cursor:pointer;
+    opacity:.9; filter: drop-shadow(0 6px 18px rgba(0,0,0,.28));
+  }
+  .hero-banner .banner-play:hover{ transform:translate(-50%,-50%) scale(1.04); opacity: 1; }
   .hero-right { display: flex; flex-direction: column; gap: 14px; }
   @media (max-width: 900px) {
     .hero-grid { grid-template-columns: 1fr; gap: 20px; }
@@ -472,11 +479,12 @@
   }
   .hero-art .play-btn {
     position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-    z-index: 3; background: transparent; border: 0; cursor: pointer; padding: 0;
-    opacity: .55;
+    z-index: 10; background: transparent; border: 0; cursor: pointer; padding: 0;
+    opacity: .85;
     transition: opacity .2s ease, transform .2s ease;
     filter: drop-shadow(0 4px 14px rgba(0,0,0,.25));
   }
+  .hero-art > svg { position: relative; z-index: 1; }
   .hero-art .play-btn:hover { opacity: 1; transform: translate(-50%, -50%) scale(1.05); }
   .hero-art .play-btn circle { transition: fill .2s ease; }
   .hero-art .play-btn:hover circle { fill: rgba(16,163,127,0.92); }
@@ -495,7 +503,7 @@
     position: absolute; top: -40px; right: 0; color: #fff; background: transparent;
     border: 0; font-size: 22px; cursor: pointer;
   }
-  .hero-art > svg { width: 100%; max-width: 560px; height: auto; display: block; margin-top: 4px; }
+  .hero-art > svg { width: 100%; max-width: 480px; height: auto; display: block; margin-top: 4px; }
   .hero-art .wave-path { stroke: url(#waveGrad); stroke-width: 2.5; fill: none;
     stroke-linecap: round; stroke-linejoin: round; }
   .hero-art .wave-bars rect { animation: wavepulse 1.5s ease-in-out infinite; }
@@ -565,7 +573,7 @@
     background: #0d1117;
     border: 1px solid #30363d; border-radius: 8px;
     font-family: "JetBrains Mono", ui-monospace, monospace;
-    color: #e6edf3; font-size: 11.5px;
+    color: #e6edf3; font-size: 12.5px;
     box-shadow: 0 4px 14px -8px rgba(0,0,0,0.3);
     overflow: hidden;
   }
@@ -600,9 +608,10 @@
   .hero-curl .copy.copied { color: #3fb950; border-color: rgba(63,185,80,0.4); }
   /* Body — single scroll line */
   .hero-curl .cmd {
-    padding: 8px 12px; line-height: 1.5;
+    padding: 10px 12px; line-height: 1.55;
     overflow-x: auto; white-space: nowrap;
   }
+
   .hero-curl .cmd::-webkit-scrollbar { height: 3px; }
   .hero-curl .cmd::-webkit-scrollbar-thumb { background: #30363d; border-radius: 2px; }
   .hero-curl .prompt { color: #7ee787; user-select: none; margin-right: 6px; }
@@ -1109,6 +1118,12 @@
 
 <!-- ═══════════════════ RENDERED MARKDOWN ═══════════════════ -->
 <div class="hero-banner">
+  <button class="banner-play" onclick="playHeroVideo()" aria-label="Play 15s product demo">
+    <svg width="96" height="96" viewBox="0 0 64 64" aria-hidden="true">
+      <circle cx="32" cy="32" r="30" fill="rgba(0,0,0,0.62)" stroke="rgba(255,255,255,0.92)" stroke-width="2.2"/>
+      <polygon points="26,20 26,44 46,32" fill="#fff"/>
+    </svg>
+  </button>
   <div class="hero-grid">
     <div>
       <span class="hero-eyebrow"><span class="pulse"></span>Since 2011 · MCP-native</span>
@@ -1157,6 +1172,17 @@
         <a class="btn" href="https://chivoxmcp2.netlify.app/global/docs">📖 Docs</a>
       </div>
 
+      <!-- instant-try curl — bigger, sits under the headline (left column) -->
+      <div class="hero-curl" id="heroCurl">
+        <div class="bar">
+          <span class="dots"><i></i><i></i><i></i></span>
+          <span class="label">try.sh <span class="badge">no signup</span></span>
+          <button class="copy" onclick="copyCurl(this)" aria-label="Copy">Copy</button>
+        </div>
+        <div class="cmd" id="heroCurlBody"><span class="prompt">$</span><span class="k">curl</span> speech-eval.site/mcp/try -d <span class="s">'{"ref":"你好","url":"…"}'</span></div>
+        <div class="resp"><span class="status">200</span><span class="arrow">←</span><span class="j-punct">{</span><span class="j-key">"overall"</span><span class="j-punct">:</span><span class="j-num">82</span><span class="j-punct">,</span> <span class="j-key">"tones"</span><span class="j-punct">:</span><span class="j-punct">[</span><span class="j-num">3</span><span class="j-punct">,</span><span class="j-num">3</span><span class="j-punct">]</span><span class="j-punct">,</span> <span class="j-key">"verdict"</span><span class="j-punct">:</span><span class="j-str">"native-like"</span><span class="j-punct">}</span></div>
+      </div>
+
     </div>
 
     <!-- ── Right column: video card + curl demo stacked ── -->
@@ -1164,8 +1190,8 @@
     <!-- ── Hero art: audio → MCP → structured fields → LLM ear ── -->
     <div class="hero-art">
       <button class="play-btn" onclick="playHeroVideo()" aria-label="Play 15s product demo">
-        <svg width="88" height="88" viewBox="0 0 64 64">
-          <circle cx="32" cy="32" r="30" fill="rgba(0,0,0,0.45)" stroke="rgba(255,255,255,0.85)" stroke-width="1.5"/>
+        <svg width="88" height="88" viewBox="0 0 64 64" aria-hidden="true">
+          <circle cx="32" cy="32" r="30" fill="rgba(0,0,0,0.62)" stroke="rgba(255,255,255,0.92)" stroke-width="2.2"/>
           <polygon points="26,20 26,44 46,32" fill="#fff"/>
         </svg>
       </button>
@@ -1271,16 +1297,6 @@
       </svg>
     </div>
 
-    <!-- instant-try curl — now lives under the video card -->
-    <div class="hero-curl" id="heroCurl">
-      <div class="bar">
-        <span class="dots"><i></i><i></i><i></i></span>
-        <span class="label">try.sh <span class="badge">no signup</span></span>
-        <button class="copy" onclick="copyCurl(this)" aria-label="Copy">Copy</button>
-      </div>
-      <div class="cmd" id="heroCurlBody"><span class="prompt">$</span><span class="k">curl</span> speech-eval.site/mcp/try -d <span class="s">'{"ref":"你好","url":"…"}'</span></div>
-      <div class="resp"><span class="status">200</span><span class="arrow">←</span><span class="j-punct">{</span><span class="j-key">"overall"</span><span class="j-punct">:</span><span class="j-num">82</span><span class="j-punct">,</span> <span class="j-key">"tones"</span><span class="j-punct">:</span><span class="j-punct">[</span><span class="j-num">3</span><span class="j-punct">,</span><span class="j-num">3</span><span class="j-punct">]</span><span class="j-punct">,</span> <span class="j-key">"verdict"</span><span class="j-punct">:</span><span class="j-str">"native-like"</span><span class="j-punct">}</span></div>
-    </div>
     </div><!-- /.hero-right -->
   </div>
 </div>
@@ -1296,45 +1312,49 @@
   <img src="https://img.shields.io/badge/discord-join-5865F2?style=flat-square&logo=discord&logoColor=white" alt="discord"/>
 </p>
 
+<div class="stats-block">
 <div class="stats-row">
   <div class="stat"><div class="v">9.2B+</div><div class="k">Evals / year</div></div>
   <div class="stat"><div class="v">185</div><div class="k">Countries</div></div>
   <div class="stat"><div class="v">95%+</div><div class="k">Human agreement</div></div>
   <div class="stat"><div class="v">&lt;200ms</div><div class="k">P99 first token</div></div>
 </div>
+</div>
 
 <blockquote>
   <b>TL;DR</b> — LLMs can't hear audio. Chivox MCP gives them ears: one tool call returns <code>overall / accuracy / fluency / phonemes[]</code> — a structured JSON your model can reason over directly. No SDK wrapping, no feature extraction, no glue code.
 </blockquote>
 
-<h3 style="border:0; padding:0; margin: 24px 0 12px; font-size: 16px; font-weight: 700;">
-  Is this for you?
-</h3>
+<div class="is-for-you">
+  <h3 style="border:0; padding:0; margin: 24px 0 12px; font-size: 16px; font-weight: 700;">
+    Is this for you?
+  </h3>
 
-<div class="fit-check">
-  <div class="col yes">
-    <h4>✓ Use Chivox if you…</h4>
-    <ul>
-      <li>Are building an AI tutor, language app, or reading-aloud product</li>
-      <li>Need to know <b>how well</b> someone spoke — not <b>what</b> they said</li>
-      <li>Want <b>Mandarin</b> assessment that actually hears tones, erhua, sandhi</li>
-      <li>Ship through <b>MCP clients</b> (Cursor / Claude / Agents SDK / LangChain)</li>
-    </ul>
+  <div class="fit-check">
+    <div class="col yes">
+      <h4>✓ Use Chivox if you…</h4>
+      <ul>
+        <li>Are building an AI tutor, language app, or reading-aloud product</li>
+        <li>Need to know <b>how well</b> someone spoke — not <b>what</b> they said</li>
+        <li>Want <b>Mandarin</b> assessment that actually hears tones, erhua, sandhi</li>
+        <li>Ship through <b>MCP clients</b> (Cursor / Claude / Agents SDK / LangChain)</li>
+      </ul>
+    </div>
+    <div class="col no">
+      <h4>✗ You probably want…</h4>
+      <ul>
+        <li>…<b>Whisper / Deepgram / AssemblyAI</b> for plain transcription</li>
+        <li>…<b>ElevenLabs / OpenAI TTS</b> for generating speech</li>
+        <li>…<b>Azure / AWS</b> for compliance / content moderation</li>
+        <li>…<b>Picovoice / Rhino</b> for keyword spotting on-device</li>
+      </ul>
+    </div>
   </div>
-  <div class="col no">
-    <h4>✗ You probably want…</h4>
-    <ul>
-      <li>…<b>Whisper / Deepgram / AssemblyAI</b> for plain transcription</li>
-      <li>…<b>ElevenLabs / OpenAI TTS</b> for generating speech</li>
-      <li>…<b>Azure / AWS</b> for compliance / content moderation</li>
-      <li>…<b>Picovoice / Rhino</b> for keyword spotting on-device</li>
-    </ul>
-  </div>
+
+  <p class="micro" style="margin-top:-8px">
+    Most production teams run <b>Whisper + Chivox together</b>: Whisper to transcribe what was said, Chivox to score how well. They don't compete.
+  </p>
 </div>
-
-<p class="micro" style="margin-top:-8px">
-  Most production teams run <b>Whisper + Chivox together</b>: Whisper to transcribe what was said, Chivox to score how well. They don't compete.
-</p>
 
 <hr/>
 
@@ -2135,7 +2155,9 @@ agent = create_react_agent(ChatOpenAI(model=<span class="tok-s">"gpt-4o"</span>)
     // map mode -> selector(s) relative to .readme
     const MODES = {
       hero:     ['.hero-banner'],
+      stats:    ['.stats-block'],
       compare:  ['.compare-matrix'],
+      fit:      ['.is-for-you'],
       loop:     ['.loop'],
       mandarin: ['.mandarin-spot'],
       english:  ['.english-spot'],
@@ -2174,6 +2196,8 @@ agent = create_react_agent(ChatOpenAI(model=<span class="tok-s">"gpt-4o"</span>)
     // tighten crop per mode so the image visually fills GitHub width
     const PAD = {
       compare:  '8px 10px',
+      fit:      '10px 12px',
+      stats:    '8px 10px',
       loop:     '10px 12px',
       pricing:  '8px 10px',
       mandarin: '10px 12px',
@@ -2219,10 +2243,10 @@ agent = create_react_agent(ChatOpenAI(model=<span class="tok-s">"gpt-4o"</span>)
         /* make the matrix fill the whole image */
         .readme{padding:8px 10px !important}
         .compare-matrix{margin:0 !important; overflow: visible !important}
-        .compare-matrix table{font-size:18px !important}
-        .compare-matrix th, .compare-matrix td{padding:16px 16px !important}
+        .compare-matrix table{font-size:22px !important}
+        .compare-matrix th, .compare-matrix td{padding:19px 16px !important}
         .compare-matrix thead th{
-          font-size:14px !important;
+          font-size:16px !important;
           letter-spacing:0.06em !important;
         }
         .compare-matrix th:first-child, .compare-matrix td:first-child{white-space:nowrap !important}
@@ -2234,11 +2258,13 @@ agent = create_react_agent(ChatOpenAI(model=<span class="tok-s">"gpt-4o"</span>)
       const s = document.createElement('style');
       s.textContent = `
         .readme{padding:8px 10px !important}
-        .price-card{padding:18px !important}
-        .price-card .plan-name{font-size:12px !important}
-        .price-card .price{font-size:34px !important}
-        .price-card .sub{font-size:13px !important}
-        .price-card .rows{font-size:13px !important}
+        .price-card{padding:20px !important}
+        .price-card .plan-name{font-size:14px !important}
+        .price-card .price{font-size:44px !important}
+        .price-card .sub{font-size:15px !important}
+        .price-card .rows{font-size:18.5px !important; line-height:1.55 !important}
+        .price-card .rows .k{font-size:15px !important}
+        .price-card .rows .v{font-size:18.5px !important}
       `;
       document.head.appendChild(s);
     }
@@ -2247,10 +2273,105 @@ agent = create_react_agent(ChatOpenAI(model=<span class="tok-s">"gpt-4o"</span>)
       const s = document.createElement('style');
       s.textContent = `
         .readme{padding:10px 12px !important}
-        .loop-stage{padding:18px !important}
-        .loop-stage .title{font-size:15px !important}
-        .loop-stage .desc{font-size:13px !important}
-        .loop-stage pre{font-size:12.5px !important}
+        .loop-stage{padding:20px !important}
+        .loop-stage .title{font-size:22px !important}
+        .loop-stage .desc{font-size:18.5px !important; line-height:1.55 !important}
+        .loop-stage pre{font-size:17px !important; line-height:1.55 !important}
+      `;
+      document.head.appendChild(s);
+    }
+
+    if (mode === 'fit') {
+      const s = document.createElement('style');
+      s.textContent = `
+        .readme{padding:10px 12px !important}
+        .is-for-you h3{font-size:24px !important;margin:0 0 14px !important}
+        .fit-check{margin:0 !important}
+        .fit-check .col{padding:18px 20px !important}
+        .fit-check h4{font-size:20px !important;margin:0 0 10px !important}
+        .fit-check li{font-size:18.5px !important;line-height:1.5 !important;margin:0 0 8px !important}
+        .is-for-you .micro{font-size:16px !important;margin-top:12px !important}
+      `;
+      document.head.appendChild(s);
+    }
+
+    if (mode === 'pillars') {
+      const s = document.createElement('style');
+      s.textContent = `
+        .readme{padding:8px 10px !important}
+        .pillars{gap:14px !important}
+        .pillar{padding:20px 20px 18px !important}
+        .pillar h4{font-size:20px !important; line-height:1.2 !important}
+        .pillar p{font-size:16px !important; line-height:1.55 !important}
+        .pillar .badge{font-size:13.5px !important}
+      `;
+      document.head.appendChild(s);
+    }
+
+    if (mode === 'mandarin' || mode === 'english') {
+      const s = document.createElement('style');
+      s.textContent = `
+        .readme{padding:10px 12px !important}
+        .mandarin-spot, .english-spot{padding:30px !important}
+        .mandarin-spot h3, .english-spot h3{font-size:28px !important}
+        .mandarin-spot p, .english-spot p{font-size:16.5px !important; line-height:1.55 !important}
+        .mandarin-spot li, .english-spot li{font-size:16.5px !important; line-height:1.55 !important}
+      `;
+      document.head.appendChild(s);
+    }
+
+    if (mode === 'stats') {
+      const s = document.createElement('style');
+      s.textContent = `
+        .readme{padding:8px 10px !important}
+        .stats-block{margin:0 !important}
+        .stats-row{
+          display:grid !important;
+          grid-template-columns:repeat(4, 1fr) !important;
+          gap:12px !important;
+          margin:0 !important;
+        }
+        .stats-row .stat{
+          border-radius:14px !important;
+          border:1px solid rgba(27,31,36,0.10) !important;
+          background: linear-gradient(180deg, rgba(255,255,255,0.92), rgba(250,251,252,0.70)) !important;
+          box-shadow:
+            0 1px 0 rgba(255,255,255,0.65) inset,
+            0 14px 30px -24px rgba(0,0,0,0.45) !important;
+          padding:18px 14px 16px !important;
+          position: relative !important;
+          overflow:hidden !important;
+        }
+        .stats-row .stat::before{
+          content:"";
+          position:absolute; left:-40px; top:-40px;
+          width:140px; height:140px; border-radius:999px;
+          background: radial-gradient(circle at 30% 30%, rgba(16,185,129,0.20), transparent 60%);
+          filter: blur(1px);
+          pointer-events:none;
+        }
+        .stats-row .stat:nth-child(2)::before{
+          background: radial-gradient(circle at 30% 30%, rgba(99,102,241,0.22), transparent 60%);
+        }
+        .stats-row .stat:nth-child(3)::before{
+          background: radial-gradient(circle at 30% 30%, rgba(14,165,233,0.22), transparent 60%);
+        }
+        .stats-row .stat:nth-child(4)::before{
+          background: radial-gradient(circle at 30% 30%, rgba(251,191,36,0.22), transparent 60%);
+        }
+        :root[data-theme="dark"] .stats-row .stat{
+          border-color: rgba(240,246,252,0.10) !important;
+          background: linear-gradient(180deg, rgba(22,27,34,0.75), rgba(13,17,23,0.55)) !important;
+        }
+        .stats-row .v{font-size:36px !important; font-weight:950 !important; letter-spacing:-0.03em !important}
+        .stats-row .k{
+          font-size:13px !important;
+          opacity:.8 !important;
+          margin-top:6px !important;
+          letter-spacing:0.10em !important;
+          text-transform:uppercase !important;
+          font-family:"JetBrains Mono", ui-monospace, monospace !important;
+        }
       `;
       document.head.appendChild(s);
     }
@@ -2260,15 +2381,41 @@ agent = create_react_agent(ChatOpenAI(model=<span class="tok-s">"gpt-4o"</span>)
       const extra = document.createElement('style');
       extra.textContent = `
         .readme{padding:0 !important}
-        .hero-banner{margin:0 !important;border-radius:0 !important;padding:40px 56px !important}
+        /* tighter crop to remove bottom whitespace in exported banner */
+        .hero-banner{margin:0 !important;border-radius:0 !important;padding:28px 44px 22px !important}
         .hero-cta{display:none !important}
         .hero-banner .hero-sub{margin-bottom:18px !important}
         .hero-banner .hero-curl{margin-top:0 !important;width:100% !important;max-width:none !important}
         /* in bare mode curl moves into left col; give left col more room so curl fits */
-        .hero-banner .hero-grid{grid-template-columns:1.05fr 1fr !important;gap:32px !important}
+        .hero-banner .hero-grid{
+          grid-template-columns:1.35fr .85fr !important;
+          gap:26px !important;
+          align-items:center !important; /* right side vertically centered */
+        }
+        /* make right illustration slightly shorter */
+        .hero-banner .hero-art{min-height:230px !important; padding:28px 18px 16px !important}
+        /* make the curl snippet readable in a static GitHub banner (≈3×) */
+        .hero-banner .hero-curl{border-radius:10px !important}
+        .hero-banner .hero-curl .bar{padding:10px 14px !important}
+        .hero-banner .hero-curl .label{font-size:16px !important}
+        .hero-banner .hero-curl .label .badge{font-size:14px !important; padding:1px 10px !important}
+        .hero-banner .hero-curl .copy{font-size:14px !important; padding:4px 10px !important}
+        .hero-banner .hero-curl .cmd{font-size:20px !important; padding:18px 16px !important; line-height:1.55 !important}
+        .hero-banner .hero-curl .resp{font-size:18px !important; padding:13px 16px !important; line-height:1.55 !important}
+        .hero-banner .hero-curl .resp .status{font-size:13px !important; padding:2px 8px !important}
         /* ensure eyebrow / wordmark stack vertically and in correct order */
-        .hero-banner .hero-eyebrow{display:inline-flex !important;margin-bottom:14px !important}
-        .hero-banner .hero-wordmark{display:block !important;margin:0 0 12px !important}
+        .hero-banner .hero-eyebrow{
+          display:inline-flex !important;
+          margin-bottom:14px !important;
+          font-size:13px !important;
+          padding:6px 14px 6px 11px !important;
+        }
+        .hero-banner .hero-wordmark{display:block !important;margin:0 0 12px !important; max-width:360px !important}
+        .hero-banner .hero-tag{font-size:28px !important; line-height:1.25 !important}
+        .hero-banner .hero-sub{font-size:16.5px !important; line-height:1.55 !important; max-width:560px !important}
+        /* make centered play icon visible in exported banner */
+        .hero-banner .hero-art .play-btn{display:none !important}
+        .hero-banner .banner-play{display:block !important}
         /* allow curl command to wrap onto a second line if needed */
         .hero-banner .hero-curl .cmd{white-space:pre-wrap !important;word-break:break-all !important}
         .hero-banner .hero-curl .resp{white-space:pre-wrap !important;word-break:break-all !important}

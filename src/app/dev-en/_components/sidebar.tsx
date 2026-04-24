@@ -122,7 +122,7 @@ export function DevEnSidebar() {
           <Link
             href="/global"
             className={cn(
-              'flex items-center gap-2.5 group',
+              'flex items-center gap-2.5 group flex-1 min-w-0',
               collapsed && 'lg:gap-0',
             )}
             aria-label="Chivox MCP"
@@ -133,12 +133,12 @@ export function DevEnSidebar() {
             </div>
             <span
               className={cn(
-                'font-semibold tracking-[-0.02em] text-[13px] flex items-baseline gap-1 text-white',
+                'font-semibold tracking-[-0.02em] text-[13px] flex items-baseline gap-1 text-white min-w-0',
                 collapsed && 'lg:hidden',
               )}
             >
               <span>Chivox</span>
-              <span className="bg-gradient-to-r from-indigo-300 via-sky-300 to-emerald-300 bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-indigo-300 via-sky-300 to-emerald-300 bg-clip-text text-transparent truncate">
                 MCP
               </span>
             </span>

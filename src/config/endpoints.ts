@@ -37,16 +37,15 @@ export const PUBLIC_AUDIO_UPLOAD_PLACEHOLDER = 'https://your-audio-host.com/uplo
 // 运行时：后端接口地址（登录 / 密钥 / 计费等 Dashboard API）
 // ============================================================
 
-const BACKEND_DEFAULT = 'http://localhost:8081/api';
-
 /**
- * 后端 API 基地址。
- * 部署时通过环境变量 NEXT_PUBLIC_API_BASE_URL 覆盖，例如：
- *   NEXT_PUBLIC_API_BASE_URL=https://fc.cloud.chivox.com/api
+ * 浏览器端固定走同域 `/api/*`，由 Next.js 服务端代理到真实后端地址。
+ *
+ * 好处：
+ * - 运维只需要改服务器环境变量并重启服务即可（不必重新打包前端）
+ * - 规避浏览器侧的 CORS 问题
  */
 export function getApiBaseUrl(): string {
-  const fromEnv = process.env.NEXT_PUBLIC_API_BASE_URL;
-  return (fromEnv && fromEnv.trim() ? fromEnv : BACKEND_DEFAULT).replace(/\/+$/, '');
+  return '/api';
 }
 
 // ============================================================
