@@ -2,14 +2,23 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState, useTransition } from 'react';
 import {
+  Activity,
+  AlertCircle,
   ArrowRight,
   ArrowUpRight,
   AudioWaveform,
+  BarChart3,
+  Bell,
   BookOpen,
   Check,
+  CheckCircle2,
   Copy,
+  Gauge,
+  Key,
+  Loader2,
+  Mail,
   MessageSquareText,
   Sparkles,
   Terminal,
@@ -28,6 +37,11 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { FadeUp, StaggerContainer, StaggerItem, CountUp } from '@/components/animated-section';
+import {
+  sendGlobalContactEmail,
+  type GlobalContactFormData,
+  type GlobalContactUseCase,
+} from '@/app/actions/send-global-contact';
 
 /* ─────────────────────────────────────────────────────────────
  * Standalone English landing for overseas developers.
@@ -226,10 +240,10 @@ const USE_CASES: {
 }[] = [
   {
     art: 'mandarin',
-    tag: 'AI Language Tutor',
-    title: 'EdTech tutors that hear every tone and phoneme',
+    tag: 'Mandarin Coach',
+    title: 'Ship a tireless Beijing-accent Mandarin coach',
     body:
-      'The category that launched us. Tone-accurate Mandarin feedback, CEFR-aligned English scoring, age-appropriate correction — stack on top of GPT / Claude to ship a real coach, not a flashcard app.',
+      'Phoneme + tone + sandhi scoring in one payload. Your agent explains why <span class="font-zh">睡觉</span> drifted into <span class="font-zh">水饺</span>, drills the tone pair, and tracks mastery session over session — built for the 25M+ global Mandarin learners your competitors can&rsquo;t serve on Whisper.',
   },
   {
     art: 'voice',
@@ -440,10 +454,10 @@ export default function GlobalLandingPage() {
 
               <FadeUp delay={0.14}>
                 <p className="text-[15.5px] md:text-[17px] text-muted-foreground leading-relaxed max-w-2xl mb-8">
-                  Chivox MCP returns a{' '}
-                  <strong className="text-foreground/90 font-semibold">phoneme-level score matrix</strong>{' '}
-                  for English and Mandarin &mdash; one MCP call, any LLM. Built for language tutors,
-                  reading coaches, and voice-native agents.
+                  Chivox MCP turns raw speech into a{' '}
+                  <strong className="text-foreground/90 font-semibold">dense, agent-ready payload</strong>{' '}
+                  &mdash; phoneme scores, stress, tone, fluency, audio quality &mdash; all in one MCP
+                  call, any LLM. The listening layer under every voice-native agent you&rsquo;re about to ship.
                 </p>
               </FadeUp>
 
@@ -551,11 +565,12 @@ export default function GlobalLandingPage() {
           <FadeUp className="mb-10 text-center max-w-2xl mx-auto">
             <div className="text-[11px] tracking-[0.2em] uppercase text-muted-foreground mb-3">/what-it-does</div>
             <h2 className="heading-display text-3xl md:text-4xl tracking-[-0.02em] mb-3">
-              Plug-and-play AI tutor infrastructure
+              The listening layer, as four MCP tools
             </h2>
             <p className="text-muted-foreground leading-relaxed">
-              Twenty years of pronunciation-assessment R&amp;D, exposed as four MCP tools. Drop into LangChain,
-              LlamaIndex, the OpenAI Agents SDK or any custom loop — skip the months of DSP work.
+              Twenty years of pronunciation-assessment R&amp;D, exposed as a structured payload your LLM
+              can reason over. Drop into LangChain, LlamaIndex, the OpenAI Agents SDK or any custom loop —
+              skip the months of DSP work.
             </p>
           </FadeUp>
 
@@ -652,126 +667,8 @@ export default function GlobalLandingPage() {
       </section>
 
       {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-       * MANDARIN MOAT — the differentiator, promoted to its own section
-       * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
-      <section
-        id="mandarin-moat"
-        className="relative py-20 md:py-24 border-b border-[#e9e2d2]/70 scroll-mt-24"
-      >
-        <div className="container mx-auto px-6 max-w-6xl">
-          <FadeUp className="mb-10 max-w-3xl">
-            <div className="inline-flex items-center gap-2 text-[11px] tracking-[0.2em] uppercase text-muted-foreground mb-3">
-              <span>/mandarin-moat</span>
-              <span className="inline-flex items-center gap-1 rounded-full border border-rose-500/30 bg-rose-500/10 px-2 py-0.5 text-[9px] font-mono text-rose-600 dark:text-rose-400 normal-case tracking-normal">
-                <span className="h-1 w-1 rounded-full bg-rose-500" />
-                Hard mode
-              </span>
-            </div>
-            <h2 className="heading-display text-3xl md:text-[42px] tracking-[-0.02em] mb-3 leading-[1.1]">
-              Crack the tonal code.
-              <br />
-              <span className="text-muted-foreground/90">Own the Mandarin market.</span>
-            </h2>
-            <p className="text-muted-foreground leading-relaxed">
-              Open-source STT flatlines on{' '}
-              <span className="font-zh text-foreground/85">妈</span> /{' '}
-              <span className="font-zh text-foreground/85">麻</span> /{' '}
-              <span className="font-zh text-foreground/85">马</span> /{' '}
-              <span className="font-zh text-foreground/85">骂</span>. We return tone-, phoneme-, and sandhi-level
-              scores &mdash; the only MCP purpose-built for the language every generic model gets wrong.
-            </p>
-          </FadeUp>
-
-          {/* ── market proof strip — why this moat matters commercially ── */}
-          <FadeUp delay={0.06}>
-            <div className="mb-8 rounded-xl border border-rose-500/15 bg-gradient-to-r from-rose-50/70 via-amber-50/50 to-rose-50/30 px-4 md:px-5 py-3.5 flex flex-col md:flex-row md:items-center gap-3 md:gap-5">
-              <div className="inline-flex items-center gap-1.5 shrink-0">
-                <Globe2 className="h-3.5 w-3.5 text-rose-600" />
-                <span className="text-[10px] font-mono uppercase tracking-[0.18em] text-rose-700/90">
-                  Market moat
-                </span>
-              </div>
-              <div className="flex flex-wrap items-baseline gap-x-5 gap-y-1.5 flex-1 min-w-0">
-                <span className="inline-flex items-baseline gap-1.5">
-                  <span className="heading-display text-[17px] md:text-[19px] tabular-nums tracking-[-0.02em] text-rose-700">
-                    25M+
-                  </span>
-                  <span className="text-[12.5px] text-foreground/75">
-                    Mandarin learners worldwide
-                  </span>
-                </span>
-                <span className="hidden md:inline-block h-3 w-px bg-rose-500/25" />
-                <span className="inline-flex items-baseline gap-1.5">
-                  <span className="heading-display text-[17px] md:text-[19px] tabular-nums tracking-[-0.02em] text-rose-700">
-                    ~$6B
-                  </span>
-                  <span className="text-[12.5px] text-foreground/75">
-                    language-learning TAM
-                  </span>
-                </span>
-                <span className="hidden md:inline-block h-3 w-px bg-rose-500/25" />
-                <span className="inline-flex items-baseline gap-1.5">
-                  <span className="heading-display text-[17px] md:text-[19px] tabular-nums tracking-[-0.02em] text-rose-700">
-                    0
-                  </span>
-                  <span className="text-[12.5px] text-foreground/75">
-                    MCPs purpose-built for it
-                  </span>
-                </span>
-              </div>
-              <div className="shrink-0 inline-flex items-center gap-1.5 text-[12.5px] italic text-foreground/80">
-                <ArrowRight className="h-3.5 w-3.5 text-rose-600" />
-                Ship the tutor they can&rsquo;t build on Whisper.
-              </div>
-            </div>
-          </FadeUp>
-
-          {/* condensed feature chip row */}
-          <FadeUp delay={0.08}>
-            <div className="mb-8 flex flex-wrap gap-2">
-              {[
-                '4 tones + T5',
-                'Tone sandhi',
-                'Erhua · 儿化音',
-                'Pinyin align',
-                'Code-switch zh ↔ en',
-                'HSK 1-9',
-              ].map((f) => (
-                <span
-                  key={f}
-                  className="inline-flex items-center gap-1.5 rounded-md border border-rose-500/20 bg-rose-500/[0.06] px-2.5 py-1 text-[11.5px] font-mono text-rose-700 dark:text-rose-300"
-                >
-                  <span className="h-1 w-1 rounded-full bg-rose-500" />
-                  {f}
-                </span>
-              ))}
-            </div>
-          </FadeUp>
-
-          <FadeUp delay={0.12}>
-            <TonePanel />
-          </FadeUp>
-
-          <FadeUp delay={0.18}>
-            <div className="mt-6 rounded-xl border border-zinc-900/[0.08] bg-white/55 backdrop-blur-sm p-5 md:p-6">
-              <div className="text-[10.5px] font-mono tracking-[0.18em] uppercase text-muted-foreground mb-2">
-                Code-switching · cross-lingual scoring
-              </div>
-              <p className="text-[13.5px] text-foreground/80 leading-relaxed">
-                Score a heritage speaker mid-sentence as they flip between languages &mdash;{' '}
-                <span className="italic">
-                  &ldquo;I told her <span className="font-zh">我下周回家</span> and she was thrilled.&rdquo;
-                </span>{' '}
-                Returns separate EN / zh sub-scores plus a blended fluency index. Useful for bilingual corporate
-                training, linguistic research, and apps targeting the 60M+ global Chinese diaspora.
-              </p>
-            </div>
-          </FadeUp>
-        </div>
-      </section>
-
-      {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
        * THREE-STAGE PIPELINE — why MCP, not just another eval API
+       * (MOVED up: platform claim must precede the Mandarin proof.)
        * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
       <section id="reasoning-engine-trigger" className="relative py-20 md:py-24 border-b border-[#e9e2d2]/70 scroll-mt-24">
         <div className="container mx-auto px-6 max-w-7xl">
@@ -785,8 +682,9 @@ export default function GlobalLandingPage() {
               <span className="text-muted-foreground/90">It&apos;s a reasoning engine trigger.</span>
             </h2>
             <p className="text-muted-foreground leading-relaxed">
-              You just saw Mandarin scored tone-by-tone. The MCP response is a <strong className="text-foreground/90">wide JSON surface</strong>: not only
-              overall and <span className="font-mono text-foreground/80">pron.*</span> sub-scores, but fluency (WPM, pauses),{' '}
+              You saw how simple the integration is. Now look at what actually comes back. The MCP response
+              is a <strong className="text-foreground/90">wide JSON surface</strong>: not only overall and{' '}
+              <span className="font-mono text-foreground/80">pron.*</span> sub-scores, but fluency (WPM, pauses),{' '}
               <span className="font-mono text-foreground/80">audio_quality</span> (SNR, clip, level), and a{' '}
               <span className="font-mono text-foreground/80">details[]</span> array where each word or character carries millisecond
               windows, <span className="font-mono text-foreground/80">dp_type</span>, stress, liaison, <span className="font-mono text-foreground/80">phonemes[]</span> with IPA, plus Mandarin{' '}
@@ -808,7 +706,7 @@ export default function GlobalLandingPage() {
                   Live demo
                 </span>
                 <span className="text-[12.5px] text-muted-foreground">
-                  Watch pass ② run. <span className="text-foreground/85">Same Mandarin payload in</span> — a
+                  Watch pass ② run. <span className="text-foreground/85">A Mandarin payload in</span> — a
                   textbook-grade diagnosis out, streamed by o1-mini.
                 </span>
               </div>
@@ -849,6 +747,138 @@ export default function GlobalLandingPage() {
       </section>
 
       {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+       * MANDARIN DEPTH — concrete proof the payload resolves the
+       * hardest acoustic signals. Technical proof, not market sell.
+       * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
+      <section
+        id="mandarin-moat"
+        className="relative py-20 md:py-24 border-b border-[#e9e2d2]/70 scroll-mt-24"
+      >
+        <div className="container mx-auto px-6 max-w-6xl">
+          <FadeUp className="mb-10 max-w-3xl">
+            <div className="inline-flex items-center gap-2 text-[11px] tracking-[0.2em] uppercase text-muted-foreground mb-3">
+              <span>/payload-depth</span>
+              <span className="inline-flex items-center gap-1 rounded-full border border-rose-500/30 bg-rose-500/10 px-2 py-0.5 text-[9px] font-mono text-rose-600 dark:text-rose-400 normal-case tracking-normal">
+                <span className="h-1 w-1 rounded-full bg-rose-500" />
+                Depth proof
+              </span>
+            </div>
+            <h2 className="heading-display text-3xl md:text-[42px] tracking-[-0.02em] mb-3 leading-[1.1]">
+              Mandarin is where the payload proves itself.
+              <br />
+              <span className="text-muted-foreground/90">If it resolves tonal sandhi, it resolves anything.</span>
+            </h2>
+            <p className="text-muted-foreground leading-relaxed">
+              Four tones, sandhi, erhua, retroflex &mdash; the acoustic edge cases that kill generic STT.
+              Chivox MCP returns tone objects, confidence distributions and per-phoneme windows on top of
+              the same <span className="font-mono text-foreground/80">pron.*</span> /{' '}
+              <span className="font-mono text-foreground/80">details[]</span> shape every other language ships.
+              Here&rsquo;s the signal your agent actually sees.
+            </p>
+          </FadeUp>
+
+          {/* ── coverage proof strip — capability chips, no market TAM ── */}
+          <FadeUp delay={0.06}>
+            <div className="mb-8 rounded-xl border border-rose-500/15 bg-gradient-to-r from-rose-50/70 via-amber-50/50 to-rose-50/30 px-4 md:px-5 py-3.5 flex flex-col md:flex-row md:items-center gap-3 md:gap-5">
+              <div className="inline-flex items-center gap-1.5 shrink-0">
+                <Globe2 className="h-3.5 w-3.5 text-rose-600" />
+                <span className="text-[10px] font-mono uppercase tracking-[0.18em] text-rose-700/90">
+                  Coverage
+                </span>
+              </div>
+              <div className="flex flex-wrap items-baseline gap-x-5 gap-y-1.5 flex-1 min-w-0">
+                <span className="inline-flex items-baseline gap-1.5">
+                  <span className="heading-display text-[17px] md:text-[19px] tabular-nums tracking-[-0.02em] text-rose-700">
+                    HSK 1-9
+                  </span>
+                  <span className="text-[12.5px] text-foreground/75">
+                    lexical ladder covered
+                  </span>
+                </span>
+                <span className="hidden md:inline-block h-3 w-px bg-rose-500/25" />
+                <span className="inline-flex items-baseline gap-1.5">
+                  <span className="heading-display text-[17px] md:text-[19px] tabular-nums tracking-[-0.02em] text-rose-700">
+                    5 tones
+                  </span>
+                  <span className="text-[12.5px] text-foreground/75">
+                    + sandhi + erhua resolved
+                  </span>
+                </span>
+                <span className="hidden md:inline-block h-3 w-px bg-rose-500/25" />
+                <span className="inline-flex items-baseline gap-1.5">
+                  <span className="heading-display text-[17px] md:text-[19px] tabular-nums tracking-[-0.02em] text-rose-700">
+                    95%+
+                  </span>
+                  <span className="text-[12.5px] text-foreground/75">
+                    agreement with human raters
+                  </span>
+                </span>
+              </div>
+              <div className="shrink-0 inline-flex items-center gap-1.5 text-[12.5px] italic text-foreground/80">
+                <ArrowRight className="h-3.5 w-3.5 text-rose-600" />
+                Same payload shape, hardest signal.
+              </div>
+            </div>
+          </FadeUp>
+
+          {/* condensed feature chip row */}
+          <FadeUp delay={0.08}>
+            <div className="mb-8 flex flex-wrap gap-2">
+              {[
+                '4 tones + T5',
+                'Tone sandhi',
+                'Erhua · 儿化音',
+                'Pinyin align',
+                'Code-switch zh ↔ en',
+                'HSK 1-9',
+              ].map((f) => (
+                <span
+                  key={f}
+                  className="inline-flex items-center gap-1.5 rounded-md border border-rose-500/20 bg-rose-500/[0.06] px-2.5 py-1 text-[11.5px] font-mono text-rose-700 dark:text-rose-300"
+                >
+                  <span className="h-1 w-1 rounded-full bg-rose-500" />
+                  {f}
+                </span>
+              ))}
+            </div>
+          </FadeUp>
+
+          <FadeUp delay={0.12}>
+            <TonePanel />
+          </FadeUp>
+
+          <FadeUp delay={0.18}>
+            <div className="mt-6 rounded-xl border border-zinc-900/[0.08] bg-white/55 backdrop-blur-sm p-5 md:p-6">
+              <div className="text-[10.5px] font-mono tracking-[0.18em] uppercase text-muted-foreground mb-2">
+                Code-switching · cross-lingual scoring
+              </div>
+              <p className="text-[13.5px] text-foreground/80 leading-relaxed">
+                Score a heritage speaker mid-sentence as they flip between languages &mdash;{' '}
+                <span className="italic">
+                  &ldquo;I told her <span className="font-zh">我下周回家</span> and she was thrilled.&rdquo;
+                </span>{' '}
+                Returns separate EN / zh sub-scores plus a blended fluency index. Same payload contract,
+                two languages interleaved.
+              </p>
+            </div>
+          </FadeUp>
+
+          <FadeUp delay={0.22}>
+            <div className="mt-6 text-[12.5px] text-muted-foreground">
+              Looking to ship a Mandarin coach on top of this?{' '}
+              <a
+                href="#use-cases"
+                className="inline-flex items-center gap-1 text-emerald-800 hover:text-emerald-900 font-medium transition-colors"
+              >
+                See the build-a-tutor use case
+                <ArrowRight className="h-3 w-3" />
+              </a>
+            </div>
+          </FadeUp>
+        </div>
+      </section>
+
+      {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
        * USE CASES — with real imagery
        * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
       <section id="use-cases" className="relative py-20 md:py-24 border-b border-[#e9e2d2]/70 scroll-mt-24">
@@ -876,7 +906,10 @@ export default function GlobalLandingPage() {
                       className="text-[15px] font-semibold tracking-[-0.01em] mb-2 leading-snug"
                       dangerouslySetInnerHTML={{ __html: u.title }}
                     />
-                    <p className="text-[13px] text-muted-foreground leading-relaxed">{u.body}</p>
+                    <p
+                      className="text-[13px] text-muted-foreground leading-relaxed"
+                      dangerouslySetInnerHTML={{ __html: u.body }}
+                    />
                   </div>
                 </div>
               </StaggerItem>
@@ -1008,41 +1041,178 @@ export default function GlobalLandingPage() {
       </section>
 
       {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-       * COMPLIANCE STRIP — stateless streaming, GDPR-aligned (condensed)
+       * RUNTIME — the day-2 stuff ops teams ask about.
+       * Absorbs the old compliance strip (stateless/GDPR) into the
+       * 6-tile grid so privacy is one of the runtime signals, not
+       * a separate footer note.
        * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
-      <section className="relative py-12 md:py-14 border-b border-[#e9e2d2]/70">
+      <section
+        id="runtime"
+        className="relative py-20 md:py-24 border-b border-[#e9e2d2]/70 scroll-mt-24"
+      >
         <div className="container mx-auto px-6 max-w-6xl">
-          <div className="rounded-2xl border border-zinc-900/[0.08] bg-white/55 backdrop-blur-md p-6 md:p-8">
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
-              <div className="max-w-md">
-                <div className="text-[11px] tracking-[0.2em] uppercase text-muted-foreground mb-2">/privacy</div>
-                <h2 className="text-lg md:text-xl font-semibold tracking-[-0.01em] mb-1">
-                  Built for the GDPR era.
-                </h2>
-                <p className="text-[13px] text-muted-foreground leading-relaxed">
-                  Stateless streaming — audio scored in-memory, never stockpiled, never used for training.
-                </p>
-              </div>
-              <div className="grid grid-cols-3 gap-3 md:gap-4 md:min-w-[520px]">
-                {[
-                  { icon: Zap, title: 'Stateless', chip: 'TTL: 0s' },
-                  { icon: ShieldCheck, title: 'Compliance-ready', chip: 'GDPR · CCPA · SOC 2' },
-                  { icon: Lightbulb, title: 'You own the data', chip: 'JSON out, no audio copies' },
-                ].map((p) => (
-                  <div
-                    key={p.title}
-                    className="rounded-xl border border-emerald-500/20 bg-emerald-500/[0.04] px-3 py-3"
-                  >
-                    <div className="flex items-center gap-2 mb-1.5">
-                      <p.icon className="h-3.5 w-3.5 text-emerald-600" />
-                      <span className="text-[12.5px] font-semibold tracking-tight">{p.title}</span>
+          <FadeUp className="mb-10 max-w-2xl">
+            <div className="text-[11px] tracking-[0.2em] uppercase text-muted-foreground mb-3">/runtime</div>
+            <h2 className="heading-display text-3xl md:text-4xl tracking-[-0.02em] mb-3 leading-[1.1]">
+              Built like infrastructure you can bet a launch on.
+            </h2>
+            <p className="text-muted-foreground leading-relaxed">
+              Chivox MCP is not a Saturday demo. Keys, budgets, alerts, uptime &mdash; the day-2 stuff
+              your ops team asks about before signing. Everything visible in the dashboard, scriptable
+              via API.
+            </p>
+          </FadeUp>
+
+          <StaggerContainer className="grid md:grid-cols-2 lg:grid-cols-3 gap-3.5">
+            {[
+              {
+                icon: Key,
+                eyebrow: 'keys',
+                title: 'Starter key → paid key',
+                body:
+                  'Free credits on signup. Flip to paid without re-integrating — same endpoint, same JSON. Keys scoped per environment, rotated from the dashboard.',
+                chip: 'Free → paid · no migration',
+                tone: 'emerald',
+              },
+              {
+                icon: Gauge,
+                eyebrow: 'budgets',
+                title: 'Spend caps you can trust',
+                body:
+                  'Hard monthly ceilings per key. When the cap is hit, calls return a structured 429 — your agent can surface billing state to users instead of failing opaquely.',
+                chip: 'Hard cap · structured 429',
+                tone: 'amber',
+              },
+              {
+                icon: Bell,
+                eyebrow: 'alerts',
+                title: 'Low-balance alerts',
+                body:
+                  'Email notifications at 80% / 90% / 100% of spend or credit balance. Webhook delivery available for Slack, PagerDuty, or internal billing systems.',
+                chip: '80 · 90 · 100% thresholds',
+                tone: 'rose',
+              },
+              {
+                icon: BarChart3,
+                eyebrow: 'observability',
+                title: 'Usage visibility',
+                body:
+                  'Per-key usage, latency percentiles, tool breakdown, error reasons — live in dashboard, exportable via API. Debug integrations without opening a ticket.',
+                chip: 'Dashboard + export API',
+                tone: 'sky',
+              },
+              {
+                icon: Zap,
+                eyebrow: 'privacy',
+                title: 'Stateless streaming',
+                body:
+                  'Audio scored in-memory, never stockpiled, never used for training. You own the data — JSON out, zero audio copies. GDPR · CCPA · SOC 2 aligned.',
+                chip: 'TTL: 0s · GDPR · CCPA · SOC 2',
+                tone: 'violet',
+              },
+              {
+                icon: Activity,
+                eyebrow: 'scale',
+                title: 'Production-ready runtime',
+                body:
+                  '9.2B+ evaluations per year, p50 240 ms, 99.95% uptime SLA on enterprise tier. Same payload whether you wire it into GPT-4o, Claude 3.5 or Gemini 2.0.',
+                chip: '9.2B/yr · p50 240 ms · 99.95% SLA',
+                tone: 'indigo',
+              },
+            ].map((tile) => {
+              const toneMap: Record<
+                string,
+                { iconBg: string; iconFg: string; eyebrow: string; chipBorder: string }
+              > = {
+                emerald: {
+                  iconBg: 'bg-emerald-500/10',
+                  iconFg: 'text-emerald-700',
+                  eyebrow: 'text-emerald-700',
+                  chipBorder: 'border-emerald-500/25 bg-emerald-500/[0.05] text-emerald-800',
+                },
+                amber: {
+                  iconBg: 'bg-amber-500/10',
+                  iconFg: 'text-amber-700',
+                  eyebrow: 'text-amber-700',
+                  chipBorder: 'border-amber-500/25 bg-amber-500/[0.05] text-amber-800',
+                },
+                rose: {
+                  iconBg: 'bg-rose-500/10',
+                  iconFg: 'text-rose-700',
+                  eyebrow: 'text-rose-700',
+                  chipBorder: 'border-rose-500/25 bg-rose-500/[0.05] text-rose-800',
+                },
+                sky: {
+                  iconBg: 'bg-sky-500/10',
+                  iconFg: 'text-sky-700',
+                  eyebrow: 'text-sky-700',
+                  chipBorder: 'border-sky-500/25 bg-sky-500/[0.05] text-sky-800',
+                },
+                violet: {
+                  iconBg: 'bg-violet-500/10',
+                  iconFg: 'text-violet-700',
+                  eyebrow: 'text-violet-700',
+                  chipBorder: 'border-violet-500/25 bg-violet-500/[0.05] text-violet-800',
+                },
+                indigo: {
+                  iconBg: 'bg-indigo-500/10',
+                  iconFg: 'text-indigo-700',
+                  eyebrow: 'text-indigo-700',
+                  chipBorder: 'border-indigo-500/25 bg-indigo-500/[0.05] text-indigo-800',
+                },
+              };
+              const t = toneMap[tile.tone];
+              return (
+                <StaggerItem key={tile.title}>
+                  <div className="group relative h-full rounded-2xl border border-zinc-900/[0.08] bg-white/70 backdrop-blur-md p-5 md:p-6 hover:-translate-y-[2px] hover:border-zinc-900/[0.15] hover:shadow-[0_18px_48px_-24px_rgba(0,0,0,0.18)] transition-all duration-300 flex flex-col">
+                    <div className="flex items-center gap-2.5 mb-3">
+                      <div
+                        className={`h-9 w-9 rounded-lg ${t.iconBg} inline-flex items-center justify-center`}
+                      >
+                        <tile.icon className={`h-4 w-4 ${t.iconFg}`} />
+                      </div>
+                      <span
+                        className={`text-[10.5px] font-mono tracking-wide uppercase ${t.eyebrow}`}
+                      >
+                        /{tile.eyebrow}
+                      </span>
                     </div>
-                    <div className="text-[10.5px] font-mono text-muted-foreground">{p.chip}</div>
+                    <h3 className="text-[16.5px] font-semibold tracking-[-0.01em] mb-2 text-zinc-900">
+                      {tile.title}
+                    </h3>
+                    <p className="text-[13px] text-muted-foreground leading-relaxed mb-4">
+                      {tile.body}
+                    </p>
+                    <span
+                      className={`mt-auto self-start inline-flex items-center rounded-md border px-2 py-0.5 text-[10.5px] font-mono ${t.chipBorder}`}
+                    >
+                      {tile.chip}
+                    </span>
                   </div>
-                ))}
-              </div>
+                </StaggerItem>
+              );
+            })}
+          </StaggerContainer>
+
+          {/* closing rail — quiet summary line */}
+          <FadeUp delay={0.2}>
+            <div className="mt-8 flex flex-col md:flex-row md:items-center md:justify-between gap-3 text-[12.5px] text-muted-foreground border-t border-zinc-900/[0.06] pt-5">
+              <span className="inline-flex items-center gap-2">
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 shadow-[0_0_6px_rgba(16,185,129,0.6)] animate-pulse" />
+                Production traffic right now &mdash; check the{' '}
+                <Link
+                  href="/global/docs#changelog"
+                  className="text-emerald-800 hover:text-emerald-900 font-medium inline-flex items-center gap-0.5"
+                >
+                  status &amp; changelog
+                  <ArrowRight className="h-3 w-3" />
+                </Link>
+              </span>
+              <span className="font-mono text-[11.5px]">
+                One payload shape · every model · every runtime
+              </span>
             </div>
-          </div>
+          </FadeUp>
         </div>
       </section>
 
@@ -1058,12 +1228,15 @@ export default function GlobalLandingPage() {
             <h2 className="heading-display text-3xl md:text-[44px] tracking-[-0.025em] mb-4 leading-[1.1]">
               Same payload. Your agent. Your production loop.
             </h2>
-            <p className="text-muted-foreground leading-relaxed mb-8 text-base md:text-[17px] max-w-2xl mx-auto">
+            <p className="text-muted-foreground leading-relaxed mb-4 text-base md:text-[17px] max-w-2xl mx-auto">
               Drop Chivox MCP into Cursor, Claude Desktop, or any agent SDK. One{' '}
               <code className="font-mono text-[13px] px-1.5 py-0.5 rounded bg-zinc-900/[0.06] text-foreground/90">
                 npx
               </code>{' '}
               and you&rsquo;re reading the same JSON you just saw above.
+            </p>
+            <p className="text-[13px] text-muted-foreground/85 mb-8 max-w-2xl mx-auto font-mono tracking-tight">
+              Starter key free &middot; spend caps &middot; low-balance alerts &middot; zero audio retention
             </p>
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3">
               <a
@@ -1087,13 +1260,351 @@ export default function GlobalLandingPage() {
                 Get your API key
                 <ArrowUpRight className="h-4 w-4 opacity-60" />
               </Link>
+              <a
+                href="#contact"
+                className="inline-flex items-center justify-center h-11 px-6 text-sm font-semibold rounded-full gap-1.5 text-zinc-700 hover:text-zinc-900 transition-colors"
+              >
+                <Mail className="h-4 w-4 opacity-70" />
+                Talk to us
+              </a>
             </div>
           </div>
         </div>
       </section>
 
+      <ContactSection />
+
       <SiteFooter />
     </main>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════════
+ *  CONTACT — warm-card block with an English lead-capture form.
+ *  Posts to `sendGlobalContactEmail` (server action) which routes
+ *  the lead into the same SMTP inbox as the Chinese homepage.
+ * ═══════════════════════════════════════════════════════════ */
+function ContactSection() {
+  return (
+    <section
+      id="contact"
+      className="relative py-20 md:py-28 border-t border-[#e9e2d2]/70 scroll-mt-28"
+      style={{
+        background:
+          'linear-gradient(to bottom, rgba(251,246,233,0) 0%, rgba(16,185,129,0.05) 40%, rgba(245,158,11,0.04) 100%)',
+      }}
+    >
+      <div className="container mx-auto px-6 max-w-7xl">
+        <div className="grid lg:grid-cols-12 gap-8 lg:gap-12 items-start">
+          {/* ── LEFT · pitch + direct-mail fallback ─────────── */}
+          <div className="lg:col-span-5">
+            <div className="text-[11px] font-mono tracking-[0.22em] uppercase text-emerald-700 mb-3">
+              /contact
+            </div>
+            <h2 className="heading-display text-3xl md:text-[40px] tracking-[-0.025em] leading-[1.08] mb-5">
+              Let&rsquo;s build your voice agent together.
+            </h2>
+            <p className="text-muted-foreground text-[15px] leading-relaxed mb-8 max-w-md">
+              Tell us what you&rsquo;re building. We&rsquo;ll reply within one business day with
+              pilot credits, pricing, or a deployment plan — whichever you need first.
+            </p>
+
+            <ul className="space-y-3.5 mb-8">
+              {[
+                {
+                  title: 'Enterprise pricing & self-hosted deployments',
+                  body: 'Volume tiers, VPC install, SLAs, and on-prem engines for regulated buyers.',
+                },
+                {
+                  title: 'Missing a language or dialect?',
+                  body: 'We train new acoustic models on request. Send us your target accent.',
+                },
+                {
+                  title: 'Pilot credits for evaluation teams',
+                  body: 'Free benchmark run on your own audio, with a side-by-side report.',
+                },
+              ].map((item) => (
+                <li key={item.title} className="flex gap-3">
+                  <div
+                    className="mt-[6px] h-5 w-5 shrink-0 rounded-full bg-emerald-500/15 text-emerald-700 inline-flex items-center justify-center"
+                    aria-hidden
+                  >
+                    <Check className="h-3 w-3" strokeWidth={3} />
+                  </div>
+                  <div>
+                    <div className="text-[14.5px] font-semibold text-zinc-900 tracking-[-0.005em]">
+                      {item.title}
+                    </div>
+                    <div className="text-[13px] text-muted-foreground leading-relaxed">
+                      {item.body}
+                    </div>
+                  </div>
+                </li>
+              ))}
+            </ul>
+
+            <div className="rounded-xl border border-zinc-900/[0.08] bg-white/55 backdrop-blur-sm p-4">
+              <div className="text-[11px] font-mono tracking-[0.2em] uppercase text-muted-foreground mb-2">
+                Prefer plain email?
+              </div>
+              <div className="flex flex-col sm:flex-row gap-3 text-[13.5px]">
+                <a
+                  href="mailto:dev@chivox.com?subject=Chivox%20MCP%20-%20Developer%20question"
+                  className="inline-flex items-center gap-2 text-zinc-900 hover:text-emerald-700 transition-colors"
+                >
+                  <Mail className="h-3.5 w-3.5 text-emerald-600" />
+                  <span className="font-medium">dev@chivox.com</span>
+                  <span className="text-muted-foreground">· developers</span>
+                </a>
+                <a
+                  href="mailto:sales@chivox.com?subject=Chivox%20MCP%20-%20Enterprise%20inquiry"
+                  className="inline-flex items-center gap-2 text-zinc-900 hover:text-emerald-700 transition-colors"
+                >
+                  <Mail className="h-3.5 w-3.5 text-amber-600" />
+                  <span className="font-medium">sales@chivox.com</span>
+                  <span className="text-muted-foreground">· enterprise</span>
+                </a>
+              </div>
+            </div>
+          </div>
+
+          {/* ── RIGHT · form card ───────────────────────────── */}
+          <div className="lg:col-span-7">
+            <div className="warm-card p-6 md:p-8">
+              <GlobalContactForm />
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+const USE_CASE_OPTIONS: Array<{ value: GlobalContactUseCase; label: string }> = [
+  { value: 'language-learning', label: 'Language learning' },
+  { value: 'serious-games', label: 'Serious games / consumer' },
+  { value: 'accessibility', label: 'Accessibility / speech therapy' },
+  { value: 'enterprise-training', label: 'Enterprise training & L&D' },
+  { value: 'research', label: 'Research / academic' },
+  { value: 'other', label: 'Other' },
+];
+
+function GlobalContactForm() {
+  const [isPending, startTransition] = useTransition();
+  const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle');
+  const [errorMsg, setErrorMsg] = useState('');
+  const [form, setForm] = useState<GlobalContactFormData>({
+    company: '',
+    name: '',
+    email: '',
+    useCase: undefined,
+    message: '',
+    source: '/global#contact',
+  });
+
+  const inputClass =
+    'w-full h-11 px-3.5 text-[14px] rounded-lg border border-zinc-900/[0.12] bg-white/70 backdrop-blur-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:border-emerald-500/60 focus:ring-2 focus:ring-emerald-500/15 transition-all disabled:opacity-60';
+
+  const labelClass = 'block text-[12.5px] font-medium text-zinc-800 mb-1.5 tracking-[-0.005em]';
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setStatus('idle');
+    setErrorMsg('');
+    startTransition(async () => {
+      const result = await sendGlobalContactEmail(form);
+      if (result.success) {
+        setStatus('success');
+      } else {
+        setStatus('error');
+        setErrorMsg(result.error || 'Submission failed. Please try again.');
+      }
+    });
+  };
+
+  if (status === 'success') {
+    return (
+      <div className="flex flex-col items-center justify-center py-10 text-center">
+        <div className="h-14 w-14 rounded-full bg-emerald-500/15 text-emerald-700 inline-flex items-center justify-center mb-4">
+          <CheckCircle2 className="h-7 w-7" />
+        </div>
+        <h3 className="heading-display text-xl md:text-2xl tracking-[-0.015em] text-zinc-900 mb-2">
+          Thanks — your note is in.
+        </h3>
+        <p className="text-[14px] text-muted-foreground leading-relaxed max-w-sm mb-6">
+          We&rsquo;ll get back within one business day. For anything urgent, email{' '}
+          <a
+            href="mailto:dev@chivox.com"
+            className="text-emerald-700 underline underline-offset-2 hover:no-underline"
+          >
+            dev@chivox.com
+          </a>{' '}
+          directly.
+        </p>
+        <button
+          type="button"
+          onClick={() => {
+            setStatus('idle');
+            setForm({
+              company: '',
+              name: '',
+              email: '',
+              useCase: undefined,
+              message: '',
+              source: '/global#contact',
+            });
+          }}
+          className="text-[13px] font-medium text-zinc-700 hover:text-zinc-900 underline underline-offset-2 hover:no-underline"
+        >
+          Send another message
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div className="mb-1">
+        <div className="text-[11px] font-mono tracking-[0.22em] uppercase text-emerald-700 mb-1.5">
+          /get-in-touch
+        </div>
+        <h3 className="heading-display text-xl md:text-[22px] tracking-[-0.01em] text-zinc-900">
+          Tell us what you&rsquo;re building.
+        </h3>
+      </div>
+
+      {status === 'error' && (
+        <div className="flex items-start gap-2 p-3 rounded-lg bg-rose-50 text-rose-800 text-[13px] border border-rose-200">
+          <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
+          <span>{errorMsg}</span>
+        </div>
+      )}
+
+      <div className="grid md:grid-cols-2 gap-3.5">
+        <div>
+          <label className={labelClass} htmlFor="contact-company">
+            Company <span className="text-rose-500">*</span>
+          </label>
+          <input
+            id="contact-company"
+            type="text"
+            value={form.company}
+            onChange={(e) => setForm({ ...form, company: e.target.value })}
+            placeholder="Acme Inc."
+            className={inputClass}
+            disabled={isPending}
+            autoComplete="organization"
+            required
+          />
+        </div>
+        <div>
+          <label className={labelClass} htmlFor="contact-name">
+            Your name <span className="text-rose-500">*</span>
+          </label>
+          <input
+            id="contact-name"
+            type="text"
+            value={form.name}
+            onChange={(e) => setForm({ ...form, name: e.target.value })}
+            placeholder="Jane Doe"
+            className={inputClass}
+            disabled={isPending}
+            autoComplete="name"
+            required
+          />
+        </div>
+      </div>
+
+      <div>
+        <label className={labelClass} htmlFor="contact-email">
+          Work email <span className="text-rose-500">*</span>
+        </label>
+        <input
+          id="contact-email"
+          type="email"
+          value={form.email}
+          onChange={(e) => setForm({ ...form, email: e.target.value })}
+          placeholder="jane@acme.com"
+          className={inputClass}
+          disabled={isPending}
+          autoComplete="email"
+          required
+        />
+      </div>
+
+      <div>
+        <label className={labelClass} htmlFor="contact-usecase">
+          What are you building?{' '}
+          <span className="text-muted-foreground font-normal">(optional)</span>
+        </label>
+        <select
+          id="contact-usecase"
+          value={form.useCase ?? ''}
+          onChange={(e) =>
+            setForm({
+              ...form,
+              useCase: (e.target.value || undefined) as GlobalContactUseCase | undefined,
+            })
+          }
+          className={cn(inputClass, 'appearance-none pr-10 cursor-pointer')}
+          style={{
+            backgroundImage:
+              "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%2352525b' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E\")",
+            backgroundRepeat: 'no-repeat',
+            backgroundPosition: 'right 14px center',
+          }}
+          disabled={isPending}
+        >
+          <option value="">Select a use case…</option>
+          {USE_CASE_OPTIONS.map((o) => (
+            <option key={o.value} value={o.value}>
+              {o.label}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      <div>
+        <label className={labelClass} htmlFor="contact-message">
+          Anything we should know?{' '}
+          <span className="text-muted-foreground font-normal">(optional)</span>
+        </label>
+        <textarea
+          id="contact-message"
+          value={form.message ?? ''}
+          onChange={(e) => setForm({ ...form, message: e.target.value })}
+          placeholder="Audio volumes, target languages, deployment region, timelines…"
+          rows={4}
+          className="w-full px-3.5 py-2.5 text-[14px] rounded-lg border border-zinc-900/[0.12] bg-white/70 backdrop-blur-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:border-emerald-500/60 focus:ring-2 focus:ring-emerald-500/15 transition-all resize-none disabled:opacity-60"
+          disabled={isPending}
+          maxLength={4000}
+        />
+      </div>
+
+      <div className="flex flex-col md:flex-row md:items-start gap-3 pt-1">
+        <button
+          type="submit"
+          disabled={isPending}
+          className="inline-flex items-center justify-center gap-2 h-11 px-6 text-[14px] font-semibold rounded-full bg-zinc-900 text-white shadow-[0_10px_24px_-10px_rgba(0,0,0,0.45)] hover:-translate-y-[1px] disabled:opacity-60 disabled:hover:translate-y-0 transition-all duration-200"
+        >
+          {isPending ? (
+            <>
+              <Loader2 className="h-4 w-4 animate-spin" />
+              Sending…
+            </>
+          ) : (
+            <>
+              Send message
+              <ArrowRight className="h-4 w-4 opacity-90" />
+            </>
+          )}
+        </button>
+        <p className="text-[11.5px] text-muted-foreground leading-relaxed md:flex-1 md:min-w-0 md:max-w-[28rem]">
+          By submitting this form you agree to receive a reply from the Chivox MCP team. We
+          don&rsquo;t share your email with third parties.
+        </p>
+      </div>
+    </form>
   );
 }
 
@@ -2688,35 +3199,35 @@ function HeroWaveGlyph() {
 const HERO_SLIDES = [
   {
     id: 'setup',
-    label: 'Instant setup',
+    label: 'One MCP integration',
     chip: 'npx · 60 s',
     tone: 'emerald',
-    headline: 'Ship voice scoring in one npx.',
-    sub: 'Four MCP tools. Works inside Claude, Cursor, Cline — zero audio plumbing.',
-  },
-  {
-    id: 'mandarin',
-    label: 'Mandarin moat',
-    chip: 'Tonal · hard mode',
-    tone: 'rose',
-    headline: 'Tell 睡觉 from 水饺.',
-    sub: 'Tone · sandhi · erhua · retroflex — the Mandarin moat Whisper just shrugs at.',
+    headline: 'One MCP, wired into every agent runtime.',
+    sub: 'Four tools. Claude, Cursor, Cline, LangChain, any custom loop — zero audio plumbing.',
   },
   {
     id: 'phoneme',
-    label: 'Phoneme-level listening',
+    label: 'Raw speech → diagnosis',
     chip: 'Beyond STT',
     tone: 'violet',
-    headline: 'Hears phonemes, not just words.',
-    sub: 'Per-phoneme accuracy, stress and liaison — a linguistics professor\u2019s ear, on-demand.',
+    headline: 'Raw audio in. Structured diagnosis out.',
+    sub: 'Per-phoneme accuracy, stress, liaison, ms-level windows — the signal an LLM needs to reason, not just transcribe.',
+  },
+  {
+    id: 'mandarin',
+    label: 'Proof of payload depth',
+    chip: 'Hardest acoustic signal',
+    tone: 'rose',
+    headline: 'If it resolves tonal sandhi, it resolves anything.',
+    sub: 'Tone, sandhi, erhua, retroflex — the acoustic edge cases generic STT flatlines on. Same payload shape as every other language.',
   },
   {
     id: 'reasoning',
-    label: 'Rich data for LLM reasoning',
-    chip: 'Agent-ready',
+    label: 'A reasoning payload',
+    chip: 'Not a leaderboard cell',
     tone: 'amber',
-    headline: 'A payload your LLM can reason over.',
-    sub: 'Dozens of top-level and per-token fields: pron, fluency, audio_quality, and details[] with stress, liaison, ms ranges & phonemes.',
+    headline: 'A payload your LLM can reason over — not a score.',
+    sub: 'Dozens of top-level and per-token fields: pron, fluency, audio_quality, details[] with stress, liaison, ms ranges, phonemes and tone objects.',
   },
 ] as const;
 
@@ -4450,10 +4961,12 @@ type NavItem = {
 
 const NAV_ITEMS: readonly NavItem[] = [
   { href: '#quickstart', label: 'Quickstart' },
-  { href: '#mandarin-moat', label: 'Mandarin' },
   { href: '#reasoning-engine-trigger', label: 'Reasoning' },
+  { href: '#mandarin-moat', label: 'Mandarin' },
   { href: '#use-cases', label: 'Use cases' },
+  { href: '#runtime', label: 'Runtime' },
   { href: '/global/docs', label: 'Docs', external: true },
+  { href: '#contact', label: 'Contact' },
 ] as const;
 
 function TopNav() {
@@ -4729,6 +5242,16 @@ function SiteFooter() {
               <li>
                 <Link href="#reasoning-engine-trigger" className="hover:text-zinc-900 transition-colors">
                   Agent reasoning
+                </Link>
+              </li>
+              <li>
+                <Link href="/global/docs" className="hover:text-zinc-900 transition-colors">
+                  Docs
+                </Link>
+              </li>
+              <li>
+                <Link href="/global#contact" className="hover:text-zinc-900 transition-colors">
+                  Contact sales
                 </Link>
               </li>
               <li>

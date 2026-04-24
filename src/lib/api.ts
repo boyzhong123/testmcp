@@ -1,7 +1,7 @@
-const DEFAULT_BASE = 'http://localhost:8081/api';
+import { getApiBaseUrl } from '@/config/endpoints';
 
 export function getApiBase(): string {
-  return (process.env.NEXT_PUBLIC_API_BASE_URL || DEFAULT_BASE).replace(/\/+$/, '');
+  return getApiBaseUrl();
 }
 
 const TOKEN_KEY = 'chivox_token';

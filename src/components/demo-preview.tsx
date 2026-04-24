@@ -653,7 +653,7 @@ export function DemoPreview() {
               </div>
               <div className="flex-1 flex justify-center">
                 <div className="h-5 max-w-[280px] w-full rounded-full bg-background border border-border/60 px-3 flex items-center justify-center text-[10px] text-muted-foreground font-mono truncate">
-                  speech-eval.site/demo · {shellData.urlHash}
+                  mcp.cloud.chivox.com/demo · {shellData.urlHash}
                 </div>
               </div>
               <div className="shrink-0 flex items-center gap-1 text-[10px] text-muted-foreground">

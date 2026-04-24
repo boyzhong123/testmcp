@@ -420,7 +420,7 @@ function ConceptSection({ L }: { L: 'en' }) {
               <CodeBlock filename="mcp-config.json" lang="json" locale={L}>{`{
   "chivox_voice_eval": {
     "type": "streamable-http",
-    "url": "https://speech-eval.site/mcp",
+    "url": "https://mcp.cloud.chivox.com",
     "apiKey": "sk-••••••••••"
   }
 }`}</CodeBlock>
@@ -468,7 +468,7 @@ When the user sends audio:
                     <tbody className="divide-y divide-border/30">
                       <tr>
                         <td className="py-2 px-3 font-medium w-36">URL</td>
-                        <td className="py-2 px-3 font-mono text-xs">https://speech-eval.site/mcp</td>
+                        <td className="py-2 px-3 font-mono text-xs">https://mcp.cloud.chivox.com</td>
                       </tr>
                       <tr>
                         <td className="py-2 px-3 font-medium">API key</td>
@@ -497,7 +497,7 @@ When the user sends audio:
   "mcpServers": {
     "chivox_voice_eval": {
       "type": "streamable-http",
-      "url": "https://speech-eval.site/mcp",
+      "url": "https://mcp.cloud.chivox.com",
       "env": { "API_KEY": "your-key" }
     }
   }
@@ -529,7 +529,7 @@ client = AsyncOpenAI(
 
 async def main():
     async with streamablehttp_client(
-        "https://speech-eval.site/mcp",
+        "https://mcp.cloud.chivox.com",
         headers={"Authorization": f"Bearer {os.getenv('CHIVOX_KEY')}"},
     ) as (read, write, _):
         async with ClientSession(read, write) as session:
@@ -661,7 +661,7 @@ sudo apt-get install sox`}</CodeBlock>
           <p>
             <strong>Option B — npx</strong>
           </p>
-          <CodeBlock filename="Terminal" lang="bash" locale={L}>{`MCP_REMOTE_URL=http://your-server:8080 npx chivox-local-mcp`}</CodeBlock>
+          <CodeBlock filename="Terminal" lang="bash" locale={L}>{`MCP_REMOTE_URL=https://fc.cloud.chivox.com npx chivox-local-mcp`}</CodeBlock>
           <p>
             <strong>Option C — build from source</strong>
           </p>
@@ -678,7 +678,7 @@ bash scripts/build.sh`}</CodeBlock>
                 name: 'MCP_REMOTE_URL',
                 type: 'string',
                 required: true,
-                desc: 'Remote Chivox MCP endpoint, e.g. http://your-server:8080',
+                desc: 'Remote Chivox MCP endpoint, e.g. https://fc.cloud.chivox.com',
               },
               {
                 name: 'MCP_API_KEY',
@@ -721,7 +721,7 @@ bash scripts/build.sh`}</CodeBlock>
           <CodeBlock filename="Cursor MCP" lang="json" locale={L}>{`{
   "name": "chivox-speech-eval",
   "type": "streamable-http",
-  "url": "https://speech-eval.site/mcp"
+  "url": "https://mcp.cloud.chivox.com"
 }`}</CodeBlock>
           <Callout type="tip">
             Cursor uses remote Streamable HTTP — no local binary. For microphone streaming, run the local proxy via Claude
@@ -742,7 +742,7 @@ bash scripts/build.sh`}</CodeBlock>
     "chivox": {
       "command": "chivox-local-mcp",
       "env": {
-        "MCP_REMOTE_URL": "http://your-server:8080",
+        "MCP_REMOTE_URL": "https://fc.cloud.chivox.com",
         "MCP_API_KEY": "your-api-key"
       }
     }
@@ -754,7 +754,7 @@ bash scripts/build.sh`}</CodeBlock>
         </SubDoc>
 
         <SubDoc id="config-claude-code" title="Claude Code">
-          <CodeBlock filename="Terminal" lang="bash" locale={L}>{`claude mcp add chivox -- env MCP_REMOTE_URL=http://your-server:8080 chivox-local-mcp`}</CodeBlock>
+          <CodeBlock filename="Terminal" lang="bash" locale={L}>{`claude mcp add chivox -- env MCP_REMOTE_URL=https://fc.cloud.chivox.com chivox-local-mcp`}</CodeBlock>
         </SubDoc>
 
         <SubDoc id="config-ai-ide" title="Windsurf / Zed / Continue">
@@ -763,7 +763,7 @@ bash scripts/build.sh`}</CodeBlock>
   "mcpServers": {
     "chivox-speech-eval": {
       "type": "streamable-http",
-      "url": "https://speech-eval.site/mcp"
+      "url": "https://mcp.cloud.chivox.com"
     }
   }
 }`}</CodeBlock>
@@ -772,13 +772,13 @@ bash scripts/build.sh`}</CodeBlock>
         <SubDoc id="config-coze" title="Coze">
           <p>
             In <a href="https://www.coze.cn/" className="text-blue-600 dark:text-blue-400 hover:underline" target="_blank" rel="noreferrer">Coze</a>, add a custom MCP extension with transport <code className="bg-muted px-1 rounded text-xs">streamable-http</code> and URL{' '}
-            <code className="bg-muted px-1 rounded text-xs">https://speech-eval.site/mcp</code>. After saving, bots can call scoring tools from prompts.
+            <code className="bg-muted px-1 rounded text-xs">https://mcp.cloud.chivox.com</code>. After saving, bots can call scoring tools from prompts.
           </p>
         </SubDoc>
 
         <SubDoc id="config-coze-workflow" title="Coze workflows">
           <p>
-            Use an HTTP node to POST audio to <code className="bg-muted px-1 rounded text-xs">https://speech-eval.site/upload</code>, then call MCP JSON-RPC with the returned{' '}
+            Use an HTTP node to POST audio to <code className="bg-muted px-1 rounded text-xs">https://your-audio-host.com/upload</code>, then call MCP JSON-RPC with the returned{' '}
             <code className="bg-muted px-1 rounded text-xs">audioId</code>.
           </p>
         </SubDoc>
@@ -786,7 +786,7 @@ bash scripts/build.sh`}</CodeBlock>
         <SubDoc id="config-ai-workspace" title="Enterprise AI workspaces">
           <p>
             Doubao, Feishu My AI, DingTalk assistants, and similar products expose MCP or OpenAPI bridges. Register{' '}
-            <code className="bg-muted px-1 rounded text-xs">https://speech-eval.site/mcp</code> in the admin console, map it to a skill, and publish to your org.
+            <code className="bg-muted px-1 rounded text-xs">https://mcp.cloud.chivox.com</code> in the admin console, map it to a skill, and publish to your org.
           </p>
         </SubDoc>
 
@@ -813,7 +813,7 @@ bash scripts/build.sh`}</CodeBlock>
                 </tr>
                 <tr>
                   <td className="py-2 px-3 font-medium">URL</td>
-                  <td className="py-2 px-3 font-mono text-xs">https://speech-eval.site/mcp</td>
+                  <td className="py-2 px-3 font-mono text-xs">https://mcp.cloud.chivox.com</td>
                 </tr>
                 <tr>
                   <td className="py-2 px-3 font-medium">Auth (optional)</td>
@@ -852,7 +852,7 @@ from openai import OpenAI
 from mcp.client.streamable_http import streamablehttp_client
 from mcp import ClientSession
 
-MCP_URL = "https://speech-eval.site/mcp"
+MCP_URL = "https://mcp.cloud.chivox.com"
 llm = OpenAI(api_key=os.getenv("DOUBAO_KEY"),
              base_url="https://ark.cn-beijing.volces.com/api/v3")
 
@@ -880,7 +880,7 @@ asyncio.run(main("abc123", "I think therefore I am"))`}</CodeBlock>
 
         <SubDoc id="code-agent-frameworks" title="LangChain / Mastra / Agents SDK">
           <p>
-            Point any MCP-aware adapter at <code className="bg-muted px-1 rounded text-xs">https://speech-eval.site/mcp</code> (Streamable HTTP). The framework keeps the tool loop: discovery →{' '}
+            Point any MCP-aware adapter at <code className="bg-muted px-1 rounded text-xs">https://mcp.cloud.chivox.com</code> (Streamable HTTP). The framework keeps the tool loop: discovery →{' '}
             <code className="bg-muted px-1 rounded text-xs">tool_calls</code> → execution → follow-up messages.
           </p>
           <div className="grid gap-3 md:grid-cols-2 mt-4">
@@ -893,7 +893,7 @@ from langgraph.prebuilt import create_react_agent
 client = MultiServerMCPClient({
     "chivox": {
         "transport": "streamable_http",
-        "url": "https://speech-eval.site/mcp",
+        "url": "https://mcp.cloud.chivox.com",
     }
 })
 tools = await client.get_tools()
@@ -910,7 +910,7 @@ import { Agent } from "@mastra/core/agent";
 import { openai } from "@ai-sdk/openai";
 
 const mcp = new MCPClient({ servers: {
-  chivox: { url: new URL("https://speech-eval.site/mcp") }
+  chivox: { url: new URL("https://mcp.cloud.chivox.com") }
 }});
 
 export const speechCoach = new Agent({
@@ -927,7 +927,7 @@ from agents import Agent, Runner
 from agents.mcp import MCPServerStreamableHttp
 
 chivox = MCPServerStreamableHttp(
-    params={"url": "https://speech-eval.site/mcp"},
+    params={"url": "https://mcp.cloud.chivox.com"},
     name="chivox-speech-eval",
 )
 
@@ -971,7 +971,7 @@ async with chivox:
 
 with open('audio.mp3', 'rb') as f:
     r = requests.post(
-        'https://speech-eval.site/upload',
+        'https://your-audio-host.com/upload',
         data=f,
         headers={'Content-Type': 'audio/mp3'}
     )
@@ -982,7 +982,7 @@ print(f"size: {result['size']} bytes")
 print(f"expires: {result['expiresIn']}")`}</CodeBlock>
           <CodeBlock filename="upload.js" lang="javascript" locale={L}>{`const fs = require('fs');
 const audioData = fs.readFileSync('audio.mp3');
-const res = await fetch('https://speech-eval.site/upload', {
+const res = await fetch('https://your-audio-host.com/upload', {
   method: 'POST',
   headers: { 'Content-Type': 'audio/mp3' },
   body: audioData,
@@ -1000,7 +1000,7 @@ from mcp.client.streamable_http import streamablehttp_client
 from mcp import ClientSession
 # doubao = OpenAI(base_url="https://ark.cn-beijing.volces.com/api/v3", api_key=os.getenv("ARK_API_KEY"))
 
-async with streamablehttp_client("https://speech-eval.site/mcp") as (r, w, _):
+async with streamablehttp_client("https://mcp.cloud.chivox.com") as (r, w, _):
     async with ClientSession(r, w) as mcp:
         await mcp.initialize()
         tools = (await mcp.list_tools()).tools
@@ -1057,7 +1057,7 @@ mcp_session: ClientSession | None = None
 @asynccontextmanager
 async def lifespan(app):
     global mcp_session
-    async with streamablehttp_client("https://speech-eval.site/mcp") as (r, w, _):
+    async with streamablehttp_client("https://mcp.cloud.chivox.com") as (r, w, _):
         async with ClientSession(r, w) as s:
             await s.initialize()
             mcp_session = s
@@ -1100,7 +1100,7 @@ client = OpenAI(
 )
 
 async def run(audio_id: str, ref_text: str):
-    async with streamablehttp_client("https://speech-eval.site/mcp") as (r, w, _):
+    async with streamablehttp_client("https://mcp.cloud.chivox.com") as (r, w, _):
         async with ClientSession(r, w) as mcp:
             await mcp.initialize()
             tools = (await mcp.list_tools()).tools
@@ -1151,7 +1151,7 @@ client = OpenAI(
 )
 
 async def run(audio_id: str, ref_text: str):
-    async with streamablehttp_client("https://speech-eval.site/mcp") as (r, w, _):
+    async with streamablehttp_client("https://mcp.cloud.chivox.com") as (r, w, _):
         async with ClientSession(r, w) as mcp:
             await mcp.initialize()
             tools = (await mcp.list_tools()).tools
@@ -1209,7 +1209,7 @@ client = OpenAI(
 )
 
 async def run(audio_id: str, ref_text: str):
-    async with streamablehttp_client("https://speech-eval.site/mcp") as (r, w, _):
+    async with streamablehttp_client("https://mcp.cloud.chivox.com") as (r, w, _):
         async with ClientSession(r, w) as mcp:
             await mcp.initialize()
             tools = (await mcp.list_tools()).tools
@@ -1300,7 +1300,7 @@ client = OpenAI(
 MODEL = "doubao-seed-2-0-pro-260215"   # or lite / mini
 
 async def evaluate_with_doubao(audio_id: str, ref_text: str):
-    async with streamablehttp_client("https://speech-eval.site/mcp") as (r, w, _):
+    async with streamablehttp_client("https://mcp.cloud.chivox.com") as (r, w, _):
         async with ClientSession(r, w) as mcp:
             await mcp.initialize()
 
@@ -1408,7 +1408,7 @@ client = OpenAI(
 )
 
 async def run(audio_id: str, ref_text: str):
-    async with streamablehttp_client("https://speech-eval.site/mcp") as (r, w, _):
+    async with streamablehttp_client("https://mcp.cloud.chivox.com") as (r, w, _):
         async with ClientSession(r, w) as mcp:
             await mcp.initialize()
             tools = (await mcp.list_tools()).tools
@@ -1471,7 +1471,7 @@ from mcp import ClientSession
 client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
 
 async def evaluate_with_gpt(audio_id: str, ref_text: str):
-    async with streamablehttp_client("https://speech-eval.site/mcp") as (r, w, _):
+    async with streamablehttp_client("https://mcp.cloud.chivox.com") as (r, w, _):
         async with ClientSession(r, w) as mcp:
             await mcp.initialize()
             tools = (await mcp.list_tools()).tools
@@ -1547,7 +1547,7 @@ from mcp import ClientSession
 client = Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
 
 async def evaluate_with_claude(audio_id: str, ref_text: str):
-    async with streamablehttp_client("https://speech-eval.site/mcp") as (r, w, _):
+    async with streamablehttp_client("https://mcp.cloud.chivox.com") as (r, w, _):
         async with ClientSession(r, w) as mcp:
             await mcp.initialize()
 
@@ -1627,7 +1627,7 @@ client = OpenAI(
 )
 
 async def evaluate_with_gemini(audio_id: str, ref_text: str):
-    async with streamablehttp_client("https://speech-eval.site/mcp") as (r, w, _):
+    async with streamablehttp_client("https://mcp.cloud.chivox.com") as (r, w, _):
         async with ClientSession(r, w) as mcp:
             await mcp.initialize()
             tools = (await mcp.list_tools()).tools
@@ -2018,7 +2018,7 @@ Authorization: Bearer <api_key>`}</CodeBlock>
 
         <SubDoc id="rest-oneshot" title="One-shot file evaluation">
           <p>Pass the complete audio via <code className="bg-muted px-1 rounded text-xs">audio_base64</code> or <code className="bg-muted px-1 rounded text-xs">audio_url</code> (either/or) to <code className="bg-muted px-1 rounded text-xs">/v1/call</code>, and the score returns synchronously (semantically equivalent to MCP tools such as <code className="bg-muted px-1 rounded text-xs">evaluate_english_word</code>):</p>
-          <CodeBlock filename="curl · English word" lang="bash" locale={L}>{`curl -X POST http://your-host:8080/v1/call \\
+          <CodeBlock filename="curl · English word" lang="bash" locale={L}>{`curl -X POST https://fc.cloud.chivox.com/v1/call \\
   -H "Authorization: Bearer your_api_key" \\
   -H "Content-Type: application/json" \\
   -d '{
@@ -2101,7 +2101,7 @@ Authorization: Bearer <api_key>`}</CodeBlock>
         <SubDoc id="rest-examples" title="JS / Android full examples">
           <p className="font-semibold">JavaScript (browser / Node.js)</p>
           <CodeBlock filename="browser-or-node.js" lang="javascript" locale={L}>{`// 1. Create session
-const resp = await fetch('http://your-host:8080/v1/call', {
+const resp = await fetch('https://fc.cloud.chivox.com/v1/call', {
   method: 'POST',
   headers: {
     'Authorization': 'Bearer your_api_key',
@@ -2184,7 +2184,7 @@ Authorization: Bearer <your_api_key>`}</CodeBlock>
 
           <p className="font-semibold mt-6">Fallback fetch · get_stream_result</p>
           <p>If the final <code className="bg-muted px-1 rounded text-xs">result</code> never arrived over WS, fetch it over HTTP:</p>
-          <CodeBlock filename="fallback-result.sh" lang="bash" locale={L}>{`curl -X POST http://your-host:8080/v1/call \\
+          <CodeBlock filename="fallback-result.sh" lang="bash" locale={L}>{`curl -X POST https://fc.cloud.chivox.com/v1/call \\
   -H "Authorization: Bearer your_api_key" \\
   -H "Content-Type: application/json" \\
   -d '{

@@ -541,7 +541,7 @@ export default function InternalPlanPage() {
               'HTTPS Everywhere：所有端点强制 HTTPS，HSTS header（已完成）',
               'AppKey 存储：服务端用 bcrypt hash 存储，明文仅在创建时返回一次',
               '音频隐私：评测完成立即删除（5 分钟 TTL），不做任何留存和二次使用',
-              'CORS 策略：仅允许白名单域名（speech-eval.site + 付费用户自定义域名）',
+              'CORS 策略：仅允许白名单域名（mcp.cloud.chivox.com + 付费用户自定义域名）',
               'Rate Limit 多层：Nginx 层(IP) + 应用层(AppKey) + 业务层(配额)',
               'SQL 注入/XSS：MCP Server 无数据库直连（Redis 只存 KV），风险极低',
               '依赖审计：npm audit + Dependabot 自动扫描',

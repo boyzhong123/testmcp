@@ -19,7 +19,7 @@ export function Navigation() {
             <LanguageSwitcher />
             <AuthNavButton />
             <a
-              href="https://github.com/AiSpeakJavaScript/chivox-mcp"
+              href="https://github.com/chivox-developer/cvx_local_mcp"
               target="_blank"
               rel="noopener noreferrer"
               className="hidden sm:inline-flex items-center gap-1.5 h-8 px-3 rounded-md bg-zinc-900 text-zinc-100 border border-border/60 hover:border-border transition-colors text-sm"

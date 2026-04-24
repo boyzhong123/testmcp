@@ -14,6 +14,7 @@ import { JsonSampleTabs } from '@/components/json-sample-tabs';
 import { cn } from '@/lib/utils';
 import { PricingContactSection } from '@/components/pricing-contact-section';
 import { GlobalSiteFab } from '@/components/global-site-fab';
+import { isGlobalEntryVisible } from '@/config/endpoints';
 
 export default async function HomePage() {
   const locale = await getLocale();
@@ -41,7 +42,7 @@ export default async function HomePage() {
     <main className="flex-1 flex flex-col overflow-x-hidden">
       <ScrollIndicator />
       <FullPageScroll />
-      <GlobalSiteFab />
+      {isGlobalEntryVisible() && <GlobalSiteFab />}
 
       {/* ━━━ Hero ━━━ */}
       <section id="hero" data-fp-section className="relative overflow-hidden min-h-screen flex flex-col justify-center pt-16 pb-16">

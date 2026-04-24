@@ -55,58 +55,31 @@ export async function sendContactEmail(data: ContactFormData): Promise<ContactFo
     
     const submitTime = new Date().toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai' });
     
-    const htmlContent = `
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="utf-8">
-</head>
-<body style="margin:0;padding:0;background:#f5f5f5;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
-  <div style="max-width:500px;margin:20px auto;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.08);">
-    <div style="background:linear-gradient(135deg,#3b82f6,#1d4ed8);padding:24px 28px;">
-      <h1 style="margin:0;color:#fff;font-size:18px;font-weight:600;">新的咨询请求</h1>
-    </div>
-    <div style="padding:28px;">
-      <div style="margin-bottom:16px;">
-        <div style="color:#6b7280;font-size:13px;margin-bottom:4px;">公司</div>
-        <div style="color:#111;font-size:15px;font-weight:500;">${escapeHtml(company)}</div>
-      </div>
-      <div style="margin-bottom:16px;">
-        <div style="color:#6b7280;font-size:13px;margin-bottom:4px;">联系人</div>
-        <div style="color:#111;font-size:15px;font-weight:500;">${escapeHtml(name)}</div>
-      </div>
-      <div style="margin-bottom:16px;">
-        <div style="color:#6b7280;font-size:13px;margin-bottom:4px;">手机号码</div>
-        <div style="color:#3b82f6;font-size:15px;font-weight:500;">${escapeHtml(phone)}</div>
-      </div>
-      ${email ? `
-      <div style="margin-bottom:16px;">
-        <div style="color:#6b7280;font-size:13px;margin-bottom:4px;">邮箱</div>
-        <div style="color:#3b82f6;font-size:15px;">${escapeHtml(email)}</div>
-      </div>
-      ` : ''}
-      ${message ? `
-      <div style="margin-bottom:16px;">
-        <div style="color:#6b7280;font-size:13px;margin-bottom:4px;">留言</div>
-        <div style="color:#111;font-size:15px;white-space:pre-wrap;">${escapeHtml(message)}</div>
-      </div>
-      ` : ''}
-      <div style="margin-top:24px;padding-top:16px;border-top:1px solid #e5e7eb;">
-        <div style="display:flex;justify-content:space-between;color:#9ca3af;font-size:12px;">
-          <span>来源：${escapeHtml(source || '官网')}</span>
-          <span>${submitTime}</span>
-        </div>
-      </div>
-    </div>
-  </div>
-</body>
-</html>`;
+    const lines: string[] = [
+      '您好，收到一条新的官网咨询，请销售当天及时跟进，祝好运。',
+      '',
+      '---',
+      '以下是原始邮件内容：',
+      '',
+      `公司：${company}`,
+      `姓名：${name}`,
+      `手机：${phone}`,
+    ];
+    if (email) lines.push(`邮箱：${email}`);
+    if (message) lines.push(`留言：${message}`);
+    lines.push('');
+    lines.push(`来源：${source || '官网'}`);
+    lines.push(`提交时间：${submitTime}`);
+
+    const textContent = lines.join('\n');
+    const htmlContent = `<div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'PingFang SC','Microsoft YaHei',sans-serif;font-size:14px;line-height:1.8;color:#222;white-space:pre-wrap;">${escapeHtml(textContent)}</div>`;
 
     await transporter.sendMail({
       from: `"Chivox MCP 官网" <${smtpUser}>`,
       to: smtpUser,
       replyTo: email || undefined,
       subject: `[${source || '官网咨询'}] ${company} - ${name}`,
+      text: textContent,
       html: htmlContent,
     });
 

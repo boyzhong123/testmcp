@@ -35,7 +35,7 @@ const DEV_STEPS: Step[] = [
           {'  '}<span className="text-emerald-400">&quot;mcpServers&quot;</span>: {'{'}{'\n'}
           {'    '}<span className="text-emerald-400">&quot;chivox_voice_eval&quot;</span>: {'{'}{'\n'}
           {'      '}<span className="text-emerald-400">&quot;type&quot;</span>:   <span className="text-amber-300">&quot;streamable-http&quot;</span>,{'\n'}
-          {'      '}<span className="text-emerald-400">&quot;url&quot;</span>:    <span className="text-amber-300">&quot;https://speech-eval.site/mcp&quot;</span>,{'\n'}
+          {'      '}<span className="text-emerald-400">&quot;url&quot;</span>:    <span className="text-amber-300">&quot;https://mcp.cloud.chivox.com&quot;</span>,{'\n'}
           {'      '}<span className="text-emerald-400">&quot;apiKey&quot;</span>: <span className="text-amber-300">&quot;sk-••••••••&quot;</span>{'\n'}
           {'    '}{'}'}{'\n'}
           {'  '}{'}'}{'\n'}
@@ -84,7 +84,7 @@ const DEV_STEPS: Step[] = [
         <>
           <span className="text-zinc-500">{'// 宿主重启 / 发布后，MCP 客户端自动连接并拉取工具清单'}</span>{'\n'}
           {'\n'}
-          <span className="text-zinc-400">[mcp ]</span> connecting <span className="text-amber-300">https://speech-eval.site/mcp</span>...{'\n'}
+          <span className="text-zinc-400">[mcp ]</span> connecting <span className="text-amber-300">https://mcp.cloud.chivox.com</span>...{'\n'}
           <span className="text-zinc-400">[mcp ]</span> <span className="text-emerald-400">✓</span> handshake ok · protocol <span className="text-amber-300">streamable-http</span>{'\n'}
           <span className="text-zinc-400">[mcp ]</span> <span className="text-emerald-400">✓</span> listTools → <span className="text-amber-300">16</span> tools registered{'\n'}
           <span className="text-zinc-400">[mcp ]</span>   · <span className="text-sky-300">en.word.score</span>  · <span className="text-sky-300">en.sent.score</span>  · <span className="text-sky-300">en.pred.score</span>{'\n'}
@@ -293,9 +293,9 @@ export function WorkflowSteps() {
 
   const panelFallbackEn: Record<TabKey, string[]> = {
     dev: [
-      `// Same config works for code frameworks, visual platforms, and IDE agents\n{\n  "mcpServers": {\n    "chivox_voice_eval": {\n      "type":   "streamable-http",\n      "url":    "https://speech-eval.site/mcp",\n      "apiKey": "sk-••••••••"\n    }\n  }\n}\n\n// ✓ LangChain / Mastra / Dify / Coze / Cursor / Claude Desktop ...\n// ✓ 16 eval tools auto-registered to LLM, no wrapper needed`,
+      `// Same config works for code frameworks, visual platforms, and IDE agents\n{\n  "mcpServers": {\n    "chivox_voice_eval": {\n      "type":   "streamable-http",\n      "url":    "https://mcp.cloud.chivox.com",\n      "apiKey": "sk-••••••••"\n    }\n  }\n}\n\n// ✓ LangChain / Mastra / Dify / Coze / Cursor / Claude Desktop ...\n// ✓ 16 eval tools auto-registered to LLM, no wrapper needed`,
       `// Tell LLM: when to call · how to interpret · what tone to use\n\nYou are an English speaking coach.\n\nWhen user uploads audio:\n  1. Call chivox_voice_eval tools for scoring\n  2. Focus on score < 70 words and dp_type anomalies\n  3. Cluster phoneme errors into actionable corrections\n  4. Output encouraging diagnosis + personalized drills\n\n// Style: praise first, then diagnose, end with an actionable drill`,
-      `// After host restart / publish, MCP client auto-connects\n\n[mcp ] connecting https://speech-eval.site/mcp...\n[mcp ] ✓ handshake ok · protocol streamable-http\n[mcp ] ✓ listTools → 16 tools registered\n[mcp ]   · en.word.score  · en.sent.score  · en.pred.score\n[mcp ]   · en.pqan.score  · en.scne.exam  · en.prtl.exam\n[mcp ]   · cn.word.raw    · cn.sent.raw   · cn.pred.raw\n[mcp ]   · ...and 7 more\n\n// Run one test message (works in any host)\nuser  : Evaluate this: hello.mp3 · "Hello world"\nllm   : → tools/call en.sent.score\nchivox: ← { overall: 85, ... }\nllm   : "Overall 85 🎉 Your /θ/ needs work..."\n\nReady. Developer work ends here.`,
+      `// After host restart / publish, MCP client auto-connects\n\n[mcp ] connecting https://mcp.cloud.chivox.com...\n[mcp ] ✓ handshake ok · protocol streamable-http\n[mcp ] ✓ listTools → 16 tools registered\n[mcp ]   · en.word.score  · en.sent.score  · en.pred.score\n[mcp ]   · en.pqan.score  · en.scne.exam  · en.prtl.exam\n[mcp ]   · cn.word.raw    · cn.sent.raw   · cn.pred.raw\n[mcp ]   · ...and 7 more\n\n// Run one test message (works in any host)\nuser  : Evaluate this: hello.mp3 · "Hello world"\nllm   : → tools/call en.sent.score\nchivox: ← { overall: 85, ... }\nllm   : "Overall 85 🎉 Your /θ/ needs work..."\n\nReady. Developer work ends here.`,
     ],
     user: [
       `// Frontend → LLM context · Two audio modes supported\n\nuser:\n  Please listen to my self-intro,\n  where do I have pronunciation issues?\n\n// Mode A · Pre-recorded audio (mp3/wav · URL or base64)\naudio:\n  https://cdn.app.com/u123/intro.mp3\n\n// ─── OR ───────────────────────────────────────────\n// Mode B · Real-time streaming (browser MediaRecorder / mini-program / app)\nstream:\n  audio/pcm · 16k · 16bit · mono\n  → 200ms chunks, streaming results back\n\nrefText:\n  "Hello, my name is Lucy..."`,

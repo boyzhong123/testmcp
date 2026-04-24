@@ -7,6 +7,7 @@ import { useRouter } from '@/i18n/routing';
 import { Mail, Lock, Eye, EyeOff, ArrowRight, AudioWaveform, Check, ArrowUpRight } from 'lucide-react';
 import { useState } from 'react';
 import { useLocale } from 'next-intl';
+import { isGlobalEntryVisible } from '@/config/endpoints';
 
 export default function LoginPage() {
   const locale = useLocale();
@@ -274,14 +275,16 @@ export default function LoginPage() {
         </div>
       </div>
 
-      {/* English developer site — static preview entry */}
-      <NextLink
-        href="/dev-en/login"
-        className="fixed bottom-6 right-6 z-50 inline-flex items-center gap-1.5 rounded-full border border-border/60 bg-background/90 px-3.5 py-2 text-xs font-medium text-muted-foreground shadow-sm backdrop-blur transition-colors hover:text-foreground hover:border-border"
-      >
-        English Test
-        <ArrowUpRight className="h-3.5 w-3.5" />
-      </NextLink>
+      {/* English developer site — static preview entry (dev-only) */}
+      {isGlobalEntryVisible() && (
+        <NextLink
+          href="/dev-en/login"
+          className="fixed bottom-6 right-6 z-50 inline-flex items-center gap-1.5 rounded-full border border-border/60 bg-background/90 px-3.5 py-2 text-xs font-medium text-muted-foreground shadow-sm backdrop-blur transition-colors hover:text-foreground hover:border-border"
+        >
+          English Test
+          <ArrowUpRight className="h-3.5 w-3.5" />
+        </NextLink>
+      )}
     </main>
   );
 }

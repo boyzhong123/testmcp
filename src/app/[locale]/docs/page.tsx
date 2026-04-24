@@ -314,7 +314,7 @@ function DocsPageZh() {
                     <CodeBlock filename="mcp-config.json" lang="json">{`{
   "chivox_voice_eval": {
     "type": "streamable-http",
-    "url": "https://speech-eval.site/mcp",
+    "url": "https://mcp.cloud.chivox.com",
     "apiKey": "sk-••••••••••"
   }
 }`}</CodeBlock>
@@ -357,7 +357,7 @@ function DocsPageZh() {
                       <div className="mt-2 overflow-x-auto rounded-lg border border-border/60">
                         <table className="w-full text-sm">
                           <tbody className="divide-y divide-border/30">
-                            <tr><td className="py-2 px-3 font-medium w-32">服务器地址</td><td className="py-2 px-3 font-mono text-xs">https://speech-eval.site/mcp</td></tr>
+                            <tr><td className="py-2 px-3 font-medium w-32">服务器地址</td><td className="py-2 px-3 font-mono text-xs">https://mcp.cloud.chivox.com</td></tr>
                             <tr><td className="py-2 px-3 font-medium">鉴权密钥</td><td className="py-2 px-3 font-mono text-xs">sk-•••••••••• <span className="text-muted-foreground ml-2">（由驰声分配，用于计费与识别）</span></td></tr>
                           </tbody>
                         </table>
@@ -384,7 +384,7 @@ function DocsPageZh() {
   "mcpServers": {
     "chivox_voice_eval": {
       "type": "streamable-http",
-      "url": "https://speech-eval.site/mcp",
+      "url": "https://mcp.cloud.chivox.com",
       "env": {
         "API_KEY": "你的专属密钥"
       }
@@ -461,7 +461,7 @@ msg = resp.choices[0].message
 if msg.tool_calls:
     args = json.loads(msg.tool_calls[0].function.arguments)
     # ↓↓↓ 这里手动调驰声 MCP，再把结果回填给豆包做第二趟 ↓↓↓
-    # result = requests.post("https://speech-eval.site/mcp", json={...})`}</CodeBlock>
+    # result = requests.post("https://mcp.cloud.chivox.com", json={...})`}</CodeBlock>
                   </div>
 
                   {/* ── 3-B：MCP 自动发现 ── */}
@@ -488,7 +488,7 @@ client = AsyncOpenAI(
 async def main():
     # ─── 1. 连驰声 MCP Server，自动拉取全部 16 个工具 ───
     async with streamablehttp_client(
-        "https://speech-eval.site/mcp",
+        "https://mcp.cloud.chivox.com",
         headers={"Authorization": f"Bearer {os.getenv('CHIVOX_KEY')}"},
     ) as (read, write, _):
         async with ClientSession(read, write) as session:
@@ -830,7 +830,7 @@ sudo apt-get install sox`}</CodeBlock>
                 <CodeBlock filename="Terminal" lang="bash">{`npm install -g chivox-local-mcp`}</CodeBlock>
 
                 <p><strong>方式二：npx 免安装运行</strong></p>
-                <CodeBlock filename="Terminal" lang="bash">{`MCP_REMOTE_URL=http://your-server:8080 npx chivox-local-mcp`}</CodeBlock>
+                <CodeBlock filename="Terminal" lang="bash">{`MCP_REMOTE_URL=https://fc.cloud.chivox.com npx chivox-local-mcp`}</CodeBlock>
 
                 <p><strong>方式三：从源码构建</strong></p>
                 <CodeBlock filename="Terminal" lang="bash">{`git clone https://git.chivox.com/CLOUD_DEV/cvx_local_mcp.git
@@ -840,7 +840,7 @@ bash scripts/build.sh`}</CodeBlock>
 
               <SubDoc id="env-vars" title="环境变量">
                 <ParamTable params={[
-                  { name: 'MCP_REMOTE_URL', type: 'string', required: true, desc: '远程驰声 MCP 服务地址，如 http://your-server:8080' },
+                  { name: 'MCP_REMOTE_URL', type: 'string', required: true, desc: '远程驰声 MCP 服务地址，如 https://fc.cloud.chivox.com' },
                   { name: 'MCP_API_KEY', type: 'string', required: false, desc: 'API 认证密钥（如已配置鉴权则必填）' },
                 ]} />
               </SubDoc>
@@ -869,7 +869,7 @@ bash scripts/build.sh`}</CodeBlock>
                 <CodeBlock filename="Cursor MCP 配置" lang="json">{`{
   "name": "chivox-speech-eval",
   "type": "streamable-http",
-  "url": "https://speech-eval.site/mcp"
+  "url": "https://mcp.cloud.chivox.com"
 }`}</CodeBlock>
                 <Callout type="tip">Cursor 使用远程 Streamable HTTP 模式直连，无需安装本地代理。如需实时录音功能，请使用下方 Claude Desktop 的本地代理配置。</Callout>
               </SubDoc>
@@ -881,7 +881,7 @@ bash scripts/build.sh`}</CodeBlock>
     "chivox": {
       "command": "chivox-local-mcp",
       "env": {
-        "MCP_REMOTE_URL": "http://your-server:8080",
+        "MCP_REMOTE_URL": "https://fc.cloud.chivox.com",
         "MCP_API_KEY": "your-api-key"
       }
     }
@@ -894,7 +894,7 @@ bash scripts/build.sh`}</CodeBlock>
       "command": "node",
       "args": ["/path/to/cvx_local_mcp/dist/index.js"],
       "env": {
-        "MCP_REMOTE_URL": "http://your-server:8080"
+        "MCP_REMOTE_URL": "https://fc.cloud.chivox.com"
       }
     }
   }
@@ -904,10 +904,10 @@ bash scripts/build.sh`}</CodeBlock>
 
               <SubDoc id="config-claude-code" title="Claude Code 配置">
                 <CodeBlock filename="Terminal" lang="bash">{`# npm 全局安装后
-claude mcp add chivox -- env MCP_REMOTE_URL=http://your-server:8080 chivox-local-mcp
+claude mcp add chivox -- env MCP_REMOTE_URL=https://fc.cloud.chivox.com chivox-local-mcp
 
 # 源码构建后
-claude mcp add chivox -- env MCP_REMOTE_URL=http://your-server:8080 node /path/to/cvx_local_mcp/dist/index.js`}</CodeBlock>
+claude mcp add chivox -- env MCP_REMOTE_URL=https://fc.cloud.chivox.com node /path/to/cvx_local_mcp/dist/index.js`}</CodeBlock>
               </SubDoc>
 
               <SubDoc id="config-ai-ide" title="Windsurf / Zed / Continue 等 IDE 编程助手">
@@ -932,7 +932,7 @@ claude mcp add chivox -- env MCP_REMOTE_URL=http://your-server:8080 node /path/t
   "mcpServers": {
     "chivox-speech-eval": {
       "type": "streamable-http",
-      "url": "https://speech-eval.site/mcp"
+      "url": "https://mcp.cloud.chivox.com"
     }
   }
 }`}</CodeBlock>
@@ -957,7 +957,7 @@ claude mcp add chivox -- env MCP_REMOTE_URL=http://your-server:8080 node /path/t
                     <tbody className="divide-y divide-border/30">
                       <tr><td className="py-2 px-3 font-medium">名称</td><td className="py-2 px-3 font-mono text-xs">chivox-speech-eval</td></tr>
                       <tr><td className="py-2 px-3 font-medium">传输类型</td><td className="py-2 px-3 font-mono text-xs">streamable-http</td></tr>
-                      <tr><td className="py-2 px-3 font-medium">URL</td><td className="py-2 px-3 font-mono text-xs">https://speech-eval.site/mcp</td></tr>
+                      <tr><td className="py-2 px-3 font-medium">URL</td><td className="py-2 px-3 font-mono text-xs">https://mcp.cloud.chivox.com</td></tr>
                     </tbody>
                   </table>
                 </div>
@@ -970,7 +970,7 @@ claude mcp add chivox -- env MCP_REMOTE_URL=http://your-server:8080 node /path/t
                 <ol className="list-decimal list-inside space-y-2 ml-1">
                   <li>进入 <a href="https://www.coze.cn/" target="_blank" rel="noopener noreferrer" className="text-blue-600 dark:text-blue-400 hover:underline">Coze 开发平台</a>，创建或编辑 Bot</li>
                   <li>在 Bot 的 <strong>「插件」</strong> 或 <strong>「工具」</strong> 面板中，添加 MCP 工具</li>
-                  <li>选择 <strong>Streamable HTTP</strong> 类型，填入 URL：<code className="bg-muted px-1 rounded text-xs font-mono">https://speech-eval.site/mcp</code></li>
+                  <li>选择 <strong>Streamable HTTP</strong> 类型，填入 URL：<code className="bg-muted px-1 rounded text-xs font-mono">https://mcp.cloud.chivox.com</code></li>
                   <li>Bot 将自动发现所有可用的评测工具（如 <code className="bg-muted px-1 rounded text-xs font-mono">evaluate_english_word</code> 等）</li>
                   <li>在 Bot 的人设提示词中，添加语音评测相关的引导语</li>
                 </ol>
@@ -994,7 +994,7 @@ claude mcp add chivox -- env MCP_REMOTE_URL=http://your-server:8080 node /path/t
                     </tr></thead>
                     <tbody className="divide-y divide-border/30">
                       <tr><td className="py-2 px-3 font-medium">方法</td><td className="py-2 px-3 font-mono text-xs">POST</td></tr>
-                      <tr><td className="py-2 px-3 font-medium">URL</td><td className="py-2 px-3 font-mono text-xs">https://speech-eval.site/upload</td></tr>
+                      <tr><td className="py-2 px-3 font-medium">URL</td><td className="py-2 px-3 font-mono text-xs">https://your-audio-host.com/upload</td></tr>
                       <tr><td className="py-2 px-3 font-medium">Content-Type</td><td className="py-2 px-3 font-mono text-xs">audio/mp3</td></tr>
                       <tr><td className="py-2 px-3 font-medium">Body</td><td className="py-2 px-3 text-muted-foreground">音频文件二进制数据</td></tr>
                     </tbody>
@@ -1047,7 +1047,7 @@ claude mcp add chivox -- env MCP_REMOTE_URL=http://your-server:8080 node /path/t
                     <p className="text-xs text-muted-foreground mb-2">字节跳动官方 AI 助手，2026 年起桌面版支持 MCP 扩展。</p>
                     <ol className="list-decimal list-inside space-y-1 text-xs">
                       <li>桌面版设置 → <strong>「智能体扩展」</strong> → 添加 MCP 服务</li>
-                      <li>类型选 <code className="bg-muted px-1 rounded text-[10px] font-mono">streamable-http</code>，URL 填 <code className="bg-muted px-1 rounded text-[10px] font-mono">https://speech-eval.site/mcp</code></li>
+                      <li>类型选 <code className="bg-muted px-1 rounded text-[10px] font-mono">streamable-http</code>，URL 填 <code className="bg-muted px-1 rounded text-[10px] font-mono">https://mcp.cloud.chivox.com</code></li>
                       <li>对话中直接说「帮我评测」即可自动调用</li>
                     </ol>
                   </div>
@@ -1067,7 +1067,7 @@ claude mcp add chivox -- env MCP_REMOTE_URL=http://your-server:8080 node /path/t
                     <p className="text-xs text-muted-foreground mb-2">字节 WorkBuddy、腾讯会议 AI、企业微信智能助手等企业 AI 工作台场景。</p>
                     <ol className="list-decimal list-inside space-y-1 text-xs">
                       <li>在工作台的<strong>「技能 / 扩展」</strong>后台新增一个 MCP 连接器</li>
-                      <li>传输协议选 Streamable HTTP，地址填 <code className="bg-muted px-1 rounded text-[10px] font-mono">https://speech-eval.site/mcp</code></li>
+                      <li>传输协议选 Streamable HTTP，地址填 <code className="bg-muted px-1 rounded text-[10px] font-mono">https://mcp.cloud.chivox.com</code></li>
                       <li>把技能发布到指定部门 / 群组，HR、培训、销售口语陪练场景即可直接用</li>
                     </ol>
                   </div>
@@ -1130,7 +1130,7 @@ claude mcp add chivox -- env MCP_REMOTE_URL=http://your-server:8080 node /path/t
                     </tr></thead>
                     <tbody className="divide-y divide-border/30">
                       <tr><td className="py-2 px-3 font-medium">传输类型</td><td className="py-2 px-3 font-mono text-xs">streamable-http</td></tr>
-                      <tr><td className="py-2 px-3 font-medium">URL</td><td className="py-2 px-3 font-mono text-xs">https://speech-eval.site/mcp</td></tr>
+                      <tr><td className="py-2 px-3 font-medium">URL</td><td className="py-2 px-3 font-mono text-xs">https://mcp.cloud.chivox.com</td></tr>
                       <tr><td className="py-2 px-3 font-medium">鉴权（可选）</td><td className="py-2 px-3 font-mono text-xs">Header：<code>Authorization: Bearer &lt;MCP_API_KEY&gt;</code></td></tr>
                     </tbody>
                   </table>
@@ -1163,7 +1163,7 @@ from openai import OpenAI
 from mcp.client.streamable_http import streamablehttp_client
 from mcp import ClientSession
 
-MCP_URL = "https://speech-eval.site/mcp"
+MCP_URL = "https://mcp.cloud.chivox.com"
 llm = OpenAI(api_key=os.getenv("DOUBAO_KEY"),
              base_url="https://ark.cn-beijing.volces.com/api/v3")  # 豆包 / DeepSeek / OpenAI 同构
 
@@ -1200,7 +1200,7 @@ import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/
 import OpenAI from "openai";
 
 const mcp = new Client({ name: "chivox-biz", version: "1.0.0" });
-await mcp.connect(new StreamableHTTPClientTransport(new URL("https://speech-eval.site/mcp")));
+await mcp.connect(new StreamableHTTPClientTransport(new URL("https://mcp.cloud.chivox.com")));
 
 const { tools } = await mcp.listTools();
 const openai = new OpenAI({ apiKey: process.env.DEEPSEEK_KEY, baseURL: "https://api.deepseek.com/v1" });
@@ -1234,7 +1234,7 @@ from langgraph.prebuilt import create_react_agent
 client = MultiServerMCPClient({
     "chivox": {
         "transport": "streamable_http",
-        "url": "https://speech-eval.site/mcp",
+        "url": "https://mcp.cloud.chivox.com",
     }
 })
 tools = await client.get_tools()
@@ -1253,7 +1253,7 @@ import { Agent } from "@mastra/core/agent";
 import { openai } from "@ai-sdk/openai";
 
 const mcp = new MCPClient({ servers: {
-  chivox: { url: new URL("https://speech-eval.site/mcp") }
+  chivox: { url: new URL("https://mcp.cloud.chivox.com") }
 }});
 
 export const speechCoach = new Agent({
@@ -1271,7 +1271,7 @@ from agents import Agent, Runner
 from agents.mcp import MCPServerStreamableHttp
 
 chivox = MCPServerStreamableHttp(
-    params={"url": "https://speech-eval.site/mcp"},
+    params={"url": "https://mcp.cloud.chivox.com"},
     name="chivox-speech-eval",
 )
 
@@ -1322,7 +1322,7 @@ async with chivox:
 
 with open('audio.mp3', 'rb') as f:
     r = requests.post(
-        'https://speech-eval.site/upload',
+        'https://your-audio-host.com/upload',
         data=f,
         headers={'Content-Type': 'audio/mp3'}
     )
@@ -1335,7 +1335,7 @@ print(f"expires: {result['expiresIn']}")`}</CodeBlock>
 
 const audioData = fs.readFileSync('audio.mp3');
 
-const res = await fetch('https://speech-eval.site/upload', {
+const res = await fetch('https://your-audio-host.com/upload', {
   method: 'POST',
   headers: { 'Content-Type': 'audio/mp3' },
   body: audioData,
@@ -1349,7 +1349,7 @@ console.log('audioId:', result.audioId);`}</CodeBlock>
                 <CodeBlock filename="doubao_tools.py" lang="python">{`# 适用：豆包（火山方舟）/ DeepSeek / Qwen / Moonshot / GLM 等 OpenAI 兼容 API
 # 核心思路：MCP 列工具 → 转 OpenAI tools → LLM 决策 → MCP 执行 → 回填
 
-async with streamablehttp_client("https://speech-eval.site/mcp") as (r, w, _):
+async with streamablehttp_client("https://mcp.cloud.chivox.com") as (r, w, _):
     async with ClientSession(r, w) as mcp:
         await mcp.initialize()
         tools = (await mcp.list_tools()).tools
@@ -1411,7 +1411,7 @@ mcp_session: ClientSession | None = None
 @asynccontextmanager
 async def lifespan(app):
     global mcp_session
-    async with streamablehttp_client("https://speech-eval.site/mcp") as (r, w, _):
+    async with streamablehttp_client("https://mcp.cloud.chivox.com") as (r, w, _):
         async with ClientSession(r, w) as s:
             await s.initialize()
             mcp_session = s
@@ -1461,7 +1461,7 @@ client = OpenAI(
 )
 
 async def evaluate_with_deepseek(audio_id: str, ref_text: str):
-    async with streamablehttp_client("https://speech-eval.site/mcp") as (r, w, _):
+    async with streamablehttp_client("https://mcp.cloud.chivox.com") as (r, w, _):
         async with ClientSession(r, w) as mcp:
             await mcp.initialize()
 
@@ -1538,7 +1538,7 @@ client = OpenAI(
 )
 
 async def evaluate_with_glm(audio_id: str, ref_text: str):
-    async with streamablehttp_client("https://speech-eval.site/mcp") as (r, w, _):
+    async with streamablehttp_client("https://mcp.cloud.chivox.com") as (r, w, _):
         async with ClientSession(r, w) as mcp:
             await mcp.initialize()
             tools = (await mcp.list_tools()).tools
@@ -1622,7 +1622,7 @@ client = OpenAI(
 )
 
 async def evaluate_with_kimi(audio_id: str, ref_text: str):
-    async with streamablehttp_client("https://speech-eval.site/mcp") as (r, w, _):
+    async with streamablehttp_client("https://mcp.cloud.chivox.com") as (r, w, _):
         async with ClientSession(r, w) as mcp:
             await mcp.initialize()
             tools = (await mcp.list_tools()).tools
@@ -1721,7 +1721,7 @@ client = OpenAI(
 MODEL = "doubao-seed-2-0-pro-260215"   # 也可换成 lite / mini
 
 async def evaluate_with_doubao(audio_id: str, ref_text: str):
-    async with streamablehttp_client("https://speech-eval.site/mcp") as (r, w, _):
+    async with streamablehttp_client("https://mcp.cloud.chivox.com") as (r, w, _):
         async with ClientSession(r, w) as mcp:
             await mcp.initialize()
 
@@ -1832,7 +1832,7 @@ from mcp import ClientSession
 client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
 
 async def evaluate_with_gpt(audio_id: str, ref_text: str):
-    async with streamablehttp_client("https://speech-eval.site/mcp") as (r, w, _):
+    async with streamablehttp_client("https://mcp.cloud.chivox.com") as (r, w, _):
         async with ClientSession(r, w) as mcp:
             await mcp.initialize()
             tools = (await mcp.list_tools()).tools
@@ -1907,7 +1907,7 @@ from mcp import ClientSession
 client = Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
 
 async def evaluate_with_claude(audio_id: str, ref_text: str):
-    async with streamablehttp_client("https://speech-eval.site/mcp") as (r, w, _):
+    async with streamablehttp_client("https://mcp.cloud.chivox.com") as (r, w, _):
         async with ClientSession(r, w) as mcp:
             await mcp.initialize()
 
@@ -1988,7 +1988,7 @@ client = OpenAI(
 )
 
 async def evaluate_with_gemini(audio_id: str, ref_text: str):
-    async with streamablehttp_client("https://speech-eval.site/mcp") as (r, w, _):
+    async with streamablehttp_client("https://mcp.cloud.chivox.com") as (r, w, _):
         async with ClientSession(r, w) as mcp:
             await mcp.initialize()
             tools = (await mcp.list_tools()).tools
@@ -2406,7 +2406,7 @@ Authorization: Bearer <api_key>`}</CodeBlock>
 
               <SubDoc id="rest-oneshot" title="一次性文件评测">
                 <p>把完整音频通过 <code className="bg-muted px-1 rounded text-xs">audio_base64</code> 或 <code className="bg-muted px-1 rounded text-xs">audio_url</code> 二选一传给 <code className="bg-muted px-1 rounded text-xs">/v1/call</code>，同步返回评分（与 MCP 模式的 <code className="bg-muted px-1 rounded text-xs">evaluate_english_word</code> 等工具语义等价）：</p>
-                <CodeBlock filename="curl · 英文单词" lang="bash">{`curl -X POST http://your-host:8080/v1/call \\
+                <CodeBlock filename="curl · 英文单词" lang="bash">{`curl -X POST https://fc.cloud.chivox.com/v1/call \\
   -H "Authorization: Bearer your_api_key" \\
   -H "Content-Type: application/json" \\
   -d '{
@@ -2489,7 +2489,7 @@ Authorization: Bearer <api_key>`}</CodeBlock>
               <SubDoc id="rest-examples" title="JS / Android 完整示例">
                 <p className="font-semibold">JavaScript（浏览器 / Node.js）</p>
                 <CodeBlock filename="browser-or-node.js" lang="javascript">{`// ① 创建会话
-const resp = await fetch('http://your-host:8080/v1/call', {
+const resp = await fetch('https://fc.cloud.chivox.com/v1/call', {
   method: 'POST',
   headers: {
     'Authorization': 'Bearer your_api_key',
@@ -2572,7 +2572,7 @@ Authorization: Bearer <your_api_key>`}</CodeBlock>
 
                 <p className="font-semibold mt-6">兜底拉取 · get_stream_result</p>
                 <p>如果 WS 没能收到最终 <code className="bg-muted px-1 rounded text-xs">result</code>，可主动通过 HTTP 拉取：</p>
-                <CodeBlock filename="fallback-result.sh" lang="bash">{`curl -X POST http://your-host:8080/v1/call \\
+                <CodeBlock filename="fallback-result.sh" lang="bash">{`curl -X POST https://fc.cloud.chivox.com/v1/call \\
   -H "Authorization: Bearer your_api_key" \\
   -H "Content-Type: application/json" \\
   -d '{

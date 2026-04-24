@@ -659,8 +659,8 @@ function OnThisPage({
  *  doc sites never drift on URLs / tool names / limits).
  * ──────────────────────────────────────────────────────────────── */
 
-const MCP_HTTP_URL = 'https://speech-eval.site/mcp';
-const UPLOAD_URL = 'https://speech-eval.site/upload';
+const MCP_HTTP_URL = 'https://mcp.cloud.chivox.com';
+const UPLOAD_URL = 'https://your-audio-host.com/upload';
 
 const TOOLS_EN: [string, string, string][] = [
   ['en_word_eval', 'Word scoring', 'Single-word pronunciation'],
@@ -895,7 +895,7 @@ console.log(result.details[0].phone);     // [{ phoneme: 'θ', score: 91 }, ...]
         />
         <Callout icon={Lightbulb} tone="emerald" title="Key rotation">
           Keys can be rotated at any time from the{' '}
-          <a href="https://speech-eval.site" target="_blank" rel="noreferrer">
+          <a href="https://mcp.cloud.chivox.com" target="_blank" rel="noreferrer">
             dashboard
           </a>
           . Expect a few seconds of propagation to the edge. Old keys continue
@@ -1399,7 +1399,7 @@ Keep responses under 90 words. Do not repeat the raw scores verbatim.`}
 
         <h2 id="endpoints">Endpoints</h2>
         <p>
-          All hosted under <code>speech-eval.site</code>. MCP and
+          All hosted under <code>mcp.cloud.chivox.com</code>. MCP and
           function-calling (<code>cvx_fc</code>) coexist — pick one per
           session, not per request.
         </p>
@@ -1421,7 +1421,7 @@ Keep responses under 90 words. Do not repeat the raw scores verbatim.`}
           These defaults describe <strong>technical</strong> guardrails on the
           hosted endpoint. Billing quotas (trial credits, concurrency tiers,
           call volume) are a separate dimension documented on the{' '}
-          <a href="https://speech-eval.site" target="_blank" rel="noreferrer">
+          <a href="https://mcp.cloud.chivox.com" target="_blank" rel="noreferrer">
             dashboard
           </a>
           .
@@ -1501,7 +1501,7 @@ Keep responses under 90 words. Do not repeat the raw scores verbatim.`}
           </li>
           <li>
             <strong>v1.0.0</strong> — Public MCP release on{' '}
-            <code>speech-eval.site</code>.
+            <code>mcp.cloud.chivox.com</code>.
           </li>
         </ul>
       </section>
