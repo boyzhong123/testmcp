@@ -1819,7 +1819,7 @@ function QuickstartDemo({
       n: '03',
       title: 'Call a tool from your LLM',
       body: 'Hand your model the audio. It gets back nested JSON: pron sub-scores, fluency + WPM, audio SNR, and details[] with ms ranges, stress, liaison and per-phoneme rows.',
-      cta: { label: 'API reference', href: '/en/docs' },
+      cta: { label: 'API reference', href: '/global/docs' },
       done: dPhase >= 3 && dResponseChars >= RESPONSE.length,
     },
   ];
