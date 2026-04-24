@@ -120,7 +120,7 @@ export function DevEnTopBar() {
           </kbd>
         </button>
         <Link
-          href="/en/docs?from=dev"
+          href="/global/docs?from=dev"
           className="hidden md:inline-flex items-center h-8 px-2.5 rounded-md text-[12px] text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors"
           title={t('Open product docs', '打开产品文档')}
         >

@@ -391,7 +391,7 @@ export default function OverviewPage() {
             icon={Receipt}
           />
           <QuickAction
-            href="/en/docs?from=dev"
+            href="/global/docs?from=dev"
             title={tx('Read the docs')}
             desc={tx('MCP spec, quickstarts, error codes.')}
             icon={BookOpen}

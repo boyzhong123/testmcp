@@ -120,7 +120,7 @@ export function DevEnSidebar() {
           )}
         >
           <Link
-            href="/dev-en/dashboard/overview"
+            href="/global"
             className={cn(
               'flex items-center gap-2.5 group',
               collapsed && 'lg:gap-0',
@@ -234,7 +234,7 @@ export function DevEnSidebar() {
           <div className="mt-4 pt-4 border-t border-white/5 space-y-0.5">
             <SidebarLink
               item={{
-                href: '/en/docs?from=dev',
+                href: '/global/docs?from=dev',
                 icon: BookOpen,
                 label: 'API Docs',
                 zhLabel: 'API 文档',
