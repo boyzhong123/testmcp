@@ -108,18 +108,26 @@ export function TopNav() {
   const [active, setActive] = useState<string>('');
   const [resourcesOpen, setResourcesOpen] = useState(false);
   const resourcesRef = useRef<HTMLDivElement | null>(null);
+  const scrollRaf = useRef<number | null>(null);
 
   useEffect(() => {
     const onScroll = () => {
-      const y = window.scrollY;
-      setScrolled(y > 40);
-      const doc = document.documentElement;
-      const max = doc.scrollHeight - doc.clientHeight;
-      setProgress(max > 0 ? Math.min(1, Math.max(0, y / max)) : 0);
+      if (scrollRaf.current != null) return;
+      scrollRaf.current = window.requestAnimationFrame(() => {
+        scrollRaf.current = null;
+        const y = window.scrollY;
+        setScrolled(y > 52);
+        const doc = document.documentElement;
+        const max = doc.scrollHeight - doc.clientHeight;
+        setProgress(max > 0 ? Math.min(1, Math.max(0, y / max)) : 0);
+      });
     };
     onScroll();
     window.addEventListener('scroll', onScroll, { passive: true });
-    return () => window.removeEventListener('scroll', onScroll);
+    return () => {
+      window.removeEventListener('scroll', onScroll);
+      if (scrollRaf.current != null) cancelAnimationFrame(scrollRaf.current);
+    };
   }, []);
 
   // Track the visible section so the corresponding pill lights up
@@ -175,41 +183,52 @@ export function TopNav() {
         <div className="mx-auto px-3 sm:px-4 pt-3 pointer-events-auto">
           <div
             className={cn(
-              'mx-auto flex items-center gap-3 rounded-full border',
-              'transition-[max-width,height,padding,background-color,box-shadow,border-color] duration-[420ms] ease-[cubic-bezier(0.22,0.61,0.36,1)]',
+              'mx-auto flex items-center gap-3 rounded-full border will-change-transform',
+              'transition-[max-width,height,padding,background-color,box-shadow,border-color,gap] duration-[600ms] ease-[cubic-bezier(0.22,1,0.36,1)]',
               scrolled
-                ? 'h-[58px] max-w-[min(calc(100%-0.5rem),76rem)] pl-4 pr-1.5 border-zinc-900/[0.08]'
-                : 'h-[68px] max-w-[min(calc(100%-0.5rem),92rem)] pl-5 pr-2 border-white/60',
+                ? 'h-[54px] max-w-[min(calc(100%-0.5rem),80rem)] pl-3.5 pr-1.5 gap-1.5 border-emerald-500/[0.14] ring-1 ring-emerald-500/[0.08]'
+                : 'h-[68px] max-w-[min(calc(100%-0.5rem),88rem)] pl-5 pr-2 gap-3 border-white/60',
             )}
             style={{
-              backgroundColor: scrolled ? 'rgba(255,255,255,0.7)' : 'rgba(255,255,255,0.36)',
+              backgroundColor: scrolled ? 'rgba(255,255,255,0.82)' : 'rgba(255,255,255,0.38)',
               backdropFilter: scrolled
-                ? 'blur(28px) saturate(200%)'
-                : 'blur(18px) saturate(160%)',
+                ? 'blur(36px) saturate(220%)'
+                : 'blur(20px) saturate(165%)',
               WebkitBackdropFilter: scrolled
-                ? 'blur(28px) saturate(200%)'
-                : 'blur(18px) saturate(160%)',
+                ? 'blur(36px) saturate(220%)'
+                : 'blur(20px) saturate(165%)',
               boxShadow: scrolled
-                ? 'inset 0 1px 0 rgba(255,255,255,0.92), inset 0 -1px 0 rgba(24,24,27,0.05), 0 22px 50px -22px rgba(24,24,27,0.32), 0 4px 12px -6px rgba(24,24,27,0.12)'
-                : 'inset 0 1px 0 rgba(255,255,255,0.78), inset 0 -1px 0 rgba(24,24,27,0.03), 0 16px 36px -20px rgba(24,24,27,0.18), 0 3px 10px -8px rgba(24,24,27,0.06)',
+                ? 'inset 0 1px 0 rgba(255,255,255,0.98), inset 0 -1px 0 rgba(16,185,129,0.10), inset 0 0 0 1px rgba(255,255,255,0.55), 0 22px 48px -22px rgba(16,52,33,0.26), 0 6px 16px -8px rgba(16,185,129,0.18)'
+                : 'inset 0 1px 0 rgba(255,255,255,0.82), inset 0 -1px 0 rgba(24,24,27,0.03), 0 18px 40px -20px rgba(24,24,27,0.16), 0 4px 14px -8px rgba(24,24,27,0.06)',
+              transitionProperty:
+                'max-width, height, padding, background-color, box-shadow, border-color, gap, backdrop-filter',
             }}
           >
             <Link
               href="/global"
-              className="shrink-0 rounded-lg outline-offset-2 focus-visible:ring-2 focus-visible:ring-zinc-400/40"
+              className={cn(
+                'shrink-0 rounded-lg outline-offset-2 focus-visible:ring-2 focus-visible:ring-zinc-400/40 origin-left',
+                'transition-transform duration-[600ms] ease-[cubic-bezier(0.22,1,0.36,1)]',
+                scrolled ? 'scale-[0.92]' : 'scale-100',
+              )}
               aria-label="Chivox MCP home"
             >
               <ChivoxMcpBrand />
             </Link>
 
             <nav
-              className="hidden md:flex items-center justify-end flex-1 min-w-0 gap-0.5 lg:gap-1 text-[14.5px] font-medium tracking-[-0.01em] text-zinc-800"
+              className={cn(
+                'hidden md:flex items-center justify-end flex-1 min-w-0 font-medium tracking-[-0.01em] text-zinc-800',
+                'transition-[font-size,gap] duration-[600ms] ease-[cubic-bezier(0.22,1,0.36,1)]',
+                scrolled ? 'text-[13px] gap-0' : 'text-[14.5px] gap-0.5 lg:gap-1',
+              )}
               aria-label="Page sections"
             >
               {NAV_ITEMS.map((item) => {
                 const isActive = !item.external && onLanding && active === item.href;
                 const commonClass = cn(
-                  'relative inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 transition-all duration-300',
+                  'relative inline-flex items-center gap-1.5 rounded-full transition-all duration-300',
+                  scrolled ? 'px-2.5 py-1' : 'px-3 py-1.5',
                   isActive
                     ? 'text-zinc-900 bg-gradient-to-b from-emerald-50 to-white shadow-[inset_0_0_0_1px_rgba(16,185,129,0.25)]'
                     : 'hover:text-zinc-900 hover:bg-zinc-900/[0.04]',
@@ -249,7 +268,8 @@ export function TopNav() {
                   aria-haspopup="menu"
                   aria-expanded={resourcesOpen}
                   className={cn(
-                    'inline-flex items-center gap-1 rounded-full px-3 py-1.5 transition-all duration-300',
+                    'inline-flex items-center gap-1 rounded-full transition-all duration-300',
+                    scrolled ? 'px-2.5 py-1' : 'px-3 py-1.5',
                     resourceActive
                       ? 'text-zinc-900 bg-gradient-to-b from-emerald-50 to-white shadow-[inset_0_0_0_1px_rgba(16,185,129,0.25)]'
                       : 'hover:text-zinc-900 hover:bg-zinc-900/[0.04]',
@@ -305,7 +325,10 @@ export function TopNav() {
 
               <Link
                 href="/global/docs"
-                className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 hover:text-zinc-900 hover:bg-zinc-900/[0.04] transition-colors"
+                className={cn(
+                  'inline-flex items-center gap-1.5 rounded-full hover:text-zinc-900 hover:bg-zinc-900/[0.04] transition-all duration-300',
+                  scrolled ? 'px-2.5 py-1' : 'px-3 py-1.5',
+                )}
               >
                 <BookOpen className="h-3.5 w-3.5 opacity-70" />
                 Docs
@@ -316,13 +339,16 @@ export function TopNav() {
                 target="_blank"
                 rel="noreferrer"
                 aria-label="Chivox MCP on GitHub"
-                className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 hover:text-zinc-900 hover:bg-zinc-900/[0.04] transition-colors"
+                className={cn(
+                  'inline-flex items-center gap-1.5 rounded-full hover:text-zinc-900 hover:bg-zinc-900/[0.04] transition-all duration-300',
+                  scrolled ? 'px-2 py-1' : 'px-3 py-1.5',
+                )}
               >
                 <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" aria-hidden>
                   <path d="M12 2a10 10 0 0 0-3.2 19.5c.5.1.7-.2.7-.5v-1.7c-2.8.6-3.4-1.3-3.4-1.3-.5-1.2-1.1-1.5-1.1-1.5-.9-.6.1-.6.1-.6 1 .1 1.6 1 1.6 1 .9 1.5 2.4 1.1 3 .8.1-.6.3-1.1.6-1.3-2.2-.3-4.6-1.1-4.6-5 0-1.1.4-2 1-2.7-.1-.3-.4-1.3.1-2.7 0 0 .8-.3 2.7 1a9.4 9.4 0 0 1 5 0c1.9-1.3 2.7-1 2.7-1 .5 1.4.2 2.4.1 2.7.6.7 1 1.6 1 2.7 0 3.9-2.4 4.7-4.6 5 .4.3.7.9.7 1.8v2.7c0 .3.2.6.7.5A10 10 0 0 0 12 2z" fill="currentColor" />
                 </svg>
-                GitHub
-                <ArrowUpRight className="h-3 w-3 opacity-55" />
+                <span className={cn(scrolled && 'sr-only lg:not-sr-only')}>GitHub</span>
+                <ArrowUpRight className={cn('h-3 w-3 opacity-55', scrolled && 'hidden lg:inline-block')} />
               </a>
             </nav>
 
@@ -330,10 +356,11 @@ export function TopNav() {
               <Link
                 href="/dev-en/login"
                 className={cn(
-                  'inline-flex items-center gap-1.5 pl-4 pr-3.5 text-sm font-semibold rounded-full bg-zinc-900 text-zinc-50 hover:-translate-y-px transition-all duration-300',
+                  'inline-flex items-center gap-1.5 text-sm font-semibold rounded-full bg-zinc-900 text-zinc-50 hover:-translate-y-px',
+                  'transition-[height,padding,box-shadow,transform] duration-[600ms] ease-[cubic-bezier(0.22,1,0.36,1)]',
                   scrolled
-                    ? 'h-9 shadow-[0_6px_16px_-8px_rgba(0,0,0,0.5)]'
-                    : 'h-10 shadow-[0_8px_20px_-10px_rgba(0,0,0,0.45)]',
+                    ? 'h-[34px] pl-3.5 pr-3 text-[13px] shadow-[0_6px_14px_-8px_rgba(0,0,0,0.55),0_0_0_1px_rgba(255,255,255,0.04)_inset]'
+                    : 'h-10 pl-4 pr-3.5 shadow-[0_8px_20px_-10px_rgba(0,0,0,0.45)]',
                 )}
               >
                 Sign in
@@ -341,19 +368,24 @@ export function TopNav() {
               </Link>
             </div>
 
-            {/* scroll progress — emerald hairline across the bottom edge */}
+            {/* scroll progress — hairline that hugs the rounded edge */}
             <div
               aria-hidden
-              className="absolute left-4 right-4 bottom-0 h-[2px] rounded-full overflow-hidden"
-              style={{ opacity: scrolled ? 1 : 0, transition: 'opacity 300ms ease' }}
+              className={cn(
+                'absolute left-[14%] right-[14%] h-[2px] rounded-full overflow-hidden',
+                'transition-[opacity,bottom,left,right] duration-[600ms] ease-[cubic-bezier(0.22,1,0.36,1)]',
+                scrolled ? 'bottom-[6px] opacity-100' : 'bottom-[10px] opacity-0',
+              )}
+              style={{ background: 'rgba(16,185,129,0.10)' }}
             >
               <div
                 className="h-full rounded-full"
                 style={{
                   width: `${progress * 100}%`,
                   background:
-                    'linear-gradient(90deg, #10b981 0%, #34d399 50%, #fbbf24 100%)',
-                  transition: 'width 120ms linear',
+                    'linear-gradient(90deg, #059669 0%, #10b981 32%, #34d399 64%, #fbbf24 100%)',
+                  boxShadow: '0 0 10px rgba(16,185,129,0.45), 0 0 2px rgba(251,191,36,0.4)',
+                  transition: 'width 90ms cubic-bezier(0.22, 0.61, 0.36, 1)',
                 }}
               />
             </div>
@@ -368,13 +400,30 @@ export function TopNav() {
 
 export function BackToOverview() {
   return (
-    <div className="container mx-auto px-6 max-w-6xl pt-4">
+    <div className="container mx-auto px-6 max-w-6xl pt-5">
       <Link
         href="/global"
-        className="inline-flex items-center gap-1.5 text-[12.5px] font-medium text-zinc-600 hover:text-emerald-700 transition-colors"
+        className={cn(
+          'group inline-flex items-center gap-1.5 rounded-full pl-2.5 pr-3.5 py-1.5',
+          'text-[12.5px] font-medium text-zinc-700',
+          'border border-zinc-900/[0.08] bg-white/55 backdrop-blur-md',
+          'shadow-[inset_0_1px_0_rgba(255,255,255,0.7),0_1px_3px_rgba(24,24,27,0.04)]',
+          'hover:text-emerald-800 hover:border-emerald-500/30 hover:bg-white/80',
+          'hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.85),0_4px_14px_-6px_rgba(16,185,129,0.25)]',
+          'transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]',
+        )}
       >
-        <ArrowLeft className="h-3.5 w-3.5" />
-        Back to overview
+        <span
+          aria-hidden
+          className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-zinc-900/[0.04] text-zinc-500 group-hover:bg-emerald-500/12 group-hover:text-emerald-700 transition-all duration-300"
+        >
+          <ArrowLeft className="h-3 w-3 transition-transform duration-300 group-hover:-translate-x-0.5" />
+        </span>
+        <span className="text-[10px] font-mono uppercase tracking-[0.18em] text-zinc-500 group-hover:text-emerald-700/85 transition-colors">
+          /global
+        </span>
+        <span className="text-zinc-300/80">·</span>
+        <span>Back to overview</span>
       </Link>
     </div>
   );

@@ -615,7 +615,7 @@ export default function GlobalLandingPage() {
         className="relative py-20 md:py-24 border-b border-[#e9e2d2]/70 scroll-mt-24"
       >
         <div className="container mx-auto px-6 max-w-6xl">
-          <FadeUp className="mb-10 max-w-3xl">
+          <FadeUp className="mb-6 max-w-3xl">
             <div className="inline-flex items-center gap-2 text-[11px] tracking-[0.2em] uppercase text-muted-foreground mb-3">
               <span>/payload-depth</span>
               <span className="inline-flex items-center gap-1 rounded-full border border-rose-500/30 bg-rose-500/10 px-2 py-0.5 text-[9px] font-mono text-rose-600 dark:text-rose-400 normal-case tracking-normal">
@@ -629,11 +629,12 @@ export default function GlobalLandingPage() {
               <span className="text-muted-foreground/90">If it resolves tonal sandhi, it resolves anything.</span>
             </h2>
             <p className="text-muted-foreground leading-relaxed">
-              Four tones, sandhi, erhua, retroflex &mdash; the acoustic edge cases that kill generic STT.
-              Chivox MCP returns tone objects, confidence distributions and per-phoneme windows on top of
-              the same <span className="font-mono text-foreground/80">pron.*</span> /{' '}
-              <span className="font-mono text-foreground/80">details[]</span> shape every other language ships.
-              Here&rsquo;s the signal your agent actually sees.
+              English handles the long tail of L2 learners. Mandarin is the pressure test &mdash; four tones,
+              sandhi, erhua, retroflex, the acoustic edge cases that kill generic STT. Both ship as{' '}
+              <span className="font-mono text-foreground/80">pron.*</span> /{' '}
+              <span className="font-mono text-foreground/80">details[]</span> on the same payload contract,
+              with tone objects and per-phoneme windows for zh, stress and CEFR alignment for en. One
+              integration, two acoustically opposite languages.
             </p>
           </FadeUp>
 
@@ -643,7 +644,7 @@ export default function GlobalLandingPage() {
               <div className="inline-flex items-center gap-1.5 shrink-0">
                 <Globe2 className="h-3.5 w-3.5 text-rose-600" />
                 <span className="text-[10px] font-mono uppercase tracking-[0.18em] text-rose-700/90">
-                  Coverage
+                  Mandarin depth
                 </span>
               </div>
               <div className="flex flex-wrap items-baseline gap-x-5 gap-y-1.5 flex-1 min-w-0">
@@ -681,30 +682,8 @@ export default function GlobalLandingPage() {
             </div>
           </FadeUp>
 
-          {/* condensed feature chip row */}
-          <FadeUp delay={0.08}>
-            <div className="mb-8 flex flex-wrap gap-2">
-              {[
-                '4 tones + T5',
-                'Tone sandhi',
-                'Erhua · 儿化音',
-                'Pinyin align',
-                'Code-switch zh ↔ en',
-                'HSK 1-9',
-              ].map((f) => (
-                <span
-                  key={f}
-                  className="inline-flex items-center gap-1.5 rounded-md border border-rose-500/20 bg-rose-500/[0.06] px-2.5 py-1 text-[11.5px] font-mono text-rose-700 dark:text-rose-300"
-                >
-                  <span className="h-1 w-1 rounded-full bg-rose-500" />
-                  {f}
-                </span>
-              ))}
-            </div>
-          </FadeUp>
-
-          <FadeUp delay={0.12}>
-            <TonePanel />
+          <FadeUp delay={0.1}>
+            <BilingualScorePanel />
           </FadeUp>
 
           <FadeUp delay={0.18}>
@@ -1468,37 +1447,46 @@ function CapVisualMeters() {
 /* 02 · languages — CN / EN toggle with pinyin + tone lines */
 function CapVisualBilingual() {
   return (
-    <div className="rounded-xl border border-zinc-900/[0.06] bg-white/50 backdrop-blur-sm p-3.5">
-      <div className="flex items-center gap-2 mb-3">
-        <span className="inline-flex items-center gap-1.5 rounded-md border border-rose-500/30 bg-rose-500/10 px-2 py-0.5 text-[10.5px] font-mono text-rose-700">
-          <span className="h-1.5 w-1.5 rounded-full bg-rose-500" /> zh-CN
+    <div className="rounded-xl border border-zinc-900/[0.06] bg-white/50 backdrop-blur-sm p-3 overflow-hidden">
+      <div className="flex items-center gap-1.5 mb-2.5">
+        <span className="inline-flex items-center gap-1 rounded-md border border-rose-500/30 bg-rose-500/10 px-1.5 py-0.5 text-[10px] font-mono text-rose-700 whitespace-nowrap">
+          <span className="h-1 w-1 rounded-full bg-rose-500" />
+          zh-CN
         </span>
-        <span className="inline-flex items-center gap-1.5 rounded-md border border-sky-500/30 bg-sky-500/10 px-2 py-0.5 text-[10.5px] font-mono text-sky-700">
-          <span className="h-1.5 w-1.5 rounded-full bg-sky-500" /> en-US
+        <span className="inline-flex items-center gap-1 rounded-md border border-sky-500/30 bg-sky-500/10 px-1.5 py-0.5 text-[10px] font-mono text-sky-700 whitespace-nowrap">
+          <span className="h-1 w-1 rounded-full bg-sky-500" />
+          en-US
         </span>
-        <span className="ml-auto text-[10px] font-mono text-muted-foreground">one flag</span>
+        <span className="ml-auto text-[9.5px] font-mono text-muted-foreground whitespace-nowrap">
+          one flag
+        </span>
       </div>
-      <div className="grid grid-cols-2 gap-2">
-        <div className="rounded-lg border border-rose-500/20 bg-rose-500/[0.04] px-2.5 py-2">
-          <div className="flex items-baseline gap-2">
-            <span className="font-zh text-lg text-rose-800">你好</span>
-            <span className="font-pinyin text-[11.5px] text-rose-700">nǐ hǎo</span>
+
+      <div className="grid grid-cols-2 gap-1.5">
+        <div className="min-w-0 rounded-lg border border-rose-500/25 bg-rose-500/[0.05] px-2 py-1.5">
+          <div className="flex items-baseline gap-1.5 min-w-0">
+            <span className="font-zh text-base text-rose-800 leading-none">你好</span>
+            <span className="font-pinyin text-[10.5px] text-rose-700 truncate">nǐ hǎo</span>
           </div>
           <div className="mt-1 flex items-center gap-1 text-rose-600">
-            <svg width="34" height="8" viewBox="0 0 34 8"><path d="M1 6 Q 5 6, 9 3 T 17 1" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" /><path d="M18 6 Q 22 6, 26 3 T 33 1" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" /></svg>
-            <span className="text-[9.5px] font-mono ml-1 text-rose-600/70">tones · pinyin · erhua</span>
+            <svg width="22" height="6" viewBox="0 0 34 8" className="shrink-0">
+              <path d="M1 6 Q 5 6, 9 3 T 17 1" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+              <path d="M18 6 Q 22 6, 26 3 T 33 1" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+            </svg>
+            <span className="text-[9px] font-mono text-rose-600/70 truncate">tones · pinyin</span>
           </div>
         </div>
-        <div className="rounded-lg border border-sky-500/20 bg-sky-500/[0.04] px-2.5 py-2">
-          <div className="flex items-baseline gap-2">
-            <span className="text-[15px] font-semibold text-sky-900">Hello</span>
-            <span className="font-mono text-[11px] text-sky-700">/həˈloʊ/</span>
+
+        <div className="min-w-0 rounded-lg border border-sky-500/25 bg-sky-500/[0.05] px-2 py-1.5">
+          <div className="flex items-baseline gap-1.5 min-w-0">
+            <span className="text-[14px] font-semibold text-sky-900 leading-none">Hello</span>
+            <span className="font-mono text-[10px] text-sky-700 truncate">/həˈloʊ/</span>
           </div>
-          <div className="mt-1 flex items-center gap-1 text-sky-600">
-            <span className="inline-flex h-1 w-4 bg-sky-400 rounded" />
-            <span className="inline-flex h-1 w-2 bg-sky-300 rounded" />
-            <span className="inline-flex h-1 w-3 bg-sky-400 rounded" />
-            <span className="text-[9.5px] font-mono ml-1 text-sky-600/70">stress · CEFR</span>
+          <div className="mt-1 flex items-center gap-0.5 text-sky-600">
+            <span className="inline-flex h-1 w-3 rounded bg-sky-500" />
+            <span className="inline-flex h-1 w-1.5 rounded bg-sky-300" />
+            <span className="inline-flex h-1 w-2 rounded bg-sky-500" />
+            <span className="text-[9px] font-mono ml-1 text-sky-600/70 truncate">stress · CEFR</span>
           </div>
         </div>
       </div>
@@ -2968,6 +2956,198 @@ function PhonemePanel() {
           <em className="not-italic font-medium text-foreground">judge</em>,{' '}
           <em className="not-italic font-medium text-foreground">badge</em>,{' '}
           <em className="not-italic font-medium text-foreground">gorgeous</em>.
+        </span>
+      </div>
+    </div>
+  );
+}
+
+/* ── Bilingual score panel — toggle between Mandarin & English ── */
+function BilingualScorePanel() {
+  const [lang, setLang] = useState<'zh' | 'en'>('zh');
+  const isZh = lang === 'zh';
+
+  return (
+    <div>
+      {/* Header rail — toggle + payload-contract + locales-on-request,
+          consolidated into one row so language signal isn't duplicated. */}
+      <div className="mb-3 flex flex-wrap items-center gap-2.5">
+        <div className="inline-flex items-center gap-1 rounded-full border border-zinc-900/[0.08] bg-white/70 backdrop-blur-sm p-1 shadow-[inset_0_1px_0_rgba(255,255,255,0.7)]">
+          <button
+            type="button"
+            onClick={() => setLang('zh')}
+            aria-pressed={isZh}
+            className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[12px] font-medium whitespace-nowrap transition-all duration-200 ${
+              isZh
+                ? 'bg-gradient-to-r from-rose-500/15 to-amber-500/10 text-rose-800 shadow-[inset_0_0_0_1px_rgba(244,63,94,0.3)]'
+                : 'text-zinc-500 hover:text-zinc-800'
+            }`}
+          >
+            <span aria-hidden className="text-[13px] leading-none">🇨🇳</span>
+            <span className="font-mono text-[11px]">zh-CN</span>
+            <span className="opacity-70">· tones · sandhi</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setLang('en')}
+            aria-pressed={!isZh}
+            className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[12px] font-medium whitespace-nowrap transition-all duration-200 ${
+              !isZh
+                ? 'bg-gradient-to-r from-sky-500/15 to-indigo-500/10 text-sky-800 shadow-[inset_0_0_0_1px_rgba(14,165,233,0.3)]'
+                : 'text-zinc-500 hover:text-zinc-800'
+            }`}
+          >
+            <span aria-hidden className="text-[13px] leading-none">🇬🇧</span>
+            <span className="font-mono text-[11px]">en-US</span>
+            <span className="opacity-70">· phonemes · CEFR</span>
+          </button>
+        </div>
+
+        <span className="inline-flex items-center gap-1.5 text-[11px] text-muted-foreground whitespace-nowrap">
+          <ArrowRight className="h-3 w-3 text-emerald-600" aria-hidden />
+          same{' '}
+          <span className="font-mono text-foreground/80">pron.*</span> /{' '}
+          <span className="font-mono text-foreground/80">details[]</span> contract
+        </span>
+
+        <span className="ml-auto text-[11px] italic text-muted-foreground whitespace-nowrap hidden md:inline-block">
+          Other locales on request.
+        </span>
+      </div>
+
+      <div
+        key={lang}
+        className="animate-[qd-line-in_360ms_cubic-bezier(0.22,1,0.36,1)]"
+      >
+        {isZh ? <TonePanel /> : <EnglishWordPanel />}
+      </div>
+    </div>
+  );
+}
+
+/* ── English word/phoneme panel — same layout as TonePanel ──── */
+function EnglishWordPanel() {
+  // Sentence row: each word with its IPA, stress pattern hint, and score.
+  const words: {
+    word: string;
+    ipa: string;
+    stress: 'pri' | 'sec' | 'unstressed';
+    score: number;
+    ok: boolean;
+  }[] = [
+    { word: 'The', ipa: 'ðə', stress: 'unstressed', score: 92, ok: true },
+    { word: 'weather', ipa: 'ˈwɛðər', stress: 'pri', score: 88, ok: true },
+    { word: 'is', ipa: 'ɪz', stress: 'unstressed', score: 90, ok: true },
+    { word: 'absolutely', ipa: 'ˌæbsəˈluːtli', stress: 'pri', score: 71, ok: true },
+    { word: 'gorgeous', ipa: 'ˈɡɔːrdʒəs', stress: 'pri', score: 58, ok: false },
+    { word: 'today', ipa: 'təˈdeɪ', stress: 'pri', score: 86, ok: true },
+  ];
+
+  // Stress glyph → small mark above the cell so it parallels the tone contour SVG.
+  const STRESS_COLOR: Record<string, { ink: string; chip: string }> = {
+    pri: {
+      ink: 'text-sky-600',
+      chip: 'border-sky-200/70 text-sky-700 bg-sky-50',
+    },
+    sec: {
+      ink: 'text-indigo-600',
+      chip: 'border-indigo-200/70 text-indigo-700 bg-indigo-50',
+    },
+    unstressed: {
+      ink: 'text-zinc-500',
+      chip: 'border-zinc-200/70 text-zinc-600 bg-zinc-50',
+    },
+  };
+
+  const STRESS_LABEL: Record<string, string> = {
+    pri: 'ˈ pri',
+    sec: 'ˌ sec',
+    unstressed: '· unstr',
+  };
+
+  return (
+    <div className="relative rounded-2xl border border-border/60 bg-background p-6 md:p-7 h-full overflow-hidden">
+      <div className="absolute -top-20 -left-20 h-56 w-56 rounded-full bg-sky-400/10 blur-3xl pointer-events-none" />
+
+      <div className="flex items-center justify-between mb-5 gap-4">
+        <div className="min-w-0">
+          <div className="inline-flex items-center gap-1.5 rounded-full border border-sky-200/70 bg-sky-50/70 px-2 py-0.5 text-[10px] font-medium text-sky-700 tracking-wide uppercase mb-2">
+            English · phoneme depth
+          </div>
+          <h3 className="text-2xl font-semibold tracking-[-0.015em] leading-tight truncate">
+            The weather is absolutely gorgeous today
+          </h3>
+          <div className="mt-1 text-sm text-muted-foreground font-mono truncate">
+            /ðə ˈwɛðər ɪz ˌæbsəˈluːtli ˈɡɔːrdʒəs təˈdeɪ/
+          </div>
+        </div>
+        <ScoreBadge value={76} label="sentence score" />
+      </div>
+
+      {/* sentence strip: 6 word cards parallel to TonePanel's syllable grid */}
+      <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5">
+        {words.map((w, idx) => {
+          const c = STRESS_COLOR[w.stress];
+          return (
+            <div
+              key={idx}
+              className={`relative rounded-xl border p-2.5 flex flex-col items-center text-center min-w-0 ${
+                w.ok
+                  ? 'border-border/60 bg-muted/25'
+                  : 'border-rose-300/70 bg-rose-50'
+              }`}
+            >
+              <div className="text-[15px] md:text-[16px] leading-tight font-semibold tracking-tight text-foreground truncate w-full">
+                {w.word}
+              </div>
+              <div className={`font-mono text-[10.5px] mt-1 leading-[1.3] ${c.ink} truncate w-full`}>
+                /{w.ipa}/
+              </div>
+              <div className={`mt-2 inline-flex items-center gap-1 rounded-md border px-1.5 py-0.5 text-[9.5px] font-mono whitespace-nowrap ${c.chip}`}>
+                {STRESS_LABEL[w.stress]}
+              </div>
+              <div className="mt-2 w-full h-1 rounded-full bg-muted overflow-hidden">
+                <div
+                  className={`h-full rounded-full ${
+                    w.score >= 80
+                      ? 'bg-emerald-500'
+                      : w.score >= 65
+                        ? 'bg-amber-500'
+                        : 'bg-rose-500'
+                  }`}
+                  style={{ width: `${w.score}%` }}
+                />
+              </div>
+              <div className="mt-1 text-[11px] font-semibold tabular-nums">{w.score}</div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* stress legend — parallel to the tone legend in TonePanel */}
+      <div className="mt-5 flex items-center flex-wrap gap-x-4 gap-y-1.5 text-[11px]">
+        <span className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">stress</span>
+        {(['pri', 'sec', 'unstressed'] as const).map((s) => {
+          const c = STRESS_COLOR[s];
+          return (
+            <span key={s} className={`inline-flex items-center gap-1 ${c.ink}`}>
+              <span className="font-mono text-[10.5px]">{STRESS_LABEL[s]}</span>
+            </span>
+          );
+        })}
+        <span className="ml-2 text-[10px] uppercase tracking-[0.18em] text-muted-foreground">cefr</span>
+        <span className="font-mono text-[10.5px] text-emerald-700">B2</span>
+      </div>
+
+      <div className="mt-4 rounded-xl border border-sky-200/60 bg-sky-50/50 p-3.5 text-xs leading-relaxed">
+        <span className="font-semibold text-sky-800">LLM hint · </span>
+        <span className="text-foreground/85">
+          <em className="not-italic font-medium font-mono text-foreground">gorgeous</em>{' '}
+          <span className="font-mono text-sky-700">/ˈɡɔːrdʒəs/</span> realised as{' '}
+          <span className="font-mono text-rose-600">/ˈɡɔːrʒəs/</span> — the{' '}
+          <span className="font-mono text-foreground">/d/</span> stop dropped before{' '}
+          <span className="font-mono text-foreground">/ʒ/</span>. Drill{' '}
+          <em className="not-italic font-medium">judge · badge · gorgeous</em>.
         </span>
       </div>
     </div>
