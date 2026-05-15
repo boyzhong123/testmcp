@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>7天备考冲刺，轻松提分20分 · 限时1299元 · 苏州驰声</title>
+<style>
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;color:#2A1810;background:#FFF8EE;}
+  a{color:inherit;text-decoration:none;}
+
+  /* ===== FRAME ===== */
+  .frame{max-width:420px;margin:0 auto;min-height:100vh;background:linear-gradient(180deg,#FFF8EE 0%,#FFEDD9 100%);box-shadow:0 0 50px rgba(50,30,10,.15);position:relative;overflow:hidden;}
+  .topbar{display:flex;justify-content:space-between;align-items:center;padding:14px 18px 6px;font-size:13px;color:#8C6440;}
+
+  /* ===== TABS ===== */
+  .pageTabs{display:flex;gap:4px;padding:8px 16px 0;border-bottom:1px solid rgba(180,100,40,.15);background:rgba(255,248,238,.96);backdrop-filter:blur(10px);}
+  .pageTab{padding:8px 12px;font-size:12px;color:#A0704A;cursor:pointer;border-bottom:2px solid transparent;transition:.2s;white-space:nowrap;}
+  .pageTab.active{color:#D9381E;border-bottom-color:#D9381E;font-weight:800;}
+  .page{display:none;}
+  .page.active{display:block;animation:fadeIn .3s ease;}
+  @keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
+
+  /* ============= LANDING PAGE ============= */
+  /* === COUNTDOWN BAR (top urgent) === */
+  .countBar{background:linear-gradient(90deg,#D9381E,#FF6B1A);color:#fff;padding:9px 16px;display:flex;align-items:center;justify-content:center;gap:8px;font-size:12px;font-weight:700;letter-spacing:.3px;animation:flash 2s ease-in-out infinite;}
+  @keyframes flash{0%,100%{filter:brightness(1);}50%{filter:brightness(1.15);}}
+  .countBar .dot{width:7px;height:7px;background:#FFD86F;border-radius:50%;animation:blink 1s infinite;}
+  @keyframes blink{0%,100%{opacity:1;}50%{opacity:.3;}}
+  .countBar .num{background:#1A1010;padding:2px 7px;border-radius:6px;font-family:monospace;font-size:13px;letter-spacing:.5px;}
+
+  /* === HERO === */
+  .hero{position:relative;padding:24px 22px 30px;background:
+    radial-gradient(circle at 80% 0%, rgba(255,170,40,.35), transparent 50%),
+    radial-gradient(circle at 0% 100%, rgba(255,80,80,.25), transparent 50%),
+    linear-gradient(180deg,#FFEDC2 0%,#FFD89E 100%);
+    overflow:hidden;}
+  .hero::before{content:'';position:absolute;top:-50px;right:-50px;width:200px;height:200px;background:radial-gradient(circle,rgba(255,140,40,.4),transparent 70%);border-radius:50%;animation:pulse-glow 4s ease-in-out infinite;}
+  @keyframes pulse-glow{0%,100%{transform:scale(1);opacity:.8;}50%{transform:scale(1.1);opacity:1;}}
+
+  .hotTag{display:inline-flex;align-items:center;gap:6px;background:linear-gradient(90deg,#D9381E,#FF6B1A);color:#fff;padding:6px 14px;border-radius:14px;font-size:11.5px;font-weight:800;letter-spacing:.5px;box-shadow:0 4px 14px rgba(217,56,30,.35);position:relative;z-index:2;}
+  .hotTag::before{content:'🔥';font-size:13px;}
+
+  .heroTtl{margin:18px 0 8px;font-size:46px;font-weight:900;line-height:1.08;letter-spacing:-1.5px;color:#2A1810;position:relative;z-index:2;}
+  .heroTtl .gold{background:linear-gradient(135deg,#D9381E 0%,#FF6B1A 50%,#FFC850 100%);-webkit-background-clip:text;background-clip:text;color:transparent;}
+  .heroTtl .underline{position:relative;display:inline-block;}
+  .heroTtl .underline::after{content:'';position:absolute;left:-2px;right:-2px;bottom:6px;height:8px;background:rgba(255,216,80,.6);z-index:-1;border-radius:4px;}
+  .heroSub{margin:0;font-size:16px;font-weight:700;color:#5A3920;line-height:1.5;position:relative;z-index:2;}
+  .heroDesc{margin:14px 0 0;font-size:13px;color:#5A3920;line-height:1.7;position:relative;z-index:2;opacity:.92;}
+  .heroBadges{margin-top:18px;display:flex;gap:8px;flex-wrap:wrap;position:relative;z-index:2;}
+  .hb{font-size:11px;background:rgba(255,255,255,.6);color:#5A3920;padding:5px 11px;border-radius:14px;font-weight:600;border:1px solid rgba(217,56,30,.2);}
+
+  /* === PRICE CARD (anchor + urgency) === */
+  .priceCard{margin:-20px 18px 0;padding:22px 20px 18px;background:linear-gradient(135deg,#fff 0%,#FFFAF0 100%);border-radius:20px;box-shadow:0 14px 40px rgba(217,56,30,.25),0 0 0 2px rgba(255,140,40,.15);position:relative;z-index:5;overflow:hidden;}
+  .priceCard::before{content:'限时特惠';position:absolute;top:-2px;right:-2px;background:linear-gradient(135deg,#D9381E,#FF6B1A);color:#fff;font-size:11px;font-weight:800;padding:6px 16px 8px 18px;border-radius:0 20px 0 14px;letter-spacing:.5px;box-shadow:0 4px 10px rgba(217,56,30,.3);}
+  .priceCard .anchor{font-size:14px;color:#A0704A;text-decoration:line-through;}
+  .priceCard .now{font-size:46px;font-weight:900;color:#D9381E;line-height:1;margin-top:4px;display:flex;align-items:baseline;gap:4px;}
+  .priceCard .yuanLbl{font-size:18px;font-weight:700;}
+  .priceCard .small{font-size:13px;font-weight:600;color:#5A3920;margin-left:auto;}
+  .priceCard .save{display:inline-block;margin-top:6px;background:#FFF1D6;color:#D9381E;font-size:12px;font-weight:800;padding:3px 10px;border-radius:6px;}
+  .priceCard .desc{margin-top:10px;font-size:12.5px;color:#5A3920;line-height:1.6;}
+  .priceCard .perks{margin-top:12px;display:flex;gap:6px;flex-wrap:wrap;}
+  .priceCard .perks span{font-size:10.5px;background:#FFF1D6;color:#A0704A;padding:3px 9px;border-radius:6px;font-weight:600;border:1px solid rgba(180,100,40,.15);}
+  .priceCard .tierRow{margin-top:14px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;}
+  .tier{padding:10px 6px;text-align:center;background:#FFFAF0;border-radius:10px;border:1px solid rgba(180,100,40,.15);}
+  .tier.hot{border-color:#D9381E;background:linear-gradient(135deg,#FFF1D6,#FFEACC);position:relative;}
+  .tier.hot::before{content:'最划算';position:absolute;top:-7px;left:50%;transform:translateX(-50%);background:#D9381E;color:#fff;font-size:9px;font-weight:800;padding:1px 7px;border-radius:6px;letter-spacing:.5px;}
+  .tier .p{font-size:18px;font-weight:900;color:#D9381E;line-height:1;}
+  .tier .l{font-size:10px;color:#A0704A;margin-top:3px;}
+  .tier .h{font-size:9.5px;color:#5A3920;margin-top:2px;}
+
+  /* === SECTION TITLE === */
+  .sec{padding:26px 22px 0;position:relative;}
+  .secTtl{margin:0;font-size:22px;font-weight:900;color:#2A1810;letter-spacing:-.5px;display:flex;align-items:center;gap:10px;}
+  .secTtl .num{display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:9px;background:linear-gradient(135deg,#D9381E,#FF6B1A);color:#fff;font-size:14px;}
+  .secSub{margin:6px 0 16px;font-size:12.5px;color:#8C6440;line-height:1.6;}
+
+  /* === PAIN POINTS === */
+  .painCard{margin:0 22px 12px;padding:16px 16px;background:#fff;border-radius:14px;border:1px solid rgba(180,100,40,.15);box-shadow:0 6px 18px rgba(180,100,40,.08);}
+  .painCard .qq{font-size:14px;font-weight:800;color:#D9381E;margin-bottom:8px;line-height:1.5;}
+  .painCard .body{font-size:13px;color:#3A2010;line-height:1.7;}
+  .painCard .body b{color:#D9381E;background:#FFF1D6;padding:1px 4px;border-radius:3px;font-weight:700;}
+
+  /* === METHODS GRID === */
+  .methodGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:0 22px;}
+  .mb{padding:14px 8px;background:#fff;border-radius:12px;text-align:center;border:1px solid rgba(180,100,40,.12);}
+  .mb .ic{font-size:24px;margin-bottom:5px;}
+  .mb .nm{font-size:11.5px;font-weight:800;color:#2A1810;}
+  .mb .des{font-size:9.5px;color:#8C6440;margin-top:3px;line-height:1.4;}
+
+  /* === 7 DAY GRID === */
+  .dgrid{margin:0 22px;display:flex;flex-direction:column;gap:7px;}
+  .dr{display:flex;align-items:center;gap:11px;padding:11px 13px;background:#fff;border-radius:12px;border:1px solid rgba(180,100,40,.12);box-shadow:0 2px 8px rgba(180,100,40,.04);}
+  .dr.core{background:linear-gradient(135deg,#FFF1D6,#FFFAF0);border-color:rgba(217,56,30,.3);}
+  .dr .num{width:42px;height:42px;border-radius:11px;background:linear-gradient(135deg,#FFD86F,#FF8C42);color:#1A1010;display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:900;flex-shrink:0;}
+  .dr .num .d{font-size:8px;letter-spacing:.5px;line-height:1;margin-bottom:1px;}
+  .dr .num .n{font-size:18px;line-height:1;}
+  .dr.core .num{background:linear-gradient(135deg,#D9381E,#FF6B1A);color:#fff;}
+  .dr .info{flex:1;min-width:0;}
+  .dr .nm{font-size:13.5px;font-weight:800;color:#2A1810;}
+  .dr .ds{font-size:11px;color:#8C6440;margin-top:2px;line-height:1.4;}
+  .dr .rev{font-size:10px;color:#48955F;margin-top:2px;line-height:1.4;}
+  .dr .tg{flex-shrink:0;font-size:13px;font-weight:900;color:#D9381E;background:#FFF1D6;padding:6px 10px;border-radius:8px;}
+
+  /* === SOCIAL PROOF === */
+  .proofGrid{padding:0 22px;display:grid;grid-template-columns:1fr 1fr;gap:9px;}
+  .proof{padding:13px;background:#fff;border-radius:14px;border:1px solid rgba(180,100,40,.12);box-shadow:0 4px 12px rgba(180,100,40,.05);}
+  .proof .who{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
+  .proof .av{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#FFD86F,#FF8C42);color:#1A1010;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;}
+  .proof .nm{font-size:11.5px;font-weight:700;color:#2A1810;}
+  .proof .lc{font-size:9.5px;color:#A0704A;margin-top:1px;}
+  .proof .quote{font-size:11.5px;color:#3A2010;line-height:1.55;font-style:italic;border-left:2px solid #FFD86F;padding-left:7px;}
+  .proof .up{margin-top:9px;display:inline-block;background:linear-gradient(90deg,#D9381E,#FF6B1A);color:#fff;font-size:12px;font-weight:900;padding:3px 11px;border-radius:7px;}
+
+  /* === LIVE FOMO TICKER === */
+  .ticker{margin:14px 22px;padding:11px 14px;background:#fff;border-radius:12px;border:1px solid rgba(180,100,40,.15);display:flex;align-items:center;gap:10px;}
+  .ticker .led{width:9px;height:9px;background:#48BB78;border-radius:50%;animation:blink 1.2s infinite;flex-shrink:0;box-shadow:0 0 0 4px rgba(72,187,120,.2);}
+  .ticker .txt{font-size:11.5px;color:#3A2010;line-height:1.5;}
+  .ticker .txt b{color:#D9381E;font-weight:800;}
+
+  /* === PLEDGE === */
+  .pledgeSec{margin:18px 22px;padding:18px;background:linear-gradient(135deg,#FFF1D6,#FFEACC);border:2px solid rgba(217,56,30,.25);border-radius:16px;}
+  .pledgeSec h2{margin:0 0 10px;font-size:16px;font-weight:900;color:#2A1810;display:flex;align-items:center;gap:7px;}
+  .pledgeSec h2 .red{color:#D9381E;}
+  .pledgeSec .body{font-size:12.5px;color:#3A2010;line-height:1.7;}
+  .pledgeSec .body .gold{background:#FFD86F;padding:1px 5px;border-radius:3px;font-weight:800;color:#2A1810;}
+  .pledgeSec .list{margin:10px 0;padding-left:22px;font-size:12.5px;color:#3A2010;line-height:1.85;}
+  .pledgeSec .list b{color:#D9381E;font-weight:800;}
+
+  /* === FAQ === */
+  .faq{margin:0 22px 9px;padding:13px 14px;background:#fff;border-radius:11px;border:1px solid rgba(180,100,40,.12);cursor:pointer;}
+  .faq summary{font-size:13px;font-weight:700;color:#2A1810;list-style:none;display:flex;justify-content:space-between;align-items:center;}
+  .faq summary::after{content:'+';font-size:18px;color:#D9381E;font-weight:700;}
+  .faq[open] summary::after{content:'−';}
+  .faq p{margin:9px 0 0;font-size:12px;color:#5A3920;line-height:1.7;}
+
+  /* === Sticky Bottom Buy Bar === */
+  .stickyBuy{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:420px;background:rgba(255,250,243,.98);backdrop-filter:saturate(180%) blur(20px);border-top:1px solid rgba(180,100,40,.18);padding:11px 16px calc(14px + env(safe-area-inset-bottom));box-shadow:0 -10px 28px rgba(50,30,10,.14);z-index:50;}
+  /* 兜底：landing 页底部预留空间，防止 CTA 遮挡内容 */
+  #page-land{padding-bottom:132px;}
+  .stickyBuy .payDock{display:flex;flex-direction:column;gap:10px;}
+  .stickyBuy .payBlock{display:flex;justify-content:space-between;align-items:center;gap:10px 14px;padding:12px 14px;background:#fff;border-radius:14px;border:1px solid rgba(180,100,40,.18);box-shadow:0 2px 10px rgba(50,30,10,.06);}
+  .stickyBuy .payColLeft{flex:1;min-width:120px;display:flex;flex-direction:column;align-items:flex-start;gap:6px;}
+  .stickyBuy .payColRight{flex-shrink:0;text-align:right;}
+  .stickyBuy .payOrig{font-size:15px;color:#7A6B5A;text-decoration:line-through;font-weight:600;}
+  .stickyBuy .payNow{font-size:26px;font-weight:900;color:#D9381E;line-height:1.1;display:inline-block;}
+  .stickyBuy .paySuf{font-size:13px;font-weight:700;color:#3A2010;margin-left:2px;}
+  .stickyBuy .payTag{font-size:11.5px;color:#5A3920;font-weight:600;line-height:1.35;margin:0;}
+  .stickyBuy .ctaPay{width:100%;padding:14px 18px;background:linear-gradient(90deg,#D9381E 0%,#FF6B1A 50%,#FFC850 100%);color:#fff;font-weight:900;font-size:15px;border-radius:14px;border:none;cursor:pointer;box-shadow:0 8px 22px rgba(217,56,30,.35);letter-spacing:.5px;position:relative;overflow:hidden;}
+  .stickyBuy .ctaPay::after{content:'';position:absolute;top:0;left:-100%;width:60%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.5),transparent);animation:shine 2.5s ease-in-out infinite;}
+  @keyframes shine{0%{left:-100%;}50%,100%{left:160%;}}
+  .payIdBar{display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap;font-size:11px;color:#5A3920;}
+  .payIdBar .payIdLbl{opacity:.88;}
+  .payIdBar .payIdVal{font-family:ui-monospace,SFMono-Regular,monospace;font-size:11px;background:rgba(255,255,255,.92);padding:5px 10px;border-radius:8px;border:1px solid rgba(180,100,40,.22);max-width:min(200px,52vw);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .payIdBar .payIdBtn{font-size:11px;font-weight:800;color:#D9381E;background:#FFF1D6;border:1px solid rgba(217,56,30,.35);padding:5px 12px;border-radius:8px;cursor:pointer;-webkit-tap-highlight-color:transparent;}
+  .stickyBuy .payIdDock{margin:2px 0 2px;}
+
+  /* === PAY PAGE === */
+  .payTop{padding:24px 22px 16px;background:linear-gradient(135deg,#FFEDC2,#FFD89E);text-align:center;}
+  .payTop h2{margin:0;font-size:20px;font-weight:900;color:#2A1810;}
+  .payTop .desc{margin-top:6px;font-size:12.5px;color:#5A3920;}
+  .orderCard{margin:14px 22px;padding:16px;background:#fff;border-radius:14px;border:1px solid rgba(180,100,40,.15);}
+  .orderCard .item{display:flex;justify-content:space-between;font-size:12.5px;padding:7px 0;color:#5A3920;border-bottom:1px dashed rgba(180,100,40,.15);}
+  .orderCard .item:last-child{border-bottom:none;}
+  .orderCard .item .v{font-weight:700;color:#2A1810;}
+  .orderCard .total{display:flex;justify-content:space-between;align-items:baseline;margin-top:9px;padding-top:11px;border-top:1.5px solid rgba(180,100,40,.2);}
+  .orderCard .total .l{font-size:13px;color:#5A3920;}
+  .orderCard .total .v{font-size:26px;font-weight:900;color:#D9381E;}
+  .payMethods{margin:0 22px;padding:0;}
+  .payMethods h3{font-size:13px;color:#2A1810;margin:14px 0 9px;font-weight:800;}
+  .payOpt{display:flex;align-items:center;gap:12px;padding:13px 14px;background:#fff;border:1.5px solid rgba(180,100,40,.18);border-radius:12px;margin-bottom:9px;cursor:pointer;transition:.2s;}
+  .payOpt.active{border-color:#D9381E;background:linear-gradient(135deg,#FFFAF0,#FFF1D6);}
+  .payOpt .icon{width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:800;}
+  .payOpt.alipay .icon{background:#1677FF;color:#fff;}
+  .payOpt.wxpay .icon{background:#07C160;color:#fff;}
+  .payOpt .info{flex:1;}
+  .payOpt .nm{font-size:13px;font-weight:700;color:#2A1810;}
+  .payOpt .ds{font-size:10.5px;color:#8C6440;margin-top:1px;}
+  .payOpt .radio{width:18px;height:18px;border-radius:50%;border:1.5px solid rgba(180,100,40,.3);flex-shrink:0;}
+  .payOpt.active .radio{border-color:#D9381E;background:radial-gradient(circle,#D9381E 50%,#fff 60%);}
+
+  .agreeBox{margin:14px 22px;padding:13px;background:#FFFAF0;border-radius:10px;border:1px solid rgba(180,100,40,.15);}
+  .agreeBox .row{display:flex;gap:9px;align-items:flex-start;font-size:11px;color:#5A3920;line-height:1.6;}
+  .agreeBox input{margin-top:2px;flex-shrink:0;}
+  .agreeBox a{color:#D9381E;text-decoration:underline;cursor:pointer;font-weight:600;}
+
+  .payBtn{margin:14px 22px 0;padding:15px;text-align:center;background:linear-gradient(90deg,#D9381E 0%,#FF6B1A 50%,#FFC850 100%);color:#fff;font-weight:900;font-size:16px;border-radius:14px;cursor:pointer;box-shadow:0 8px 24px rgba(217,56,30,.35);}
+  .payBtn.disabled{background:#D8C4B0;cursor:not-allowed;box-shadow:none;}
+
+  .secureRow{padding:12px 22px 18px;text-align:center;font-size:10.5px;color:#8C6440;display:flex;justify-content:center;gap:9px;}
+
+  /* === SUCCESS === */
+  .successBox{padding:32px 22px 24px;text-align:center;background:linear-gradient(135deg,#FFEDC2,#FFD89E);}
+  .successBox .check{width:68px;height:68px;border-radius:50%;background:linear-gradient(135deg,#48BB78,#38A169);color:#fff;font-size:34px;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;font-weight:900;box-shadow:0 10px 30px rgba(72,187,120,.4);}
+  .successBox h2{margin:0;font-size:20px;color:#2A1810;font-weight:900;}
+  .successBox .ds{margin-top:8px;font-size:12.5px;color:#5A3920;line-height:1.65;}
+
+  .nextCard{margin:14px 22px;padding:16px;background:#fff;border-radius:14px;border:1px solid rgba(180,100,40,.15);}
+  .nextCard h3{margin:0 0 12px;font-size:14px;font-weight:800;color:#2A1810;}
+  .nextCard .step{display:flex;gap:10px;font-size:12px;color:#3A2010;align-items:center;padding:8px 0;border-bottom:1px solid rgba(180,100,40,.08);}
+  .nextCard .step:last-child{border-bottom:none;}
+  .nextCard .step .n{width:24px;height:24px;border-radius:50%;background:linear-gradient(135deg,#FFD86F,#FF8C42);color:#1A1010;font-weight:800;display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0;}
+
+  .footer{text-align:center;padding:22px;font-size:10.5px;color:#A0704A;}
+
+  /* === CUSTOM DIALOG === */
+  .cdlg-mask{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;display:none;align-items:center;justify-content:center;}
+  .cdlg-mask.open{display:flex;animation:cdlgIn .15s ease;}
+  @keyframes cdlgIn{from{opacity:0;}to{opacity:1;}}
+  .cdlg-box{background:#fff;border-radius:18px;padding:24px 20px 18px;width:min(320px,88vw);box-shadow:0 20px 60px rgba(0,0,0,.25);}
+  .cdlg-title{font-size:15px;font-weight:900;color:#2A1810;margin:0 0 6px;}
+  .cdlg-sub{font-size:12px;color:#8C6440;margin:0 0 14px;line-height:1.5;}
+  .cdlg-input{width:100%;padding:11px 13px;border:1.5px solid rgba(180,100,40,.3);border-radius:10px;font-size:14px;font-family:ui-monospace,SFMono-Regular,monospace;color:#2A1810;outline:none;box-sizing:border-box;}
+  .cdlg-input:focus{border-color:#D9381E;}
+  .cdlg-err{font-size:11px;color:#D9381E;margin:5px 0 0;min-height:16px;}
+  .cdlg-btns{display:flex;gap:10px;margin-top:16px;}
+  .cdlg-btn{flex:1;padding:12px;border-radius:10px;font-size:14px;font-weight:700;border:none;cursor:pointer;}
+  .cdlg-btn.cancel{background:#F3EDE5;color:#5A3920;}
+  .cdlg-btn.confirm{background:linear-gradient(90deg,#D9381E,#FF6B1A);color:#fff;box-shadow:0 4px 12px rgba(217,56,30,.3);}
+
+  /* === FREE DIAGNOSIS HOOK === */
+  .diagHook{margin:16px 18px 0;padding:18px 18px 16px;background:linear-gradient(135deg,#48BB78 0%,#38A169 70%,#2F855A 100%);border-radius:18px;box-shadow:0 10px 28px rgba(56,161,105,.32);position:relative;overflow:hidden;color:#fff;}
+  .diagHook::before{content:'';position:absolute;top:-30px;right:-30px;width:120px;height:120px;background:radial-gradient(circle,rgba(255,255,255,.20),transparent 70%);border-radius:50%;}
+  .diagHook .free{display:inline-flex;align-items:center;gap:5px;background:#FFD86F;color:#2A1810;font-size:11px;font-weight:900;padding:4px 11px;border-radius:14px;letter-spacing:.5px;}
+  .diagHook .free::before{content:'🎁';}
+  .diagHook h3{margin:10px 0 4px;font-size:22px;font-weight:900;letter-spacing:-.5px;line-height:1.2;}
+  .diagHook .sub{font-size:13px;opacity:.95;line-height:1.55;margin:0 0 14px;}
+  .diagHook .sub b{background:rgba(255,255,255,.22);padding:1px 6px;border-radius:5px;}
+  .diagHook .features{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:14px;}
+  .diagHook .feat{font-size:11px;background:rgba(255,255,255,.16);padding:7px 10px;border-radius:9px;display:flex;align-items:center;gap:6px;backdrop-filter:blur(4px);}
+  .diagHook .feat::before{content:'✓';color:#FFD86F;font-weight:900;}
+  .diagHook .diagBtn{display:block;width:100%;padding:14px;background:#fff;color:#2F855A;font-weight:900;font-size:15px;border-radius:12px;text-align:center;box-shadow:0 6px 18px rgba(0,0,0,.18);letter-spacing:.5px;cursor:pointer;transition:.2s;}
+  .diagHook .diagBtn:hover{transform:translateY(-1px);}
+  .diagHook .diagBtn::after{content:' →';font-size:18px;}
+  .diagHook .diagFoot{margin-top:9px;text-align:center;font-size:11px;opacity:.9;}
+
+  /* === DIAGNOSIS SAMPLE REPORT === */
+  .diagSample{margin:14px 18px 0;padding:16px;background:#fff;border-radius:14px;border:1px solid rgba(56,161,105,.25);box-shadow:0 4px 14px rgba(56,161,105,.10);}
+  .diagSample .lbl{font-size:11px;color:#2F855A;font-weight:800;letter-spacing:.3px;}
+  .diagSample h4{margin:5px 0 10px;font-size:15px;color:#2A1810;font-weight:900;}
+  .diagSample .radar{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:12px;}
+  .diagSample .dim{padding:9px 11px;border-radius:10px;background:#FFFAF0;border:1px solid rgba(180,100,40,.12);display:flex;justify-content:space-between;align-items:center;}
+  .diagSample .dim .nn{font-size:12px;color:#2A1810;font-weight:700;}
+  .diagSample .dim .sc{font-size:13px;font-weight:900;}
+  .diagSample .dim.weak{background:linear-gradient(90deg,#FFE0DA,#FFEED5);border-color:#D9381E;}
+  .diagSample .dim.weak .sc{color:#D9381E;}
+  .diagSample .dim.ok .sc{color:#2F855A;}
+  .diagSample .weakList{padding:10px 11px;background:linear-gradient(90deg,#FFF1D6,#FFEACC);border-radius:10px;border:1px dashed #D9381E;}
+  .diagSample .weakList .t{font-size:11.5px;font-weight:800;color:#D9381E;margin-bottom:5px;display:flex;align-items:center;gap:5px;}
+  .diagSample .weakList .t::before{content:'⚠';}
+  .diagSample .weakList ul{margin:0;padding-left:18px;font-size:11.5px;color:#5A3920;line-height:1.65;}
+  .diagSample .pred{margin-top:10px;padding:9px 11px;background:#E8F8F0;border-radius:9px;border:1px solid rgba(56,161,105,.22);font-size:12px;color:#2F855A;font-weight:700;display:flex;align-items:center;gap:6px;}
+  .diagSample .pred::before{content:'🎯';}
+
+</style>
+</head>
+<body>
+<div class="frame">
+
+  <div class="pageTabs">
+    <div class="pageTab active" data-page="land">📢 宣传落地页</div>
+    <div class="pageTab" data-page="pay">💳 支付页</div>
+    <div class="pageTab" data-page="ok">✅ 支付成功</div>
+  </div>
+
+  <!-- ============================ LANDING ============================ -->
+  <div class="page active" id="page-land">
+    <div class="topbar"><span>9:41</span><span style="opacity:.65;">📶 100%</span></div>
+
+    <!-- 顶部紧迫感倒计时 -->
+    <div class="countBar">
+      <span class="dot"></span>
+      <span>限时早鸟价 999 元 · 仅剩</span>
+      <span class="num" id="countdown">02:17:43</span>
+      <span>结束</span>
+    </div>
+
+    <!-- HERO -->
+    <div class="hero">
+      <span class="hotTag">中考 / 期末冲刺限时 · 立省 1000 元</span>
+      <h1 class="heroTtl"><span class="gold">7天备考冲刺</span><br>轻松<span class="underline">提分 20 分</span></h1>
+      <p class="heroSub" style="font-size:13px;opacity:.85;">「轻松提分 20 分」是本课程目标口号 · <b>孩子的个人预估提分区间</b>由 Day 0 免费诊断后即时给出（1-25 分区间内）</p>
+      <p class="heroSub">每天 30-40 分钟 · 不耽误其他学科复习</p>
+      <p class="heroDesc">10 大学习方法 × 4 大应用维度 × AI 即时评分。每天混合训练（不是 1 天单词、1 天语法这种低效安排），按艾宾浩斯 1/3/7 天曲线自动复测，真正抗遗忘。</p>
+      <div class="heroBadges">
+        <span class="hb">✓ 4 大应用维度</span>
+        <span class="hb">✓ AI 全程评分</span>
+        <span class="hb">✓ 家长全程查看</span>
+        <span class="hb">✓ 驰声背诵检查 ★</span>
+      </div>
+    </div>
+
+    <!-- FREE DIAGNOSIS HOOK (漏斗第一动作) -->
+    <div class="diagHook">
+      <span class="free">完全免费 · 不用付钱</span>
+      <h3>先免费测，再决定买不买</h3>
+      <p class="sub">让 AI 给孩子做一份 <b>15 分钟能力诊断</b>，看清单词 / 语法 / 听说 / 作文 4 个维度<b>到底差在哪</b>，再决定是否报名。</p>
+      <div class="features">
+        <span class="feat">36 题诊断 · 15 分钟</span>
+        <span class="feat">4 维度雷达图</span>
+        <span class="feat">Top 3 薄弱点清单</span>
+        <span class="feat">预估提分空间</span>
+      </div>
+      <div class="diagBtn" onclick="alert('🚀 进入免费诊断\n→ 拉起驰声 App「Day 0 免费诊断」\n→ 15 分钟做完 36 题\n→ AI 即时输出 4 维能力雷达图 + 薄弱点清单\n→ 看完报告再决定是否购买 7 天冲刺包')">🎁 立即免费测能力</div>
+      <div class="diagFoot">已有 <b>3,847</b> 位家长让孩子测过 · 完成后赠 30 元课程券</div>
+    </div>
+
+    <!-- DIAGNOSIS SAMPLE REPORT -->
+    <div class="diagSample">
+      <span class="lbl">📊 真实诊断报告样例（南京 张同学 · 初三）</span>
+      <h4>测完 15 分钟，AI 给出的画像 →</h4>
+      <div class="radar">
+        <div class="dim ok"><span class="nn">📖 单词应用</span><span class="sc">76 / 100</span></div>
+        <div class="dim weak"><span class="nn">🧩 语法应用</span><span class="sc">52 / 100</span></div>
+        <div class="dim weak"><span class="nn">🎧 听说应用</span><span class="sc">48 / 100</span></div>
+        <div class="dim ok"><span class="nn">✍️ 作文应用</span><span class="sc">71 / 100</span></div>
+      </div>
+      <div class="weakList">
+        <div class="t">Top 3 弱项 · 7 天重点要补</div>
+        <ul>
+          <li>语法：主谓一致 + 非谓语 -ing/to do 不分（错 8/10）</li>
+          <li>听说：听后复述要点覆盖只有 35%（漏关键信息）</li>
+          <li>单词：跟读音素相似度 58%（重音 / 元音不稳）</li>
+        </ul>
+      </div>
+      <div class="pred" style="background:linear-gradient(135deg,#FFF6EC,#FFEAD9);border:2px solid #FF7A3C;padding:14px;margin-top:10px;border-radius:12px;">
+        <div style="font-size:11px;color:#888;margin-bottom:4px;">📊 Day 0 模型给张同学的预估提分区间</div>
+        <div style="display:flex;align-items:baseline;gap:8px;">
+          <b style="font-size:32px;color:#D43A00;font-weight:900;line-height:1;">18-23</b><span style="font-size:14px;color:#5A4A38;font-weight:700;">分</span>
+          <span style="font-size:10.5px;color:#888;margin-left:auto;">系统区间 1-25 分</span>
+        </div>
+        <p style="margin:6px 0 0;font-size:11.5px;color:#5A4A38;line-height:1.55;">基于诊断分数 + 7 天完成度模型 · <b>每个孩子的区间都不同</b>。课程目标口号「轻松提分 20 分」为产品平均预期；<b>你家孩子的真实区间，做完诊断立即出</b>。</p>
+      </div>
+    </div>
+
+    <!-- PRICE CARD with 3 tiers -->
+    <div class="priceCard">
+      <div class="anchor">原价 ¥1999</div>
+      <div class="now">¥<span class="yuanLbl"></span><span style="font-size:46px;">1299</span><span class="small">/ 7 天打包</span></div>
+      <span class="save">立省 ¥700 · 仅限本周</span>
+      <div class="desc">每天 30-40 分钟 · 4 大应用 + AI 评分 + 提分报告 + 24h 锦囊 + 家长端</div>
+      <div class="perks"><span>支付宝</span><span>微信支付</span><span>支持发票</span><span>7 天无理由退</span></div>
+      <div class="tierRow">
+        <div class="tier"><div class="p">¥999</div><div class="l">早鸟价</div><div class="h">前 100 名</div></div>
+        <div class="tier hot"><div class="p">¥1099</div><div class="l">拼团价</div><div class="h">3 人成团</div></div>
+        <div class="tier"><div class="p">¥1299</div><div class="l">单买价</div><div class="h">原价 1999</div></div>
+      </div>
+    </div>
+
+    <!-- LIVE FOMO TICKER -->
+    <div class="ticker">
+      <div class="led"></div>
+      <div class="txt"><b>南京张女士</b>刚为孩子购买了 7 天备考冲刺包 · 1 分钟前</div>
+    </div>
+
+    <!-- WHY DIAGNOSIS MATTERS -->
+    <div class="sec">
+      <h2 class="secTtl"><span class="num">①</span>为什么我们让你先免费测</h2>
+      <p class="secSub">不是营销话术 · 这套诊断会决定孩子后 7 天每一天做什么题</p>
+    </div>
+    <div class="painCard" style="border-left:4px solid #38A169;">
+      <div class="qq" style="color:#2F855A;">🎯 同样 7 天，为什么我们能保证「轻松提 20 分」？</div>
+      <div class="body">因为我们<b style="background:#E8F8F0;color:#2F855A;">不是统一推送</b>。Day 0 免费诊断后，AI 会根据孩子的薄弱点定制 7 天的每一天：<br>· 语法弱 → Day 2 错题口讲规则多练 5 道<br>· 听说弱 → Day 3 听后复述加 1 段<br>· 单词弱 → Day 1 听默写多推 10 词<br>这就是「<b>千人千面</b>」的个性化备考。不测就买，等于让孩子做不适合他的题。</div>
+    </div>
+
+    <!-- PAIN POINTS / WHY -->
+    <div class="sec">
+      <h2 class="secTtl"><span class="num">②</span>为什么家长愿意为这 7 天买单</h2>
+      <p class="secSub">不是又一个冲刺班，是一套真正在 App 里跑起来的科学方法</p>
+    </div>
+    <div class="painCard">
+      <div class="qq">❓ 中考/期末最后 7 天还能提分吗？</div>
+      <div class="body">可以，但前提是<b>每天都要混合训练 + 间隔复测</b>。死刷题没用——重要的是 <b>"错点入复习卡"+"错题口讲清楚"+"先说后写"+"分散到 7 天每天 30 分钟"</b>。我们把这些方法做成了 App 里每一个具体动作。</div>
+    </div>
+    <div class="painCard">
+      <div class="qq">❓ 7 天学一类、隔 6 天不复习不忘吗？</div>
+      <div class="body">这正是<b>市面冲刺营最大的坑</b>：Day1 背单词、Day2 学语法...到 Day7 单词早忘光了。我们按艾宾浩斯曲线设计：<b>每天主攻 1 个维度 + 复盘前几天的 1/3/7 天错点</b>，真正让单词进入长期记忆。</div>
+    </div>
+    <div class="painCard">
+      <div class="qq">❓ 别家的题库我们也用过，差别在哪？</div>
+      <div class="body">8 年驰声口语评测技术沉淀。其他 App 让孩子"再背一遍"，我们让孩子<b>"讲一遍 / 复述一遍 / 摘要一遍"</b>——AI 立刻告诉孩子思路漏在哪。<b>背作文 + 驰声背诵检查</b> 这是其他平台做不到的差异化主场。</div>
+    </div>
+    <div class="painCard">
+      <div class="qq">❓ "提分 20 分"目标如何兑现？</div>
+      <div class="body">「轻松提分 20 分」是产品<b>宣传口号</b>，是面向全部学员的平均预期。落到<b>每个孩子身上</b>，则以 Day 0 诊断后系统给出的<b>个人预估提分区间</b>（1-25 分内的具体范围，如 18-23、12-18 等）为准 · Day 7 模考 vs Day 0 诊断同等难度对比量化提分 · 兑现以 7 天每天 6 项任务全达标为前提，详见学员承诺书。</div>
+    </div>
+
+    <!-- 7 DAY PATH -->
+    <div class="sec">
+      <h2 class="secTtl"><span class="num">③</span>7 天主+辅备考路径</h2>
+      <p class="secSub">每天 30-40 分钟 · 主攻 1 个 + 复盘 1-2 个 · 全达标解锁次日</p>
+    </div>
+    <div class="dgrid">
+      <div class="dr">
+        <div class="num"><div class="d">DAY</div><div class="n">1</div></div>
+        <div class="info"><div class="nm">📖 单词应用 · 30 分</div><div class="ds">主攻：听默写 + 听读 + 口头造句</div><div class="rev">复盘：首日无复盘（错词进 1/3/7 天卡）</div></div>
+        <div class="tg">+3</div>
+      </div>
+      <div class="dr">
+        <div class="num"><div class="d">DAY</div><div class="n">2</div></div>
+        <div class="info"><div class="nm">🧩 语法应用 · 30 分</div><div class="ds">主攻：错题口讲规则 + 变式题</div><div class="rev">复盘：D1 单词 1 天卡复测</div></div>
+        <div class="tg">+3</div>
+      </div>
+      <div class="dr core">
+        <div class="num"><div class="d">DAY</div><div class="n">3</div></div>
+        <div class="info"><div class="nm">🎧 听说应用 ★驰声主场 · 35 分</div><div class="ds">主攻：听后复述 + 续说 + 错音切片</div><div class="rev">复盘：D1 单词 3 天卡 + D2 语法变式</div></div>
+        <div class="tg">+5</div>
+      </div>
+      <div class="dr core">
+        <div class="num"><div class="d">DAY</div><div class="n">4</div></div>
+        <div class="info"><div class="nm">✍️ 作文应用 ★背诵检查 · 35 分</div><div class="ds">主攻：背作文 + 续写 + 口头作文</div><div class="rev">复盘：D1 单词 7 天卡 + D3 听后复述</div></div>
+        <div class="tg">+3</div>
+      </div>
+      <div class="dr">
+        <div class="num"><div class="d">DAY</div><div class="n">5</div></div>
+        <div class="info"><div class="nm">🌀 4 大应用交错训练 · 40 分</div><div class="ds">主攻：单词/语法/听说/作文 4 类题穿插</div><div class="rev">复盘：综合 4 应用雷达图</div></div>
+        <div class="tg">+3</div>
+      </div>
+      <div class="dr">
+        <div class="num"><div class="d">DAY</div><div class="n">6</div></div>
+        <div class="info"><div class="nm">📝 综合卷 I · 半卷模考 · 40 分</div><div class="ds">主攻：半卷模考 + 即时复盘</div><div class="rev">复盘：错点入卡 + 24h 锦囊预热</div></div>
+        <div class="tg">+2</div>
+      </div>
+      <div class="dr">
+        <div class="num"><div class="d">DAY</div><div class="n">7</div></div>
+        <div class="info"><div class="nm">🏆 综合卷 II + 提分报告 · 40 分</div><div class="ds">主攻：全卷模考 + 7 天报告 + 24h 锦囊</div><div class="rev">复盘：Day 0 vs Day 7 · 4 维对比</div></div>
+        <div class="tg">+1</div>
+      </div>
+    </div>
+
+    <!-- METHOD ENGINE -->
+    <div class="sec">
+      <h2 class="secTtl"><span class="num">④</span>10 大学习方法引擎</h2>
+      <p class="secSub">每个方法对应 App 里一个具体动作，不是营销话术</p>
+    </div>
+    <div class="methodGrid">
+      <div class="mb"><div class="ic">🌀</div><div class="nm">艾宾浩斯</div><div class="des">1/3/7 天复习卡</div></div>
+      <div class="mb"><div class="ic">🗣️</div><div class="nm">费曼学习法</div><div class="des">错题口讲规则</div></div>
+      <div class="mb"><div class="ic">📈</div><div class="nm">Krashen i+1</div><div class="des">难度自适应</div></div>
+      <div class="mb"><div class="ic">✍️</div><div class="nm">POA 产出导向</div><div class="des">先说后写</div></div>
+      <div class="mb"><div class="ic">🎯</div><div class="nm">刻意练习</div><div class="des">微技能拆解</div></div>
+      <div class="mb"><div class="ic">🔁</div><div class="nm">测试效应</div><div class="des">用考代替背</div></div>
+      <div class="mb"><div class="ic">🔀</div><div class="nm">交错练习</div><div class="des">题型穿插</div></div>
+      <div class="mb"><div class="ic">📝</div><div class="nm">以续促学</div><div class="des">续说续写</div></div>
+      <div class="mb"><div class="ic">🧭</div><div class="nm">形成性评价</div><div class="des">评分=下一步</div></div>
+    </div>
+
+    <!-- SOCIAL PROOF -->
+    <div class="sec">
+      <h2 class="secTtl"><span class="num">⑤</span>家长真实见证</h2>
+      <p class="secSub">来自 2024 寒假冲刺营 · 1827 名达标学员（平均提分 14 分）</p>
+    </div>
+    <div class="proofGrid">
+      <div class="proof"><div class="who"><div class="av">陈</div><div><div class="nm">陈同学 妈妈</div><div class="lc">江苏 · 初三</div></div></div><div class="quote">"7 天里 AI 让孩子讲了 30 多次。讲不清的就是真的不会。"</div><div class="up">+19 分</div></div>
+      <div class="proof"><div class="who"><div class="av">王</div><div><div class="nm">王同学</div><div class="lc">上海 · 初三</div></div></div><div class="quote">"听后复述真的有效，第三天我突然听懂了。"</div><div class="up">+22 分</div></div>
+      <div class="proof"><div class="who"><div class="av">李</div><div><div class="nm">李同学 爸爸</div><div class="lc">浙江 · 高二</div></div></div><div class="quote">"家长端推送让我心里有数，孩子也知道我在看。"</div><div class="up">+15 分</div></div>
+      <div class="proof"><div class="who"><div class="av">赵</div><div><div class="nm">赵同学</div><div class="lc">广东 · 初三</div></div></div><div class="quote">"24 小时锦囊那 5 张卡真的进考场用上了。"</div><div class="up">+17 分</div></div>
+    </div>
+    <p style="font-size:10px;color:#A0704A;padding:8px 22px 0;line-height:1.6;">数据来源：2024 寒假冲刺营 1827 名达标学员样本；为客观呈现，未达标学员（占比约 38%）平均提分 +6 分。</p>
+
+    <!-- LIVE FOMO TICKER 2 -->
+    <div class="ticker">
+      <div class="led"></div>
+      <div class="txt"><b>上海徐先生 / 杭州陈女士 / 苏州林女士</b> 等 <b style="color:#D9381E;">328 位家长</b> 今日已购买</div>
+    </div>
+
+    <!-- PLEDGE -->
+    <div class="pledgeSec">
+      <h2>📜 关于「轻松提分 20 分」<span class="red">重要说明</span></h2>
+      <div class="body">「轻松提分 20 分」是本课程的<b>宣传口号</b>（产品平均预期），<b>不是对每个学员个人的承诺</b>。每位学员的<b>个人预估提分区间</b>由 Day 0 免费诊断后即时生成（在 1-25 分区间内的具体范围）。兑现该区间需以下<span class="gold">两个前提</span>：</div>
+      <ol class="list">
+        <li>学员在 7 个学习日内每日完成全部 <b>6 项达标任务</b>（含口讲规则、复测、复盘卡等）；</li>
+        <li>提分以 <b>Day0 诊断 vs Day7 全卷模考</b> 同等难度卷面对比测得。</li>
+      </ol>
+      <div class="body" style="margin-top:10px;">购买后入营时，学员将签署《学员承诺书》。若学员未按承诺完成全部达标任务，本目标不构成对学员的提分承诺。这是科学方法对所有学习者都成立的客观前提，也是本课程区别于「保证提分」类违规承诺的核心。</div>
+    </div>
+
+    <!-- FAQ -->
+    <div class="sec">
+      <h2 class="secTtl"><span class="num">⑥</span>家长常见疑问</h2>
+      <p class="secSub">5 个家长最关心的问题</p>
+    </div>
+    <details class="faq"><summary>Q1. 我家孩子英语基础很差，能用吗？</summary><p>可以。Day 0 诊断后系统会按孩子水平自适应推送（"略高一档"原则）。基础越薄弱，反而提分弹性越大。</p></details>
+    <details class="faq"><summary>Q2. 1299 元贵吗？</summary><p>线下中考冲刺营通常 3000-5000 元 / 期；线上同类 999-1999 元。本课程是「AI 全程评分 + 学习法引擎 + 家长全程查看 + 7 天打包」综合产品。可拼团 1099 元 / 人或参与早鸟 999 元优惠。</p></details>
+    <details class="faq"><summary>Q3. 每天要花多少时间？影响其他学科吗？</summary><p>每天 30-40 分钟，比刷题省一半时间。我们特意做轻——毕竟孩子还要复习数学、物理等其他学科。</p></details>
+    <details class="faq"><summary>Q4. 万一孩子提不到 20 分？</summary><p>请先在家长端查看孩子 7 天达标情况。如果是因为孩子有 1-2 天未完成达标项，请鼓励孩子按系统提示补练；如果是其他情况，请联系客服。我们 7 天里提供人工抽听兜底服务，家长可随时介入。</p></details>
+    <details class="faq"><summary>Q5. 退款规则？</summary><p>开营前 7 天内全额退；开营后 24 小时内未做训练 70% 退；开营 48 小时后不退。详见《用户协议》。</p></details>
+
+    <div style="padding:14px 22px 4px;text-align:center;font-size:11px;color:#A0704A;">7 天 · 30-40 分钟/天 · 4 大应用 · AI 评分 · 家长端 · 1299 元</div>
+  </div>
+
+  <!-- Sticky Buy -->
+  <div class="stickyBuy" id="stickyBuy">
+    <div class="payDock">
+      <div class="payBlock">
+        <div class="payColLeft">
+          <span class="payOrig">¥1999</span>
+          <div class="payTag">限时特惠 · 立省 ¥700</div>
+        </div>
+        <div class="payColRight">
+          <span class="payNow">¥1299<span class="paySuf">/ 7 天打包</span></span>
+        </div>
+      </div>
+      <div class="payIdBar payIdDock">
+        <span class="payIdLbl">传原生 ID</span>
+        <code class="payIdVal">2JZg1DgX</code>
+        <button type="button" class="payIdBtn" onclick="editPayDynamicId()">更换</button>
+      </div>
+      <button type="button" class="ctaPay" onclick="handleJumpClick()">立即支付</button>
+    </div>
+  </div>
+
+  <!-- ============================ PAYMENT ============================ -->
+  <div class="page" id="page-pay">
+    <div class="topbar"><span>9:41</span><span style="opacity:.65;">🔒 安全支付</span></div>
+    <div style="padding:6px 16px 14px;display:flex;align-items:center;">
+      <span style="font-size:22px;color:#8C6440;padding:6px 10px 6px 0;cursor:pointer;" onclick="switchPage('land')">←</span>
+      <span style="font-size:15px;font-weight:700;flex:1;text-align:center;margin-right:24px;color:#2A1810;">确认订单 · 支付</span>
+    </div>
+
+    <div class="payTop">
+      <h2>7 天备考冲刺 · 轻松提分 20 分</h2>
+      <div class="desc">每天 30-40 分钟 · 4 大应用维度 · AI 评分</div>
+    </div>
+
+    <div class="orderCard">
+      <div class="item"><span>商品</span><span class="v">7 天备考冲刺包（中考/期末通用）</span></div>
+      <div class="item"><span>地区</span><span class="v">江苏南京 · 初三</span></div>
+      <div class="item"><span>学员</span><span class="v">林小明</span></div>
+      <div class="item"><span>原价</span><span class="v" style="text-decoration:line-through;color:#A0704A;">¥1999</span></div>
+      <div class="item"><span>限时优惠</span><span class="v" style="color:#D9381E;">-¥700</span></div>
+      <div class="total"><span class="l">应付</span><span class="v">¥1299</span></div>
+    </div>
+
+    <div class="payMethods">
+      <h3>选择支付方式</h3>
+      <div class="payOpt alipay active" onclick="selectPay(this)">
+        <div class="icon">支</div>
+        <div class="info"><div class="nm">支付宝支付</div><div class="ds">推荐 · 支持花呗分期</div></div>
+        <div class="radio"></div>
+      </div>
+      <div class="payOpt wxpay" onclick="selectPay(this)">
+        <div class="icon">微</div>
+        <div class="info"><div class="nm">微信支付</div><div class="ds">微信账户余额 / 零钱通 / 银行卡</div></div>
+        <div class="radio"></div>
+      </div>
+    </div>
+
+    <div class="agreeBox">
+      <div class="row">
+        <input type="checkbox" id="agree1" onchange="updateBtn()">
+        <span>我已阅读并同意 <a onclick="alert('—— 用户协议（节选） ——\n\n第 X 条：关于「轻松提分 20 分」释义：「轻松提分 20 分」系本课程对外宣传口号（产品平均预期），不构成对个人学员的提分承诺。\n\n第 X+1 条：个人预估提分区间：学员完成 Day 0 免费能力检测后，系统将基于诊断分数 + 7 天完成度模型给出该学员的个人预估提分区间（区间上限 25 分、下限 1 分）。该区间为模型预测，非保证值。\n\n第 X+2 条：兑现条件：学员在 7 个学习日内每日完成全部 6 项达标任务（详见《学员承诺书》）。若学员未按承诺完成任一项达标任务，本课程对该学员的预估区间不构成兑现义务。')">《驰声 7 天备考冲刺包用户协议》</a>，知悉「轻松提分 20 分」为<b>宣传口号</b>而非个人承诺，个人提分区间以 Day 0 诊断报告为准。</span>
+      </div>
+      <div class="row" style="margin-top:9px;">
+        <input type="checkbox" id="agree2" onchange="updateBtn()">
+        <span>我作为家长同步签收 <a onclick="alert('—— 家长监督承诺（节选） ——\n\n本人作为林小明的法定监护人/家长，承诺：\n① 每天查看孩子家长端的达标情况；\n② 鼓励孩子按计划完成每日 6 项达标任务；\n③ 知悉「轻松提分 20 分」为产品宣传口号，孩子的个人预估提分区间以 Day 0 诊断报告为准（1-25 分内的具体范围），非保证值；\n④ 知悉兑现以孩子完成 7 天每日 6 项达标任务为前提。')">《家长监督承诺》</a>，承诺监督孩子按计划完成 7 天每日 6 项达标任务。</span>
+      </div>
+    </div>
+
+    <div class="payIdBar" style="margin:14px 22px 0;">
+      <span class="payIdLbl">传原生 ID</span>
+      <code class="payIdVal">2JZg1DgX</code>
+      <button type="button" class="payIdBtn" onclick="editPayDynamicId()">更换</button>
+    </div>
+
+    <div class="payBtn disabled" id="payBtn" onclick="goPay()">立即支付</div>
+
+    <div class="secureRow">
+      <span>🔒 信息加密</span><span>·</span><span>🛡️ 资金安全保障</span><span>·</span><span>📞 客服 9-22 点</span>
+    </div>
+  </div>
+
+  <!-- ============================ SUCCESS ============================ -->
+  <div class="page" id="page-ok">
+    <div class="topbar"><span>9:41</span><span style="opacity:.65;">✓ 已支付</span></div>
+
+    <div class="successBox">
+      <div class="check">✓</div>
+      <h2>购买成功 · 欢迎入营</h2>
+      <div class="ds">订单号：CHIVOX20260511-7821<br>已支付 ¥1299 · 7 天备考冲刺包已激活</div>
+    </div>
+
+    <div class="nextCard">
+      <h3>📋 接下来 4 步</h3>
+      <div class="step"><div class="n">1</div><div>签学员承诺书（家长同步签收）</div></div>
+      <div class="step"><div class="n">2</div><div>做 Day 0 诊断测（10 分钟，建立能力档位）</div></div>
+      <div class="step"><div class="n">3</div><div>解锁 Day 1 单词应用训练（30 分钟）</div></div>
+      <div class="step"><div class="n">4</div><div>家长扫码绑定家长端（每日推送进度）</div></div>
+    </div>
+
+    <div class="nextCard">
+      <h3>📲 家长端二维码（请家长扫码绑定）</h3>
+      <div style="text-align:center;padding:14px 0;">
+        <div style="width:140px;height:140px;margin:0 auto;background:repeating-linear-gradient(45deg,#fff,#fff 4px,#2A1810 4px,#2A1810 8px);border-radius:10px;border:8px solid #fff;box-shadow:0 6px 20px rgba(180,100,40,.2);"></div>
+        <div style="font-size:11px;color:#A0704A;margin-top:10px;">扫码后家长可实时查看孩子达标情况</div>
+      </div>
+    </div>
+
+    <div style="padding:14px 22px 24px;">
+      <div style="padding:16px;background:linear-gradient(90deg,#D9381E,#FF6B1A,#FFC850);color:#fff;text-align:center;border-radius:14px;font-weight:900;cursor:pointer;font-size:15px;box-shadow:0 10px 28px rgba(217,56,30,.4);" onclick="alert('跳转到学生端 H5 · 开始 Day 0 诊断')">▶ 立即开始 Day 0 诊断</div>
+      <div style="text-align:center;font-size:11px;color:#A0704A;margin-top:9px;">建议在中考/期末前 10-14 天开始 7 天备考冲刺</div>
+    </div>
+  </div>
+
+  <div class="footer">驰声听说在线 · 7 天备考冲刺包 · 宣传与支付 H5 · v4</div>
+</div>
+
+<!-- 自定义 ID 更换弹窗 -->
+<div class="cdlg-mask" id="idDlg" onclick="closeDlgIfMask(event)">
+  <div class="cdlg-box">
+    <p class="cdlg-title">更换传原生 ID</p>
+    <p class="cdlg-sub">修改后将传入 actionJump 的业务参数</p>
+    <input class="cdlg-input" id="idDlgInput" type="text" maxlength="64" placeholder="请输入 ID" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+    <div class="cdlg-err" id="idDlgErr"></div>
+    <div class="cdlg-btns">
+      <button class="cdlg-btn cancel" onclick="closeDlg()">取消</button>
+      <button class="cdlg-btn confirm" onclick="confirmDlg()">确定</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  /** 传值给原生：chivoxOnlineHelper / Android JSBridge / iOS WKWebView */
+  function actionJump(data) {
+    console.log('发给原生的数据是:', data);
+    var h = window.chivoxOnlineHelper;
+    if (h && typeof h.actionJump === 'function') {
+      h.actionJump(data);
+      return;
+    }
+    if (window.JSBridge && typeof window.JSBridge.actionJump === 'function') {
+      window.JSBridge.actionJump(data);
+      return;
+    }
+    if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.actionJump) {
+      window.webkit.messageHandlers.actionJump.postMessage(data);
+    }
+  }
+  var PAY_DYNAMIC_DEFAULT = '2JZg1DgX';
+  var payDynamicId = PAY_DYNAMIC_DEFAULT;
+  function refreshPayIdDisplay(){
+    document.querySelectorAll('.payIdVal').forEach(function(el){ el.textContent = payDynamicId; });
+  }
+  function editPayDynamicId(){
+    var input = document.getElementById('idDlgInput');
+    input.value = payDynamicId;
+    document.getElementById('idDlgErr').textContent = '';
+    document.getElementById('idDlg').classList.add('open');
+    setTimeout(function(){ input.focus(); input.select(); }, 100);
+  }
+  function closeDlg(){
+    document.getElementById('idDlg').classList.remove('open');
+  }
+  function closeDlgIfMask(e){
+    if(e.target === document.getElementById('idDlg')) closeDlg();
+  }
+  function confirmDlg(){
+    var v = String(document.getElementById('idDlgInput').value).trim();
+    if(!v){
+      document.getElementById('idDlgErr').textContent = '不能传空 ID，请输入有效值';
+      return;
+    }
+    payDynamicId = v;
+    refreshPayIdDisplay();
+    closeDlg();
+  }
+  document.getElementById('idDlgInput').addEventListener('keydown', function(e){
+    if(e.key === 'Enter') confirmDlg();
+    if(e.key === 'Escape') closeDlg();
+  });
+  function handleJumpClick() {
+    actionJump(payDynamicId);
+  }
+
+  function switchPage(name){
+    document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+    document.querySelectorAll('.pageTab').forEach(t=>t.classList.remove('active'));
+    const el=document.getElementById('page-'+name);
+    const tb=document.querySelector('[data-page="'+name+'"]');
+    if(el){el.classList.add('active');}
+    if(tb){tb.classList.add('active');}
+    // hide sticky on non-landing
+    document.getElementById('stickyBuy').style.display = (name==='land')?'block':'none';
+    window.scrollTo({top:0,behavior:'smooth'});
+  }
+  document.querySelectorAll('.pageTab').forEach(t=>{
+    t.addEventListener('click',()=>switchPage(t.getAttribute('data-page')));
+  });
+  function selectPay(el){
+    document.querySelectorAll('.payOpt').forEach(o=>o.classList.remove('active'));
+    el.classList.add('active');
+    document.getElementById('payBtn').textContent='立即支付';
+  }
+  function updateBtn(){
+    const ok=document.getElementById('agree1').checked && document.getElementById('agree2').checked;
+    const btn=document.getElementById('payBtn');
+    if(ok){btn.classList.remove('disabled');}else{btn.classList.add('disabled');}
+  }
+  function goPay(){
+    if(document.getElementById('payBtn').classList.contains('disabled')){
+      alert('请先勾选用户协议+家长监督承诺');return;
+    }
+    handleJumpClick();
+  }
+  // Countdown timer
+  let total = 2*3600 + 17*60 + 43; // 02:17:43
+  function tick(){
+    const h=Math.floor(total/3600), m=Math.floor((total%3600)/60), s=total%60;
+    const pad=v=>String(v).padStart(2,'0');
+    const el=document.getElementById('countdown');
+    if(el) el.textContent = pad(h)+':'+pad(m)+':'+pad(s);
+    total = Math.max(0, total-1);
+  }
+  tick();
+  setInterval(tick, 1000);
+
+  // Rotating live ticker
+  const tickerLines = [
+    '<b>南京张女士</b>刚为孩子购买了 7 天备考冲刺包 · 1 分钟前',
+    '<b>苏州陈先生</b>刚为孩子购买了 7 天备考冲刺包 · 3 分钟前',
+    '<b>上海林女士</b>使用拼团价 1099 元购买 · 5 分钟前',
+    '<b>杭州王先生</b>抢到早鸟价 999 元 · 8 分钟前',
+    '<b>无锡赵女士</b>刚为孩子购买了 7 天备考冲刺包 · 12 分钟前',
+  ];
+  let tickerIdx = 0;
+  setInterval(()=>{
+    tickerIdx = (tickerIdx+1) % tickerLines.length;
+    const tickers = document.querySelectorAll('.ticker .txt');
+    tickers.forEach(t=>{t.innerHTML = tickerLines[tickerIdx];});
+  }, 4000);
+</script>
+
+</body>
+</html>
