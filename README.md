@@ -1,3 +1,5 @@
+[![MseeP.ai Security Assessment Badge](https://mseep.net/pr/boyzhong123-testmcp-badge.png)](https://mseep.ai/app/boyzhong123-testmcp)
+
 <p align="right">
   <b>简体中文</b> · <a href="README.en.md">English</a>
 </p>
